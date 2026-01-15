@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Transaction Entry</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<h2>Transaction Entry</h2>
+
+<form id="txnForm">
+
+  <input type="date" id="date" required>
+  <input type="number" id="amount" placeholder="Amount" required>
+
+  <select id="txnType" required>
+    <option value="">Type</option>
+    <option>Expense</option>
+    <option>Income</option>
+    <option>Transfer</option>
+  </select>
+
+  <select id="level1" required>
+    <option value="">Level-1</option>
+  </select>
+
+  <select id="category" required>
+    <option value="">Category</option>
+  </select>
+
+  <select id="subCategory" required>
+    <option value="">Sub-Category</option>
+  </select>
+
+  <select id="fromAccount" required>
+    <option value="">From Account</option>
+  </select>
+
+  <select id="toAccount">
+    <option value="">To Account (optional)</option>
+  </select>
+
+  <input type="text" id="relatedTo" placeholder="Related To (EMI / Normal)">
+  <input type="text" id="description" placeholder="Description">
+
+  <button type="submit">Save Transaction</button>
+</form>
+
+<script src="js/api.js"></script>
+
+<script>
+const API_URL =
+"https://script.google.com/macros/s/AKfycbx0yqBiy_b6vq4J6ddJJo-2-cwQdbTmSJ9BYtOdVIdqZ12-XNi6nfBF4T_msoKgPmNqtg/exec";
+
+let dropdownData = {};
+
+async function loadDropdowns() {
+  const res = await fetch(API_URL + "?mode=dropdowns");
+  dropdownData = await res.json();
+
+  // Level-1
+  dropdownData.level1.forEach(l1 => {
+    level1.innerHTML += `<option>${l1}</option>`;
+  });
+
+  // Accounts
+  dropdownData.accounts.forEach(a => {
+    fromAccount.innerHTML += `<option>${a}</option>`;
+    toAccount.innerHTML += `<option>${a}</option>`;
+  });
+}
+
+level1.onchange = () => {
+  category.innerHTML = `<option value="">Category</option>`;
+  subCategory.innerHTML = `<option value="">Sub-Category</option>`;
+
+  const cats = dropdownData.categories[level1.value] || {};
+  Object.keys(cats).forEach(c => {
+    category.innerHTML += `<option>${c}</option>`;
+  });
+};
+
+category.onchange = () => {
+  subCategory.innerHTML = `<option value="">Sub-Category</option>`;
+  const subs = dropdownData.categories[level1.value][category.value] || [];
+  subs.forEach(s => {
+    subCategory.innerHTML += `<option>${s}</option>`;
+  });
+};
+
+document.getElementById("txnForm").onsubmit = async (e) => {
+  e.preventDefault();
+
+  const payload = {
+    type: "transaction",
+    date: date.value,
+    amount: amount.value,
+    txnType: txnType.value,
+    level1: level1.value,
+    category: category.value,
+    subCategory: subCategory.value,
+    fromAccount: fromAccount.value,
+    toAccount: toAccount.value,
+    relatedTo: relatedTo.value,
+    description: description.value
+  };
+
+  const res = await sendData(payload);
+  alert(res.message);
+};
+
+loadDropdowns();
+</script>
+
+</body>
+</html>
