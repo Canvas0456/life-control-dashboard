@@ -5,131 +5,125 @@
 <title>Transaction Entry</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Apple-like Font -->
+<!-- Apple-like font -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-/* ---------- Apple Style Theme ---------- */
-:root {
-  --bg: #f5f5f7;
-  --card: rgba(255,255,255,0.75);
-  --border: rgba(0,0,0,0.08);
-  --text: #1d1d1f;
-  --muted: #6e6e73;
-  --accent: #0071e3;
-  --danger: #ff3b30;
-  --success: #34c759;
-  --radius: 18px;
+:root{
+  --bg:#f5f5f7;
+  --card:rgba(255,255,255,.75);
+  --border:rgba(0,0,0,.08);
+  --text:#1d1d1f;
+  --muted:#6e6e73;
+  --accent:#0071e3;
+  --success:#34c759;
+  --danger:#ff3b30;
+  --radius:18px;
 }
 
-* { box-sizing: border-box; }
+*{box-sizing:border-box}
 
-body {
-  margin: 0;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont;
-  background: var(--bg);
-  color: var(--text);
+body{
+  margin:0;
+  font-family:Inter,-apple-system,BlinkMacSystemFont;
+  background:var(--bg);
+  color:var(--text);
 }
 
-/* ---------- Layout ---------- */
-.container {
-  max-width: 480px;
-  margin: auto;
-  padding: 24px 16px 40px;
+.container{
+  max-width:480px;
+  margin:auto;
+  padding:24px 16px 40px;
 }
 
-h1 {
-  font-size: 26px;
-  font-weight: 600;
-  margin-bottom: 6px;
+h1{
+  font-size:26px;
+  font-weight:600;
+  margin:0 0 4px;
 }
 
-.subtitle {
-  color: var(--muted);
-  margin-bottom: 22px;
+.subtitle{
+  color:var(--muted);
+  margin-bottom:6px;
 }
 
-/* ---------- Card ---------- */
-.card {
-  background: var(--card);
-  backdrop-filter: blur(20px);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  padding: 20px;
-  animation: slideUp 0.6s ease;
+#commitInfo{
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:18px;
 }
 
-@keyframes slideUp {
-  from { transform: translateY(15px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+.card{
+  background:var(--card);
+  backdrop-filter:blur(20px);
+  border-radius:var(--radius);
+  border:1px solid var(--border);
+  padding:20px;
+  animation:slideUp .5s ease;
 }
 
-/* ---------- Inputs ---------- */
-.field {
-  margin-bottom: 14px;
+@keyframes slideUp{
+  from{transform:translateY(12px);opacity:0}
+  to{transform:none;opacity:1}
 }
 
-label {
-  font-size: 13px;
-  color: var(--muted);
-  display: block;
-  margin-bottom: 6px;
+.field{margin-bottom:14px}
+
+label{
+  font-size:13px;
+  color:var(--muted);
+  display:block;
+  margin-bottom:6px;
 }
 
-input, select {
-  width: 100%;
-  padding: 12px 14px;
-  font-size: 15px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: white;
-  outline: none;
-  transition: all 0.2s ease;
+input,select{
+  width:100%;
+  padding:12px 14px;
+  font-size:15px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#fff;
+  outline:none;
+  transition:.2s;
 }
 
-input:focus, select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(0,113,227,0.15);
+input:focus,select:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(0,113,227,.15);
 }
 
-/* ---------- Button ---------- */
-button {
-  width: 100%;
-  padding: 14px;
-  border-radius: 14px;
-  border: none;
-  font-size: 16px;
-  font-weight: 600;
-  background: var(--accent);
-  color: white;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+.inline{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
 }
 
-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(0,113,227,0.3);
+button{
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:none;
+  font-size:16px;
+  font-weight:600;
+  background:var(--accent);
+  color:#fff;
+  cursor:pointer;
+  transition:.15s;
 }
 
-/* ---------- Status ---------- */
-.status {
-  margin-top: 16px;
-  text-align: center;
-  font-weight: 500;
+button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 18px rgba(0,113,227,.3);
 }
 
-.success { color: var(--success); }
-.error { color: var(--danger); }
-
-/* ---------- Small UX ---------- */
-.inline {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+.status{
+  margin-top:14px;
+  text-align:center;
+  font-weight:500;
 }
 
-.hidden { display: none; }
-
+.success{color:var(--success)}
+.error{color:var(--danger)}
 </style>
 </head>
 
@@ -137,7 +131,8 @@ button:hover {
 <div class="container">
 
 <h1>Transaction Entry</h1>
-<div class="subtitle">Quick, clean & controlled</div>
+<div class="subtitle">Clean • Controlled • Real-time</div>
+<div id="commitInfo">Loading version…</div>
 
 <div class="card">
 <form id="txnForm">
@@ -152,7 +147,6 @@ button:hover {
     <label>Amount</label>
     <input type="number" id="amount" placeholder="₹" required>
   </div>
-
   <div class="field">
     <label>Type</label>
     <select id="txnType" required>
@@ -184,7 +178,6 @@ button:hover {
     <label>From Account</label>
     <select id="fromAccount" required></select>
   </div>
-
   <div class="field">
     <label>To Account</label>
     <select id="toAccount"></select>
@@ -201,88 +194,123 @@ button:hover {
 
 </form>
 </div>
-
 </div>
 
-<!-- ---------- SCRIPT ---------- -->
 <script>
+/* ================= CONFIG ================= */
+const API =
+"https://script.google.com/macros/s/AKfycbx0yqBiy_b6vq4J6ddJJo-2-cwQdbTmSJ9BYtOdVIdqZ12-XNi6nfBF4T_msoKgPmNqtg/exec";
+
+/* 🔴 CHANGE THIS */
+const GITHUB_USER = "YOUR_GITHUB_USERNAME";
+const REPO_NAME = "life-control-dashboard";
+const FILE_PATH = "transactions.html";
+
+/* ============== DOM BINDINGS ============== */
 const level1 = document.getElementById("level1");
 const category = document.getElementById("category");
 const subCategory = document.getElementById("subCategory");
 const fromAccount = document.getElementById("fromAccount");
 const toAccount = document.getElementById("toAccount");
 const status = document.getElementById("status");
-
-const API =
-"https://script.google.com/macros/s/AKfycbx0yqBiy_b6vq4J6ddJJo-2-cwQdbTmSJ9BYtOdVIdqZ12-XNi6nfBF4T_msoKgPmNqtg/exec";
+const date = document.getElementById("date");
+const amount = document.getElementById("amount");
+const txnType = document.getElementById("txnType");
+const description = document.getElementById("description");
 
 let dropdowns = {};
 
-// Auto-set today
-document.getElementById("date").valueAsDate = new Date();
+/* ============== AUTO DATE ============== */
+date.valueAsDate = new Date();
 
-async function loadDropdowns() {
+/* ============== LOAD DROPDOWNS ============== */
+async function loadDropdowns(){
   const res = await fetch(API + "?mode=dropdowns");
   dropdowns = await res.json();
 
   level1.innerHTML = `<option value="">Select</option>`;
-  dropdowns.level1.forEach(v => level1.innerHTML += `<option>${v}</option>`);
+  dropdowns.level1.forEach(v=>{
+    level1.innerHTML += `<option value="${v}">${v}</option>`;
+  });
 
   fromAccount.innerHTML = `<option value="">Select</option>`;
   toAccount.innerHTML = `<option value="">Optional</option>`;
-  dropdowns.accounts.forEach(a => {
-    fromAccount.innerHTML += `<option>${a}</option>`;
-    toAccount.innerHTML += `<option>${a}</option>`;
+  dropdowns.accounts.forEach(a=>{
+    fromAccount.innerHTML += `<option value="${a}">${a}</option>`;
+    toAccount.innerHTML += `<option value="${a}">${a}</option>`;
   });
 }
 
-level1.onchange = () => {
+level1.onchange = ()=>{
   category.innerHTML = `<option value="">Select</option>`;
   subCategory.innerHTML = `<option value="">Select</option>`;
-
-  Object.keys(dropdowns.categories[level1.value] || {})
-    .forEach(c => category.innerHTML += `<option>${c}</option>`);
+  const cats = dropdowns.categories[level1.value] || {};
+  Object.keys(cats).forEach(c=>{
+    category.innerHTML += `<option value="${c}">${c}</option>`;
+  });
 };
 
-category.onchange = () => {
+category.onchange = ()=>{
   subCategory.innerHTML = `<option value="">Select</option>`;
   (dropdowns.categories[level1.value][category.value] || [])
-    .forEach(s => subCategory.innerHTML += `<option>${s}</option>`);
+    .forEach(s=>{
+      subCategory.innerHTML += `<option value="${s}">${s}</option>`;
+    });
 };
 
-document.getElementById("txnForm").onsubmit = async e => {
+/* ============== SUBMIT ============== */
+document.getElementById("txnForm").onsubmit = async e=>{
   e.preventDefault();
-  status.textContent = "Saving...";
+  status.textContent = "Saving…";
   status.className = "status";
 
   const payload = {
-    type: "transaction",
-    date: date.value,
-    amount: amount.value,
-    txnType: txnType.value,
-    level1: level1.value,
-    category: category.value,
-    subCategory: subCategory.value,
-    fromAccount: fromAccount.value,
-    toAccount: toAccount.value,
-    description: description.value
+    type:"transaction",
+    date:date.value,
+    amount:amount.value,
+    txnType:txnType.value,
+    level1:level1.value,
+    category:category.value,
+    subCategory:subCategory.value,
+    fromAccount:fromAccount.value,
+    toAccount:toAccount.value,
+    description:description.value
   };
 
-  const res = await fetch(API, {
-    method: "POST",
-    body: JSON.stringify(payload)
-  }).then(r => r.json());
+  const res = await fetch(API,{
+    method:"POST",
+    body:JSON.stringify(payload)
+  }).then(r=>r.json());
 
   status.textContent = res.message;
-  status.className = "status " + (res.status === "success" ? "success" : "error");
+  status.className = "status " + (res.status==="success"?"success":"error");
 
-  if (res.status === "success") {
+  if(res.status==="success"){
     document.getElementById("txnForm").reset();
-    document.getElementById("date").valueAsDate = new Date();
+    date.valueAsDate = new Date();
   }
 };
 
+/* ============== GITHUB COMMIT TIMESTAMP ============== */
+async function loadCommitInfo(){
+  try{
+    const url =
+      `https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/commits?path=${FILE_PATH}&per_page=1`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if(!data[0]) throw "";
+    const d = new Date(data[0].commit.committer.date);
+    document.getElementById("commitInfo").textContent =
+      "Last Updated: " + d.toLocaleString();
+  }catch{
+    document.getElementById("commitInfo").textContent =
+      "Version info unavailable";
+  }
+}
+
+/* ============== INIT ============== */
 loadDropdowns();
+loadCommitInfo();
 </script>
 
 </body>
