@@ -1,18 +1,69 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Ledger</title>
+
 <style>
-body{font-family:system-ui;background:#0b1220;color:#e5e7eb;margin:0}
-header{padding:14px;background:#020617;position:sticky;top:0}
-.card{background:#111827;border-radius:14px;padding:16px;margin:16px}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.kpi{background:#020617;padding:12px;border-radius:12px}
-label{font-size:12px;color:#9ca3af}
-select{width:100%;padding:10px;border-radius:10px;background:#020617;color:#fff}
-table{width:100%;border-collapse:collapse}
-th,td{padding:8px;border-bottom:1px solid #1f2937;font-size:12px}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system;
+  background:#0b1220;
+  color:#e5e7eb;
+}
+header{
+  background:#020617;
+  padding:14px 18px;
+  position:sticky;
+  top:0;
+}
+.card{
+  background:#111827;
+  border-radius:14px;
+  padding:16px;
+  margin:16px;
+}
+label{
+  font-size:12px;
+  color:#9ca3af;
+  display:block;
+  margin-top:10px;
+}
+select{
+  width:100%;
+  padding:10px;
+  margin-top:4px;
+  background:#020617;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+}
+.kpis{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+.kpi{
+  background:#020617;
+  padding:12px;
+  border-radius:12px;
+}
+.kpi div:last-child{
+  font-size:18px;
+  font-weight:600;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  padding:8px;
+  font-size:12px;
+  border-bottom:1px solid #1f2937;
+}
+th{
+  color:#9ca3af;
+}
 </style>
 </head>
 
@@ -22,6 +73,7 @@ th,td{padding:8px;border-bottom:1px solid #1f2937;font-size:12px}
   <b>Ledger</b>
 </header>
 
+<!-- FILTERS -->
 <div class="card">
   <label>Ledger Type</label>
   <select id="ledgerType">
@@ -34,78 +86,117 @@ th,td{padding:8px;border-bottom:1px solid #1f2937;font-size:12px}
 
   <label>Year</label>
   <select id="ledgerYear">
-    <option>2026</option>
-    <option>2025</option>
+    <option value="2026">2026</option>
+    <option value="2025">2025</option>
   </select>
 </div>
 
+<!-- KPIs -->
 <div class="card">
   <div class="kpis">
     <div class="kpi"><label>Opening</label><div id="k1">–</div></div>
-    <div class="kpi"><label>Inflow</label><div id="k2">–</div></div>
-    <div class="kpi"><label>Outflow</label><div id="k3">–</div></div>
+    <div class="kpi"><label>Inflow / Debit</label><div id="k2">–</div></div>
+    <div class="kpi"><label>Outflow / Credit</label><div id="k3">–</div></div>
     <div class="kpi"><label>Closing</label><div id="k4">–</div></div>
   </div>
 </div>
 
+<!-- TABLE -->
 <div class="card">
   <table>
     <thead>
-      <tr><th>Date</th><th>Description</th><th>Debit</th><th>Credit</th><th>Balance</th></tr>
+      <tr>
+        <th>Date</th>
+        <th>Description</th>
+        <th>Debit</th>
+        <th>Credit</th>
+        <th>Balance</th>
+      </tr>
     </thead>
     <tbody id="rows"></tbody>
   </table>
 </div>
 
 <script>
+/* 🔴 PASTE YOUR DEPLOYMENT URL HERE */
 const API = "PASTE_YOUR_NEW_DEPLOYMENT_URL_HERE";
 
 const ledgerType = document.getElementById("ledgerType");
 const ledgerName = document.getElementById("ledgerName");
 const ledgerYear = document.getElementById("ledgerYear");
 
-ledgerType.onchange = loadNames;
-ledgerName.onchange = loadLedger;
-ledgerYear.onchange = loadLedger;
+ledgerType.addEventListener("change", loadLedgerNames);
+ledgerName.addEventListener("change", loadLedger);
+ledgerYear.addEventListener("change", loadLedger);
 
-function loadNames(){
+/* Load ledger names safely */
+function loadLedgerNames(){
+  ledgerName.innerHTML = "<option>Loading...</option>";
+
   fetch(`${API}?mode=ledgers&type=${ledgerType.value}`)
     .then(r=>r.json())
-    .then(d=>{
-      ledgerName.innerHTML="";
-      d.forEach(x=>{
-        const o=document.createElement("option");
-        o.value=o.textContent=x.name;
+    .then(list=>{
+      ledgerName.innerHTML = "";
+
+      if(!list || list.length===0){
+        ledgerName.innerHTML = "<option>No Ledgers</option>";
+        clearUI();
+        return;
+      }
+
+      list.forEach((l,i)=>{
+        const o = document.createElement("option");
+        o.value = l.name;
+        o.textContent = l.name;
         ledgerName.appendChild(o);
       });
+
+      /* Auto-select first ledger */
+      ledgerName.selectedIndex = 0;
       loadLedger();
+    })
+    .catch(()=>{
+      ledgerName.innerHTML = "<option>Error</option>";
     });
 }
 
+/* Load ledger data */
 function loadLedger(){
   if(!ledgerName.value) return;
 
-  fetch(`${API}?mode=ledger&type=${ledgerType.value}&name=${ledgerName.value}&year=${ledgerYear.value}`)
+  fetch(`${API}?mode=ledger&type=${ledgerType.value}&name=${encodeURIComponent(ledgerName.value)}&year=${ledgerYear.value}`)
     .then(r=>r.json())
     .then(d=>{
-      k1.textContent = d.opening_balance;
-      k2.textContent = d.total_inflow || d.total_debit;
-      k3.textContent = d.total_outflow || d.total_credit;
-      k4.textContent = d.closing_balance;
+      if(!d || !d.entries){
+        clearUI();
+        return;
+      }
+
+      k1.textContent = d.opening_balance ?? "0";
+      k2.textContent = d.total_inflow ?? d.total_debit ?? "0";
+      k3.textContent = d.total_outflow ?? d.total_credit ?? "0";
+      k4.textContent = d.closing_balance ?? "0";
 
       rows.innerHTML = d.entries.map(e=>`
         <tr>
           <td>${e.date}</td>
           <td>${e.description}</td>
-          <td>${e.debit||""}</td>
-          <td>${e.credit||""}</td>
+          <td>${e.debit || ""}</td>
+          <td>${e.credit || ""}</td>
           <td>${e.balance}</td>
         </tr>
       `).join("");
     });
 }
 
-loadNames();
+/* Clear UI */
+function clearUI(){
+  k1.textContent = k2.textContent = k3.textContent = k4.textContent = "–";
+  rows.innerHTML = "";
+}
+
+/* INIT */
+loadLedgerNames();
 </script>
 
 </body>
