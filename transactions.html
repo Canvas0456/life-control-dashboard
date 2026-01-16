@@ -6,7 +6,7 @@
 <title>Add Transaction</title>
 
 <style>
-:root {
+:root{
   --bg:#f5f7fb;
   --card:#ffffff;
   --primary:#007aff;
@@ -17,7 +17,7 @@
 }
 *{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI";}
 body{margin:0;background:var(--bg);padding:20px;}
-.container{max-width:520px;margin:auto;}
+.container{max-width:620px;margin:auto;}
 .card{
   background:var(--card);
   border-radius:var(--radius);
@@ -40,76 +40,128 @@ button{
 .error{color:var(--danger);font-size:12px;margin-top:8px}
 .success{color:#2ecc71;text-align:center;margin-top:12px}
 .hidden{display:none}
+
+/* ===== Last 10 Table ===== */
+.toggle{
+  margin-top:22px;
+  font-size:14px;
+  color:var(--primary);
+  cursor:pointer;
+  user-select:none;
+}
+.table-wrap{
+  margin-top:14px;
+  display:none;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+th,td{
+  padding:8px;
+  border-bottom:1px solid #eee;
+  text-align:left;
+}
+th{color:var(--muted);font-weight:600}
+.badge{
+  padding:2px 8px;
+  border-radius:10px;
+  background:#eef3ff;
+  font-size:11px;
+}
 </style>
 </head>
 
 <body>
 <div class="container">
-  <div class="card">
-    <h1>Add Transaction</h1>
-    <div class="sub">Fast • Clean • Controlled</div>
+<div class="card">
+<h1>Add Transaction</h1>
+<div class="sub">Fast • Clean • Controlled</div>
 
-    <label>Date</label>
-    <input type="date" id="date">
+<label>Date</label>
+<input type="date" id="date">
 
-    <label>Transaction Type</label>
-    <select id="txnType">
-      <option value="">Select</option>
-      <option>Income</option>
-      <option>Expense</option>
-      <option>Transfer</option>
-    </select>
+<label>Transaction Type</label>
+<select id="txnType">
+  <option value="">Select</option>
+  <option>Income</option>
+  <option>Expense</option>
+  <option>Transfer</option>
+</select>
 
-    <label>Level</label>
-    <select id="level"></select>
+<label>Level</label>
+<select id="level"></select>
 
-    <label>Category</label>
-    <select id="category"></select>
+<label>Category</label>
+<select id="category"></select>
 
-    <label>Sub-Category</label>
-    <select id="subCategory"></select>
+<label>Sub-Category</label>
+<select id="subCategory"></select>
 
-    <label>Amount (₹)</label>
-    <input type="number" id="amount">
+<label>Amount (₹)</label>
+<input type="number" id="amount">
 
-    <div id="fromBlock">
-      <label>From Account</label>
-      <select id="fromAccount"></select>
-    </div>
+<label>From Account</label>
+<select id="fromAccount"></select>
 
-    <div id="toBlock" class="hidden">
-      <label>To Account</label>
-      <select id="toAccount"></select>
-    </div>
+<div id="toBlock" class="hidden">
+  <label>To Account</label>
+  <select id="toAccount"></select>
+</div>
 
-    <label>Notes</label>
-    <textarea id="notes" rows="2"></textarea>
+<label>Notes</label>
+<textarea id="notes" rows="2"></textarea>
 
-    <div class="error" id="error"></div>
-    <button id="saveBtn">Save Transaction</button>
-    <div class="success" id="success"></div>
-  </div>
+<div class="error" id="error"></div>
+<button id="saveBtn">Save Transaction</button>
+<div class="success" id="success"></div>
+
+<!-- ===== Last 10 Toggle ===== -->
+<div class="toggle" id="toggleRecent">Show last 10 transactions ⌄</div>
+
+<div class="table-wrap" id="recentWrap">
+<table>
+<thead>
+<tr>
+  <th>Date</th>
+  <th>Type</th>
+  <th>Category</th>
+  <th>Amount</th>
+  <th>From → To</th>
+</tr>
+</thead>
+<tbody id="recentBody"></tbody>
+</table>
+</div>
+
+</div>
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbx0qkMTieJu2dm1sfhd0zvJ8KgKCocfZHNIXyHw6adNjj5cTReMXGO2uKbB_do0PTPLMw/exec";
+const API="https://script.google.com/macros/s/AKfycbx0qkMTieJu2dm1sfhd0zvJ8KgKCocfZHNIXyHw6adNjj5cTReMXGO2uKbB_do0PTPLMw/exec";
+const $=id=>document.getElementById(id);
+let master={};
 
-const $ = id => document.getElementById(id);
-let master = {};
+$("date").valueAsDate=new Date();
 
-fetch(API + "?mode=dropdowns")
+/* ===== Load Dropdowns ===== */
+fetch(API+"?mode=dropdowns")
 .then(r=>r.json())
 .then(d=>{
   master=d;
   loadAccounts();
+  loadRecent();
 });
 
 function loadAccounts(){
   ["fromAccount","toAccount"].forEach(id=>{
-    $(id).innerHTML="<option value=''>Select</option>"+master.accounts.map(a=>`<option>${a}</option>`).join("");
+    $(id).innerHTML="<option value=''>Select</option>"+
+      master.accounts.map(a=>`<option>${a}</option>`).join("");
   });
 }
 
+/* ===== Dynamic Logic ===== */
 $("txnType").onchange=()=>{
   reset();
   const t=$("txnType").value;
@@ -120,11 +172,9 @@ $("txnType").onchange=()=>{
     loadCategories("Income");
     $("toBlock").classList.remove("hidden");
   }
-
   if(t==="Expense"){
     loadLevels(["Variable","Savings","Sinking"]);
   }
-
   if(t==="Transfer"){
     $("level").innerHTML="<option>Transfer</option>";
     loadCategories("Transfer");
@@ -151,6 +201,7 @@ function reset(){
   $("toBlock").classList.add("hidden");
 }
 
+/* ===== Save ===== */
 $("saveBtn").onclick=async()=>{
   $("error").textContent="";$("success").textContent="";
 
@@ -184,8 +235,32 @@ $("saveBtn").onclick=async()=>{
   $("saveBtn").disabled=false;
 
   if(r.status!=="success") return $("error").textContent=r.message;
+
   $("success").textContent="Transaction saved successfully";
+  loadRecent();
 };
+
+/* ===== Recent Table ===== */
+$("toggleRecent").onclick=()=>{
+  const w=$("recentWrap");
+  w.style.display=w.style.display==="none"?"block":"none";
+};
+
+function loadRecent(){
+  fetch(API+"?mode=recent&type=transactions")
+  .then(r=>r.json())
+  .then(rows=>{
+    $("recentBody").innerHTML=rows.map(r=>`
+      <tr>
+        <td>${r.date}</td>
+        <td><span class="badge">${r.type}</span></td>
+        <td>${r.category}<br><small>${r.sub}</small></td>
+        <td>₹${r.amount}</td>
+        <td>${r.from||"-"} → ${r.to||"-"}</td>
+      </tr>
+    `).join("");
+  });
+}
 </script>
 </body>
 </html>
