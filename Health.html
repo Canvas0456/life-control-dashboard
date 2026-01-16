@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Daily Health Entry</title>
+
+<style>
+:root {
+  --bg: #f2f7f5;
+  --card: #ffffff;
+  --primary: #34c759;
+  --danger: #ff3b30;
+  --text: #1c1c1e;
+  --muted: #6e6e73;
+  --radius: 18px;
+}
+
+* { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI"; }
+
+body {
+  background: var(--bg);
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 520px;
+  margin: auto;
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  animation: fadeIn 0.4s ease;
+}
+
+h1 {
+  margin: 0 0 6px;
+  font-size: 22px;
+}
+
+.sub {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+textarea { resize: none; }
+
+button {
+  width: 100%;
+  margin-top: 22px;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: var(--primary);
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+}
+
+.error {
+  color: var(--danger);
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.success {
+  text-align: center;
+  color: green;
+  margin-top: 14px;
+  font-size: 14px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <div class="card">
+    <h1>Daily Health Check</h1>
+    <div class="sub">Small steps, big impact</div>
+
+    <label>Date</label>
+    <input type="date" id="date"/>
+
+    <label>Steps</label>
+    <input type="number" id="steps" placeholder="e.g. 6500"/>
+
+    <label>Water Intake (Liters)</label>
+    <input type="number" step="0.1" id="water" placeholder="e.g. 3.0"/>
+
+    <label>Sleep (Hours)</label>
+    <input type="number" step="0.1" id="sleep" placeholder="e.g. 7.5"/>
+
+    <label>Workout (Minutes)</label>
+    <input type="number" id="workout" placeholder="e.g. 45"/>
+
+    <label>Calories Burned (Optional)</label>
+    <input type="number" id="calories"/>
+
+    <label>Mood</label>
+    <select id="mood">
+      <option value="">Select</option>
+      <option>Excellent</option>
+      <option>Good</option>
+      <option>Neutral</option>
+      <option>Low</option>
+      <option>Stressed</option>
+    </select>
+
+    <label>Notes (Optional)</label>
+    <textarea id="notes" rows="2"></textarea>
+
+    <div class="error" id="error"></div>
+
+    <button id="saveBtn">Save Health Entry</button>
+    <div class="success" id="success"></div>
+  </div>
+</div>
+
+<script>
+const API = "YOUR_APPS_SCRIPT_EXEC_URL";
+
+const el = id => document.getElementById(id);
+const error = el("error");
+const success = el("success");
+
+el("date").valueAsDate = new Date();
+
+el("saveBtn").onclick = async () => {
+  error.textContent = "";
+  success.textContent = "";
+
+  if (!el("date").value || new Date(el("date").value) < new Date("2026-02-01"))
+    return error.textContent = "Date must be Feb-2026 or later";
+
+  const payload = {
+    type: "health",
+    date: el("date").value,
+    steps: el("steps").value || 0,
+    water: el("water").value || 0,
+    sleep: el("sleep").value || 0,
+    workout: el("workout").value || 0,
+    calories: el("calories").value || 0,
+    mood: el("mood").value,
+    notes: el("notes").value
+  };
+
+  el("saveBtn").disabled = true;
+
+  const res = await fetch(API, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+
+  const r = await res.json();
+  el("saveBtn").disabled = false;
+
+  if (r.status !== "success")
+    return error.textContent = r.message;
+
+  success.textContent = "Health entry saved successfully";
+};
+</script>
+</body>
+</html>
