@@ -36,27 +36,35 @@ button{
   border:none;border-radius:14px;
   background:var(--primary);color:#fff;font-size:15px;
 }
+button:disabled{opacity:.6}
 .error{color:var(--danger);font-size:12px;margin-top:8px}
 .success{color:#2ecc71;text-align:center;margin-top:12px}
 
-/* ===== Last 10 ===== */
+/* ===== Last 10 Table ===== */
 .toggle{
   margin-top:22px;
   font-size:14px;
   color:var(--primary);
   cursor:pointer;
+  user-select:none;
 }
 .table-wrap{display:none;margin-top:14px;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;}
-th{color:var(--muted);}
-.badge{background:#e8f7ee;border-radius:10px;padding:2px 8px;font-size:11px;}
+th{color:var(--muted);font-weight:600}
+.badge{
+  background:#e8f7ee;
+  border-radius:10px;
+  padding:2px 8px;
+  font-size:11px;
+}
 </style>
 </head>
 
 <body>
 <div class="container">
 <div class="card">
+
 <h1>Daily Health Check</h1>
 <div class="sub">Consistency beats intensity</div>
 
@@ -64,18 +72,18 @@ th{color:var(--muted);}
 <input type="date" id="date">
 
 <label>Steps</label>
-<input type="number" min="0" id="steps">
+<input type="number" min="0" id="steps" placeholder="e.g. 6500">
 
 <label>Water Intake (Liters)</label>
-<input type="number" step="0.1" min="0" id="water">
+<input type="number" step="0.1" min="0" id="water" placeholder="e.g. 3.0">
 
 <label>Sleep (Hours)</label>
-<input type="number" step="0.1" min="0" id="sleep">
+<input type="number" step="0.1" min="0" id="sleep" placeholder="e.g. 7.5">
 
 <label>Workout (Minutes)</label>
-<input type="number" min="0" id="workout">
+<input type="number" min="0" id="workout" placeholder="e.g. 45">
 
-<label>Calories Burned</label>
+<label>Calories Burned (Optional)</label>
 <input type="number" min="0" id="calories">
 
 <label>Mood</label>
@@ -88,15 +96,19 @@ th{color:var(--muted);}
   <option>Stressed</option>
 </select>
 
-<label>Notes</label>
+<label>Notes (Optional)</label>
 <textarea id="notes" rows="2"></textarea>
 
 <div class="error" id="error"></div>
-<button id="saveBtn">Save Health Entry</button>
+
+<!-- IMPORTANT: type="button" -->
+<button id="saveBtn" type="button">Save Health Entry</button>
+
 <div class="success" id="success"></div>
 
-<!-- Last 10 -->
+<!-- Last 10 Toggle -->
 <div class="toggle" id="toggleRecent">Show last 10 health entries ⌄</div>
+
 <div class="table-wrap" id="recentWrap">
 <table>
 <thead>
@@ -119,20 +131,27 @@ th{color:var(--muted);}
 const API="https://script.google.com/macros/s/AKfycbx0qkMTieJu2dm1sfhd0zvJ8KgKCocfZHNIXyHw6adNjj5cTReMXGO2uKbB_do0PTPLMw/exec";
 const $=id=>document.getElementById(id);
 
+/* ===== Init ===== */
 $("date").valueAsDate=new Date();
 loadRecent();
 
+/* ===== Toggle Table ===== */
 $("toggleRecent").onclick=()=>{
   const w=$("recentWrap");
   w.style.display=w.style.display==="none"?"block":"none";
 };
 
+/* ===== Save ===== */
 $("saveBtn").onclick=async()=>{
   $("error").textContent="";
   $("success").textContent="";
+  $("saveBtn").disabled=true;
 
-  if(new Date($("date").value)<new Date("2026-02-01"))
-    return $("error").textContent="January is locked. Start from Feb-2026.";
+  if(new Date($("date").value)<new Date("2026-02-01")){
+    $("error").textContent="January is locked. Start from Feb-2026.";
+    $("saveBtn").disabled=false;
+    return;
+  }
 
   const payload={
     type:"health",
@@ -146,13 +165,26 @@ $("saveBtn").onclick=async()=>{
     notes:$("notes").value
   };
 
-  const r=await fetch(API,{method:"POST",body:JSON.stringify(payload)}).then(r=>r.json());
-  if(r.status!=="success") return $("error").textContent=r.message;
+  try{
+    const r=await fetch(API,{
+      method:"POST",
+      body:JSON.stringify(payload)
+    }).then(r=>r.json());
 
-  $("success").textContent="Health entry saved successfully";
-  loadRecent();
+    if(r.status!=="success"){
+      $("error").textContent=r.message;
+    }else{
+      $("success").textContent="Health entry saved successfully";
+      loadRecent();
+    }
+  }catch(e){
+    $("error").textContent="Network error. Try again.";
+  }
+
+  $("saveBtn").disabled=false;
 };
 
+/* ===== Load Recent ===== */
 function loadRecent(){
   fetch(API+"?mode=recent&type=health")
   .then(r=>r.json())
@@ -169,5 +201,6 @@ function loadRecent(){
   });
 }
 </script>
+
 </body>
 </html>
