@@ -1,392 +1,111 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ledger · Kaiwalya Muley</title>
-
+<title>Ledger</title>
 <style>
-:root{
-  --bg:#0b1220;
-  --glass:rgba(255,255,255,.06);
-  --border:rgba(255,255,255,.14);
-  --text:#e5e7eb;
-  --muted:#9ca3af;
-  --accent:#4ade80;
-  --danger:#ef4444;
-  --radius:18px;
-  --blur:blur(18px);
-}
-
-*{
-  box-sizing:border-box;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto
-}
-
-body{
-  margin:0;
-  min-height:100vh;
-  background:
-    radial-gradient(900px 400px at 10% -10%,#1e293b,transparent),
-    radial-gradient(700px 350px at 90% 10%,#020617,transparent),
-    var(--bg);
-  color:var(--text);
-}
-
-header{
-  position:sticky;
-  top:0;
-  z-index:10;
-  backdrop-filter:var(--blur);
-  background:linear-gradient(180deg,rgba(2,6,23,.95),rgba(2,6,23,.8));
-  border-bottom:1px solid var(--border);
-}
-
-.header-wrap{
-  max-width:1000px;
-  margin:auto;
-  padding:14px 18px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.title{font-size:18px;font-weight:600}
-.subtitle{font-size:11px;color:var(--muted)}
-.live{font-size:12px;color:var(--muted)}
-
-.container{
-  max-width:1000px;
-  margin:22px auto;
-  padding:0 14px
-}
-
-.card{
-  background:var(--glass);
-  backdrop-filter:var(--blur);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:20px;
-  margin-bottom:18px;
-}
-
-label{
-  font-size:12px;
-  color:var(--muted);
-  display:block;
-  margin-top:12px
-}
-
-.select-wrap{
-  position:relative;
-  margin-top:6px
-}
-
-.select-wrap select{
-  appearance:none;
-  width:100%;
-  padding:14px 44px 14px 14px;
-  border-radius:16px;
-  border:1px solid var(--border);
-  background:rgba(2,6,23,.8);
-  color:var(--text);
-}
-
-.select-wrap::after{
-  content:"▾";
-  position:absolute;
-  right:16px;
-  top:50%;
-  transform:translateY(-50%);
-  color:var(--muted)
-}
-
-.kpis{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:14px;
-  margin-top:12px
-}
-
-.kpi{
-  padding:14px;
-  border-radius:16px;
-  border:1px solid var(--border);
-  background:rgba(2,6,23,.7)
-}
-
-.kpi .label{
-  font-size:11px;
-  color:var(--muted)
-}
-
-.kpi .value{
-  font-size:18px;
-  font-weight:600;
-  margin-top:4px
-}
-
-.positive{color:var(--accent)}
-.negative{color:var(--danger)}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:14px
-}
-
-th,td{
-  padding:10px;
-  font-size:12px;
-  border-bottom:1px solid var(--border);
-  text-align:left
-}
-
-th{color:var(--muted)}
-
-canvas{
-  width:100%;
-  height:220px;
-  margin-top:10px
-}
-
-.footer{
-  text-align:center;
-  font-size:11px;
-  color:var(--muted);
-  margin-top:14px
-}
+body{font-family:system-ui;background:#0b1220;color:#e5e7eb;margin:0}
+header{padding:14px;background:#020617;position:sticky;top:0}
+.card{background:#111827;border-radius:14px;padding:16px;margin:16px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:#020617;padding:12px;border-radius:12px}
+label{font-size:12px;color:#9ca3af}
+select{width:100%;padding:10px;border-radius:10px;background:#020617;color:#fff}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px;border-bottom:1px solid #1f2937;font-size:12px}
 </style>
 </head>
 
 <body>
 
 <header>
-  <div class="header-wrap">
-    <div>
-      <div class="title">Ledger</div>
-      <div class="subtitle" id="subtitle">PERSON Ledger</div>
-    </div>
-    <div class="live" id="liveClock"></div>
-  </div>
+  <b>Ledger</b>
 </header>
 
-<div class="container">
-
-<!-- FILTERS -->
 <div class="card">
   <label>Ledger Type</label>
-  <div class="select-wrap">
-    <select id="ledgerType">
-      <option value="person">PERSON</option>
-      <option value="account">ACCOUNT</option>
-    </select>
-  </div>
+  <select id="ledgerType">
+    <option value="account">ACCOUNT</option>
+    <option value="person">PERSON</option>
+  </select>
 
   <label>Ledger Name</label>
-  <div class="select-wrap">
-    <select id="ledgerName"></select>
-  </div>
+  <select id="ledgerName"></select>
 
   <label>Year</label>
-  <div class="select-wrap">
-    <select id="ledgerYear">
-      <option>2026</option>
-      <option>2025</option>
-    </select>
-  </div>
+  <select id="ledgerYear">
+    <option>2026</option>
+    <option>2025</option>
+  </select>
 </div>
 
-<!-- KPIs (ALWAYS 4) -->
 <div class="card">
   <div class="kpis">
-    <div class="kpi">
-      <div class="label" id="kpi1Label">Opening Balance</div>
-      <div class="value" id="kpi1">–</div>
-    </div>
-    <div class="kpi">
-      <div class="label" id="kpi2Label">Total Debit</div>
-      <div class="value" id="kpi2">–</div>
-    </div>
-    <div class="kpi">
-      <div class="label" id="kpi3Label">Total Credit</div>
-      <div class="value" id="kpi3">–</div>
-    </div>
-    <div class="kpi">
-      <div class="label" id="kpi4Label">Closing Balance</div>
-      <div class="value" id="kpi4">–</div>
-    </div>
+    <div class="kpi"><label>Opening</label><div id="k1">–</div></div>
+    <div class="kpi"><label>Inflow</label><div id="k2">–</div></div>
+    <div class="kpi"><label>Outflow</label><div id="k3">–</div></div>
+    <div class="kpi"><label>Closing</label><div id="k4">–</div></div>
   </div>
 </div>
 
-<!-- TREND -->
-<div class="card">
-  <div id="trendTitle" style="font-size:13px;color:var(--muted)">
-    Monthly Net Movement
-  </div>
-  <canvas id="trend"></canvas>
-</div>
-
-<!-- TABLE -->
 <div class="card">
   <table>
     <thead>
-      <tr>
-        <th>Date</th>
-        <th>Description</th>
-        <th>Debit</th>
-        <th>Credit</th>
-        <th>Balance</th>
-      </tr>
+      <tr><th>Date</th><th>Description</th><th>Debit</th><th>Credit</th><th>Balance</th></tr>
     </thead>
-    <tbody id="ledgerBody"></tbody>
+    <tbody id="rows"></tbody>
   </table>
 </div>
 
-<div class="footer">Designed & Engineered by Kaiwalya Muley</div>
-
-</div>
-
 <script>
-const API="https://script.google.com/macros/s/AKfycbx0qkMTieJu2dm1sfhd0zvJ8KgKCocfZHNIXyHw6adNjj5cTReMXGO2uKbB_do0PTPLMw/exec";
+const API = "PASTE_YOUR_NEW_DEPLOYMENT_URL_HERE";
 
-const ledgerType=document.getElementById("ledgerType");
-const ledgerName=document.getElementById("ledgerName");
-const ledgerYear=document.getElementById("ledgerYear");
-const subtitle=document.getElementById("subtitle");
+const ledgerType = document.getElementById("ledgerType");
+const ledgerName = document.getElementById("ledgerName");
+const ledgerYear = document.getElementById("ledgerYear");
 
-const kpi1=document.getElementById("kpi1");
-const kpi2=document.getElementById("kpi2");
-const kpi3=document.getElementById("kpi3");
-const kpi4=document.getElementById("kpi4");
+ledgerType.onchange = loadNames;
+ledgerName.onchange = loadLedger;
+ledgerYear.onchange = loadLedger;
 
-const kpi1Label=document.getElementById("kpi1Label");
-const kpi2Label=document.getElementById("kpi2Label");
-const kpi3Label=document.getElementById("kpi3Label");
-const kpi4Label=document.getElementById("kpi4Label");
-
-const ledgerBody=document.getElementById("ledgerBody");
-const trend=document.getElementById("trend");
-const trendTitle=document.getElementById("trendTitle");
-
-/* Live Clock */
-setInterval(()=>{
-  const d=new Date();
-  document.getElementById("liveClock").textContent =
-    d.toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short",year:"numeric"})
-    +" · "+d.toLocaleTimeString();
-},1000);
-
-/* Load Ledger Names */
-function loadLedgerNames(){
-  const type=ledgerType.value.toUpperCase();
-  subtitle.textContent=type+" Ledger";
-
-  fetch(`${API}?mode=ledgers&type=${type}`)
+function loadNames(){
+  fetch(`${API}?mode=ledgers&type=${ledgerType.value}`)
     .then(r=>r.json())
-    .then(list=>{
-      ledgerName.innerHTML="<option value=''>Select</option>";
-      list.forEach(l=>{
+    .then(d=>{
+      ledgerName.innerHTML="";
+      d.forEach(x=>{
         const o=document.createElement("option");
-        o.value=o.textContent=l.name;
+        o.value=o.textContent=x.name;
         ledgerName.appendChild(o);
       });
+      loadLedger();
     });
-
-  updateLabels();
 }
 
-ledgerType.onchange=loadLedgerNames;
-ledgerName.onchange=loadLedger;
-ledgerYear.onchange=loadLedger;
-
-/* KPI Labels */
-function updateLabels(){
-  if(ledgerType.value==="person"){
-    kpi1Label.textContent="Opening Balance";
-    kpi2Label.textContent="Total Debit";
-    kpi3Label.textContent="Total Credit";
-    kpi4Label.textContent="Closing Balance";
-    trendTitle.textContent="Monthly Net Movement";
-  }else{
-    kpi1Label.textContent="Opening Balance";
-    kpi2Label.textContent="Total Inflow";
-    kpi3Label.textContent="Total Outflow";
-    kpi4Label.textContent="Closing Balance";
-    trendTitle.textContent="Monthly Cash Flow";
-  }
-}
-
-/* Load Ledger */
 function loadLedger(){
   if(!ledgerName.value) return;
 
-  fetch(`${API}?mode=ledger&type=${ledgerType.value}&name=${encodeURIComponent(ledgerName.value)}&year=${ledgerYear.value}`)
-  .then(r=>r.json())
-  .then(d=>{
-    if(ledgerType.value==="person"){
-      kpi1.textContent=d.opening_balance;
-      kpi2.textContent=d.total_debit;
-      kpi3.textContent=d.total_credit;
-      kpi4.textContent=d.closing_balance;
-    }else{
-      kpi1.textContent=d.opening_balance;
-      kpi2.textContent=d.total_inflow;
-      kpi3.textContent=d.total_outflow;
-      kpi4.textContent=d.closing_balance;
-    }
+  fetch(`${API}?mode=ledger&type=${ledgerType.value}&name=${ledgerName.value}&year=${ledgerYear.value}`)
+    .then(r=>r.json())
+    .then(d=>{
+      k1.textContent = d.opening_balance;
+      k2.textContent = d.total_inflow || d.total_debit;
+      k3.textContent = d.total_outflow || d.total_credit;
+      k4.textContent = d.closing_balance;
 
-    kpi4.className="value "+(Number(kpi4.textContent)>=0?"positive":"negative");
-
-    ledgerBody.innerHTML=d.entries.map(e=>`
-      <tr>
-        <td>${e.date}</td>
-        <td>${e.description}</td>
-        <td>${e.debit||""}</td>
-        <td>${e.credit||""}</td>
-        <td>${e.balance}</td>
-      </tr>
-    `).join("");
-
-    drawTrend(d.entries);
-  });
+      rows.innerHTML = d.entries.map(e=>`
+        <tr>
+          <td>${e.date}</td>
+          <td>${e.description}</td>
+          <td>${e.debit||""}</td>
+          <td>${e.credit||""}</td>
+          <td>${e.balance}</td>
+        </tr>
+      `).join("");
+    });
 }
 
-/* Trend */
-function drawTrend(entries){
-  const ctx=trend.getContext("2d");
-  ctx.clearRect(0,0,trend.width,trend.height);
-
-  const months=Array(12).fill(0);
-  entries.forEach(e=>{
-    const m=parseInt(e.date.split("-")[1],10)-1;
-    months[m]+= (e.credit||0)-(e.debit||0);
-  });
-
-  const max=Math.max(...months.map(v=>Math.abs(v)))||1;
-  const w=trend.width=trend.offsetWidth;
-  const h=trend.height=220;
-  const step=w/12;
-
-  ctx.strokeStyle="#4ade80";
-  ctx.lineWidth=2;
-  ctx.beginPath();
-  months.forEach((v,i)=>{
-    const x=i*step+step/2;
-    const y=h/2-(v/max)*(h/2-20);
-    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-  });
-  ctx.stroke();
-
-  ctx.strokeStyle="rgba(255,255,255,.2)";
-  ctx.beginPath();
-  ctx.moveTo(0,h/2);
-  ctx.lineTo(w,h/2);
-  ctx.stroke();
-}
-
-/* Init */
-loadLedgerNames();
+loadNames();
 </script>
 
 </body>
