@@ -61,7 +61,6 @@ button{
   color:#052e16;
   font-weight:600;
   cursor:pointer;
-  transition:.2s;
 }
 button:disabled{opacity:.6;cursor:not-allowed}
 
@@ -73,6 +72,8 @@ button:disabled{opacity:.6;cursor:not-allowed}
 .msg{text-align:center;font-size:13px;margin-top:10px}
 .error{color:var(--danger)}
 .success{color:var(--accent)}
+
+.hidden{display:none}
 
 table{
   width:100%;
@@ -86,7 +87,6 @@ th,td{
   text-align:left;
 }
 th{color:var(--muted)}
-.hidden{display:none}
 </style>
 </head>
 
@@ -123,8 +123,10 @@ th{color:var(--muted)}
 <label>From Account</label>
 <select id="fromAccount"></select>
 
-<label>To Account</label>
-<select id="toAccount"></select>
+<div id="toAccountWrap">
+  <label>To Account</label>
+  <select id="toAccount"></select>
+</div>
 
 <label>Notes</label>
 <textarea id="notes" rows="2"></textarea>
@@ -134,12 +136,10 @@ th{color:var(--muted)}
 
 <button id="saveBtn">Save Transaction</button>
 
-<!-- Collapsible Button -->
 <button id="toggleRecent" class="secondary-btn">
   Show Last 10 Transactions
 </button>
 
-<!-- Last 10 Table -->
 <div id="recentWrap" class="hidden">
 <table>
 <thead>
@@ -165,7 +165,9 @@ $("date").valueAsDate=new Date();
 let DATA={}, submitting=false;
 
 /* Load dropdowns */
-fetch(API+"?mode=dropdowns").then(r=>r.json()).then(d=>{
+fetch(API+"?mode=dropdowns")
+.then(r=>r.json())
+.then(d=>{
   DATA=d;
   fill(level1,d.level1,true);
   fill(fromAccount,d.accounts,true);
@@ -175,12 +177,13 @@ fetch(API+"?mode=dropdowns").then(r=>r.json()).then(d=>{
 function fill(sel,arr,blank){
   sel.innerHTML = blank ? "<option value=''>Select</option>" : "";
   arr.forEach(v=>{
-    let o=document.createElement("option");
+    const o=document.createElement("option");
     o.value=o.textContent=v;
     sel.appendChild(o);
   });
 }
 
+/* Cascading categories */
 level1.onchange=()=>{
   category.innerHTML=subCategory.innerHTML="<option value=''>Select</option>";
   fill(category,Object.keys(DATA.categories[level1.value]||{}),true);
@@ -190,7 +193,49 @@ category.onchange=()=>{
   fill(subCategory,DATA.categories[level1.value]?.[category.value]||[],true);
 };
 
-/* Prevent double submit */
+/* Type rules */
+txnType.onchange=()=>{
+  // Reset visibility
+  toAccountWrap.classList.remove("hidden");
+  toAccount.value="";
+
+  if(txnType.value==="Expense"){
+    // No To Account for Expense
+    toAccountWrap.classList.add("hidden");
+    toAccount.value="";
+  }
+
+  if(txnType.value==="Transfer"){
+    // Force transfer category
+    level1.value="Transfer";
+    category.innerHTML="<option>Internal Transfer</option>";
+    subCategory.innerHTML="<option>Account Transfer</option>";
+  }
+
+  if(txnType.value==="Income"){
+    // Salary lock
+    level1.value="Income";
+    category.innerHTML="<option>Salary</option>";
+    subCategory.innerHTML="<option>SMonthly Salary</option>";
+    amount.value=40188;
+    fromAccount.innerHTML="<option>Customer Capital</option>";
+    toAccountWrap.classList.remove("hidden");
+    toAccount.value="IDFC";
+    lock(["level1","category","subCategory","amount","fromAccount","toAccount"]);
+  }
+};
+
+/* Transfer From ≠ To */
+fromAccount.onchange=()=>{
+  if(txnType.value!=="Transfer") return;
+  const from = fromAccount.value;
+  fill(toAccount,DATA.accounts.filter(a=>a!==from),true);
+};
+
+/* Lock helpers */
+function lock(arr){arr.forEach(i=>$(i).disabled=true)}
+
+/* Save */
 saveBtn.onclick=async()=>{
   if(submitting) return;
   submitting=true;
@@ -206,7 +251,7 @@ saveBtn.onclick=async()=>{
     subCategory:subCategory.value,
     amount:amount.value,
     fromAccount:fromAccount.value,
-    toAccount:toAccount.value,
+    toAccount: toAccountWrap.classList.contains("hidden") ? "" : toAccount.value,
     notes:notes.value
   };
 
@@ -218,8 +263,8 @@ saveBtn.onclick=async()=>{
 
   if(r.status!=="success"){
     error.textContent=r.message;
-    saveBtn.disabled=false;
     submitting=false;
+    saveBtn.disabled=false;
     return;
   }
 
