@@ -56,8 +56,10 @@ th{color:var(--muted)}
 <h1>Daily Health Check</h1>
 <div class="sub">Consistency beats intensity</div>
 
-<form id="healthForm" target="hiddenFrame" method="POST"
- action="https://script.google.com/macros/s/AKfycbx0qkMTieJu2dm1sfhd0zvJ8KgKCocfZHNIXyHw6adNjj5cTReMXGO2uKbB_do0PTPLMw/exec">
+<form id="healthForm"
+      method="POST"
+      target="hiddenFrame"
+      action="https://script.google.com/macros/s/AKfycbx0qkMTieJu2dm1sfhd0zvJ8KgKCocfZHNIXyHw6adNjj5cTReMXGO2uKbB_do0PTPLMw/exec">
 
 <input type="hidden" name="type" value="health">
 
@@ -98,7 +100,6 @@ th{color:var(--muted)}
 
 </form>
 
-<!-- Hidden iframe -->
 <iframe name="hiddenFrame" style="display:none;"></iframe>
 
 <!-- Last 10 -->
@@ -128,15 +129,18 @@ const $=id=>document.getElementById(id);
 $("date").valueAsDate=new Date();
 loadRecent();
 
-/* Toggle */
+/* Toggle last 10 */
 $("toggleRecent").onclick=()=>{
   $("recentWrap").style.display =
     $("recentWrap").style.display==="none"?"block":"none";
 };
 
-/* After submit */
+/* Submit validation */
 $("healthForm").onsubmit=()=>{
-  if(new Date($("date").value)<new Date("2026-02-01")){
+  $("error").textContent="";
+  $("success").textContent="";
+
+  if(new Date($("date").value) < new Date("2026-02-01")){
     $("error").textContent="January is locked. Start from Feb-2026.";
     return false;
   }
@@ -146,18 +150,18 @@ $("healthForm").onsubmit=()=>{
   return true;
 };
 
-/* Load recent */
+/* Load recent entries */
 function loadRecent(){
   fetch(API+"?mode=recent&type=health")
   .then(r=>r.json())
   .then(rows=>{
-    $("recentBody").innerHTML=rows.map(r=>`
+    $("recentBody").innerHTML = rows.map(r=>`
       <tr>
         <td>${r.date}</td>
         <td>${r.steps}</td>
         <td>${r.sleep}</td>
         <td>${r.water}</td>
-        <td><span class="badge">${r.mood||"-"}</span></td>
+        <td><span class="badge">${r.mood || "-"}</span></td>
       </tr>
     `).join("");
   });
