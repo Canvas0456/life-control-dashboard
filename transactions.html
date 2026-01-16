@@ -3,86 +3,96 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Add Transaction</title>
+<title>Transaction Entry</title>
 
 <style>
 :root{
-  --bg:#f5f7fb;
-  --card:#ffffff;
-  --primary:#007aff;
-  --danger:#ff3b30;
-  --text:#1c1c1e;
-  --muted:#6e6e73;
+  --bg:#0f172a;
+  --card:#111827;
+  --field:#1f2933;
+  --accent:#22c55e;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+  --danger:#ef4444;
   --radius:18px;
 }
 *{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI";}
-body{margin:0;background:var(--bg);padding:20px;}
-.container{max-width:620px;margin:auto;}
+body{
+  margin:0;
+  min-height:100vh;
+  background:
+    linear-gradient(180deg,rgba(15,23,42,.92),rgba(15,23,42,.98)),
+    url("https://images.unsplash.com/photo-1565372918674-89e6c8c0d39b");
+  background-size:cover;
+  background-position:center;
+  color:var(--text);
+  padding:20px;
+  animation:fadeIn .6s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1}}
+
+.container{max-width:640px;margin:auto;}
 .card{
   background:var(--card);
   border-radius:var(--radius);
   padding:22px;
-  box-shadow:0 12px 30px rgba(0,0,0,.08);
+  box-shadow:0 30px 60px rgba(0,0,0,.5);
 }
 h1{margin:0 0 6px;font-size:22px;}
-.sub{font-size:13px;color:var(--muted);margin-bottom:16px;}
-label{display:block;margin-top:14px;font-size:13px;color:var(--muted);}
+.sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+
+label{display:block;margin-top:14px;font-size:13px;color:var(--muted)}
 input,select,textarea{
-  width:100%;padding:12px;margin-top:6px;
-  border-radius:12px;border:1px solid #ddd;font-size:14px;
+  width:100%;
+  background:var(--field);
+  border:1px solid #334155;
+  border-radius:12px;
+  padding:12px;
+  color:var(--text);
+  margin-top:6px;
+  font-size:14px;
 }
 textarea{resize:none}
-button{
-  width:100%;margin-top:22px;padding:14px;
-  border:none;border-radius:14px;
-  background:var(--primary);color:#fff;font-size:15px;
-}
-.error{color:var(--danger);font-size:12px;margin-top:8px}
-.success{color:#2ecc71;text-align:center;margin-top:12px}
-.hidden{display:none}
+select:disabled,input:disabled{opacity:.6}
 
-/* ===== Last 10 Table ===== */
-.toggle{
-  margin-top:22px;
-  font-size:14px;
-  color:var(--primary);
-  cursor:pointer;
-  user-select:none;
-}
-.table-wrap{
-  margin-top:14px;
-  display:none;
-}
-table{
+button{
   width:100%;
-  border-collapse:collapse;
+  margin-top:22px;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:var(--accent);
+  color:#052e16;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.25s;
+}
+button:active{transform:scale(.97)}
+button.loading{opacity:.6;pointer-events:none}
+
+.msg{
+  text-align:center;
   font-size:13px;
+  margin-top:12px;
 }
-th,td{
-  padding:8px;
-  border-bottom:1px solid #eee;
-  text-align:left;
-}
-th{color:var(--muted);font-weight:600}
-.badge{
-  padding:2px 8px;
-  border-radius:10px;
-  background:#eef3ff;
-  font-size:11px;
-}
+.error{color:var(--danger)}
+.success{color:var(--accent)}
+
 </style>
 </head>
 
 <body>
 <div class="container">
 <div class="card">
-<h1>Add Transaction</h1>
-<div class="sub">Fast • Clean • Controlled</div>
+
+<h1>New Transaction</h1>
+<div class="sub">Smart finance entry · no manual sheet work</div>
 
 <label>Date</label>
 <input type="date" id="date">
 
-<label>Transaction Type</label>
+<label>Type</label>
 <select id="txnType">
   <option value="">Select</option>
   <option>Income</option>
@@ -90,8 +100,8 @@ th{color:var(--muted);font-weight:600}
   <option>Transfer</option>
 </select>
 
-<label>Level</label>
-<select id="level"></select>
+<label>Level-1</label>
+<select id="level1"></select>
 
 <label>Category</label>
 <select id="category"></select>
@@ -99,41 +109,22 @@ th{color:var(--muted);font-weight:600}
 <label>Sub-Category</label>
 <select id="subCategory"></select>
 
-<label>Amount (₹)</label>
-<input type="number" id="amount">
+<label>Amount</label>
+<input type="number" id="amount" min="0">
 
 <label>From Account</label>
 <select id="fromAccount"></select>
 
-<div id="toBlock" class="hidden">
-  <label>To Account</label>
-  <select id="toAccount"></select>
-</div>
+<label>To Account</label>
+<select id="toAccount"></select>
 
 <label>Notes</label>
 <textarea id="notes" rows="2"></textarea>
 
-<div class="error" id="error"></div>
+<div class="msg error" id="error"></div>
+<div class="msg success" id="success"></div>
+
 <button id="saveBtn">Save Transaction</button>
-<div class="success" id="success"></div>
-
-<!-- ===== Last 10 Toggle ===== -->
-<div class="toggle" id="toggleRecent">Show last 10 transactions ⌄</div>
-
-<div class="table-wrap" id="recentWrap">
-<table>
-<thead>
-<tr>
-  <th>Date</th>
-  <th>Type</th>
-  <th>Category</th>
-  <th>Amount</th>
-  <th>From → To</th>
-</tr>
-</thead>
-<tbody id="recentBody"></tbody>
-</table>
-</div>
 
 </div>
 </div>
@@ -141,87 +132,68 @@ th{color:var(--muted);font-weight:600}
 <script>
 const API="https://script.google.com/macros/s/AKfycbx0qkMTieJu2dm1sfhd0zvJ8KgKCocfZHNIXyHw6adNjj5cTReMXGO2uKbB_do0PTPLMw/exec";
 const $=id=>document.getElementById(id);
-let master={};
 
 $("date").valueAsDate=new Date();
 
-/* ===== Load Dropdowns ===== */
+let DATA={};
+
 fetch(API+"?mode=dropdowns")
 .then(r=>r.json())
 .then(d=>{
-  master=d;
-  loadAccounts();
-  loadRecent();
+  DATA=d;
+  fill($("level1"),d.level1);
+  fill($("fromAccount"),d.accounts);
+  fill($("toAccount"),d.accounts,true);
 });
 
-function loadAccounts(){
-  ["fromAccount","toAccount"].forEach(id=>{
-    $(id).innerHTML="<option value=''>Select</option>"+
-      master.accounts.map(a=>`<option>${a}</option>`).join("");
+function fill(sel,arr,blank){
+  sel.innerHTML=blank?"<option></option>":"";
+  arr.forEach(v=>{
+    const o=document.createElement("option");
+    o.textContent=v;o.value=v;
+    sel.appendChild(o);
   });
 }
 
-/* ===== Dynamic Logic ===== */
-$("txnType").onchange=()=>{
-  reset();
-  const t=$("txnType").value;
-  if(!t)return;
+$("level1").onchange=()=>{
+  const c=DATA.categories[$("level1").value]||{};
+  fill($("category"),Object.keys(c));
+  $("subCategory").innerHTML="";
+};
 
-  if(t==="Income"){
-    $("level").innerHTML="<option>Income</option>";
-    loadCategories("Income");
-    $("toBlock").classList.remove("hidden");
-  }
-  if(t==="Expense"){
-    loadLevels(["Variable","Savings","Sinking"]);
-  }
-  if(t==="Transfer"){
-    $("level").innerHTML="<option>Transfer</option>";
-    loadCategories("Transfer");
-    $("toBlock").classList.remove("hidden");
+$("category").onchange=()=>{
+  const s=DATA.categories[$("level1").value]?.[$("category").value]||[];
+  fill($("subCategory"),s);
+};
+
+$("txnType").onchange=()=>{
+  resetLocks();
+  if($("txnType").value==="Income"){
+    $("level1").value="Income";
+    $("category").value="Salary";
+    $("subCategory").innerHTML="<option>Monthly Salary</option>";
+    $("amount").value=40188;
+    $("fromAccount").innerHTML="<option>Customer Capital</option>";
+    $("toAccount").value="IDFC";
+    lock(["level1","category","amount","fromAccount","toAccount"]);
   }
 };
 
-$("level").onchange=()=>loadCategories($("level").value);
-$("category").onchange=()=>loadSub($("level").value,$("category").value);
-
-function loadLevels(arr){
-  $("level").innerHTML="<option value=''>Select</option>"+arr.map(v=>`<option>${v}</option>`).join("");
-}
-function loadCategories(l){
-  $("category").innerHTML="<option value=''>Select</option>"+
-    Object.keys(master.categories[l]||{}).map(c=>`<option>${c}</option>`).join("");
-}
-function loadSub(l,c){
-  $("subCategory").innerHTML="<option value=''>Select</option>"+
-    (master.categories[l][c]||[]).map(s=>`<option>${s}</option>`).join("");
-}
-function reset(){
-  ["level","category","subCategory"].forEach(i=>$(i).innerHTML="");
-  $("toBlock").classList.add("hidden");
+function lock(ids){ids.forEach(i=>$(i).disabled=true)}
+function resetLocks(){
+  ["level1","category","amount","fromAccount","toAccount"].forEach(i=>$(i).disabled=false);
 }
 
-/* ===== Save ===== */
 $("saveBtn").onclick=async()=>{
-  $("error").textContent="";$("success").textContent="";
-
-  if(new Date($("date").value)<new Date("2026-02-01"))
-    return $("error").textContent="January is locked. Start from Feb-2026.";
-
-  if(!$("txnType").value||!$("level").value||!$("category").value||!$("subCategory").value)
-    return $("error").textContent="Complete all category fields.";
-
-  if(!$("amount").value||$("amount").value<=0)
-    return $("error").textContent="Amount must be greater than zero.";
-
-  if($("txnType").value==="Transfer" && $("fromAccount").value===$("toAccount").value)
-    return $("error").textContent="From and To account cannot be same.";
+  $("error").textContent="";
+  $("success").textContent="";
+  $("saveBtn").classList.add("loading");
 
   const payload={
     type:"transaction",
     date:$("date").value,
     txnType:$("txnType").value,
-    level1:$("level").value,
+    level1:$("level1").value,
     category:$("category").value,
     subCategory:$("subCategory").value,
     amount:$("amount").value,
@@ -230,37 +202,21 @@ $("saveBtn").onclick=async()=>{
     notes:$("notes").value
   };
 
-  $("saveBtn").disabled=true;
-  const r=await fetch(API,{method:"POST",body:JSON.stringify(payload)}).then(r=>r.json());
-  $("saveBtn").disabled=false;
+  const r=await fetch(API,{
+    method:"POST",
+    headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body:JSON.stringify(payload)
+  }).then(r=>r.json());
 
-  if(r.status!=="success") return $("error").textContent=r.message;
+  if(r.status!=="success"){
+    $("error").textContent=r.message;
+    $("saveBtn").classList.remove("loading");
+    return;
+  }
 
-  $("success").textContent="Transaction saved successfully";
-  loadRecent();
+  $("success").textContent="Transaction saved";
+  setTimeout(()=>location.reload(),900);
 };
-
-/* ===== Recent Table ===== */
-$("toggleRecent").onclick=()=>{
-  const w=$("recentWrap");
-  w.style.display=w.style.display==="none"?"block":"none";
-};
-
-function loadRecent(){
-  fetch(API+"?mode=recent&type=transactions")
-  .then(r=>r.json())
-  .then(rows=>{
-    $("recentBody").innerHTML=rows.map(r=>`
-      <tr>
-        <td>${r.date}</td>
-        <td><span class="badge">${r.type}</span></td>
-        <td>${r.category}<br><small>${r.sub}</small></td>
-        <td>₹${r.amount}</td>
-        <td>${r.from||"-"} → ${r.to||"-"}</td>
-      </tr>
-    `).join("");
-  });
-}
 </script>
 </body>
 </html>
