@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ledger View · Kaiwalya Muley</title>
+<title>Ledger · Kaiwalya Muley</title>
 
 <style>
 :root{
@@ -30,7 +30,6 @@ body{
   color:var(--text);
 }
 
-/* ---------- HEADER ---------- */
 header{
   position:sticky;top:0;z-index:10;
   backdrop-filter:var(--blur);
@@ -38,7 +37,7 @@ header{
   border-bottom:1px solid var(--border);
 }
 .header-wrap{
-  max-width:900px;
+  max-width:980px;
   margin:auto;
   padding:14px 18px;
   display:flex;
@@ -49,8 +48,7 @@ header{
 .subtitle{font-size:11px;color:var(--muted)}
 .live{font-size:12px;color:var(--muted);text-align:right}
 
-/* ---------- CONTAINER ---------- */
-.container{max-width:900px;margin:22px auto;padding:0 14px}
+.container{max-width:980px;margin:22px auto;padding:0 14px}
 .card{
   background:var(--glass);
   backdrop-filter:var(--blur);
@@ -60,10 +58,9 @@ header{
   margin-bottom:18px;
 }
 
-/* ---------- FORM ---------- */
 label{
   font-size:12px;color:var(--muted);
-  display:block;margin-top:14px
+  display:block;margin-top:12px
 }
 .select-wrap{
   position:relative;margin-top:6px
@@ -84,12 +81,10 @@ label{
   color:var(--muted)
 }
 
-/* ---------- KPI ---------- */
 .kpis{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:14px;
-  margin-top:12px
+  gap:14px;margin-top:12px
 }
 .kpi{
   padding:14px;border-radius:16px;
@@ -101,7 +96,6 @@ label{
 .positive{color:var(--accent)}
 .negative{color:var(--danger)}
 
-/* ---------- TABLE ---------- */
 table{
   width:100%;border-collapse:collapse;margin-top:14px
 }
@@ -112,6 +106,11 @@ th,td{
   text-align:left
 }
 th{color:var(--muted)}
+
+canvas{
+  width:100%;height:220px;
+  margin-top:10px;
+}
 
 .footer{
   text-align:center;
@@ -127,8 +126,8 @@ th{color:var(--muted)}
 <header>
   <div class="header-wrap">
     <div>
-      <div class="title">Ledger View</div>
-      <div class="subtitle">Read-only · Accounting Grade</div>
+      <div class="title">Ledger</div>
+      <div class="subtitle">Person Ledger · Monthly Trend</div>
     </div>
     <div class="live" id="liveClock"></div>
   </div>
@@ -141,11 +140,11 @@ th{color:var(--muted)}
   <label>Ledger Type</label>
   <div class="select-wrap">
     <select id="ledgerType">
-      <option value="person">Person Ledger</option>
+      <option value="person">PERSON</option>
     </select>
   </div>
 
-  <label>Name</label>
+  <label>Ledger Name</label>
   <div class="select-wrap">
     <select id="ledgerName"></select>
   </div>
@@ -181,6 +180,12 @@ th{color:var(--muted)}
   </div>
 </div>
 
+<!-- MONTHLY TREND -->
+<div class="card">
+  <div style="font-size:13px;color:var(--muted)">Monthly Net Movement</div>
+  <canvas id="trend"></canvas>
+</div>
+
 <!-- TABLE -->
 <div class="card">
   <table>
@@ -213,26 +218,19 @@ setInterval(()=>{
     +" · "+d.toLocaleTimeString();
 },1000);
 
-/* Load Names */
-fetch(API+"?mode=dropdowns")
+/* Load PERSON ledgers from Ledger_Master */
+fetch(`${API}?mode=ledgers&type=PERSON`)
 .then(r=>r.json())
-.then(d=>{
-  fill(ledgerName,[...d.receivables,...d.payables],true);
-});
-
-function fill(sel,arr,blank){
-  sel.innerHTML=blank?"<option value=''>Select</option>":"";
-  arr.forEach(v=>{
+.then(list=>{
+  ledgerName.innerHTML="<option value=''>Select</option>";
+  list.forEach(l=>{
     const o=document.createElement("option");
-    o.value=o.textContent=v;
-    sel.appendChild(o);
+    o.value=o.textContent=l.name;
+    ledgerName.appendChild(o);
   });
-}
-
-/* Fetch Ledger */
-[ledgerType,ledgerName,ledgerYear].forEach(el=>{
-  el.onchange=loadLedger;
 });
+
+[ledgerName,ledgerYear].forEach(el=>el.onchange=loadLedger);
 
 function loadLedger(){
   if(!ledgerName.value) return;
@@ -255,7 +253,43 @@ function loadLedger(){
         <td>${e.balance}</td>
       </tr>
     `).join("");
+
+    drawTrend(d.entries);
   });
+}
+
+/* Monthly Trend (Net) */
+function drawTrend(entries){
+  const ctx=trend.getContext("2d");
+  ctx.clearRect(0,0,trend.width,trend.height);
+
+  const months=Array(12).fill(0);
+  entries.forEach(e=>{
+    const m=parseInt(e.date.split("-")[1],10)-1;
+    months[m]+= (e.credit||0)-(e.debit||0);
+  });
+
+  const max=Math.max(...months.map(v=>Math.abs(v)))||1;
+  const w=trend.width=trend.offsetWidth;
+  const h=trend.height=220;
+  const step=w/12;
+
+  ctx.strokeStyle="#4ade80";
+  ctx.lineWidth=2;
+  ctx.beginPath();
+
+  months.forEach((v,i)=>{
+    const x=i*step+step/2;
+    const y=h/2-(v/max)*(h/2-20);
+    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  });
+  ctx.stroke();
+
+  ctx.strokeStyle="rgba(255,255,255,.2)";
+  ctx.beginPath();
+  ctx.moveTo(0,h/2);
+  ctx.lineTo(w,h/2);
+  ctx.stroke();
 }
 </script>
 
