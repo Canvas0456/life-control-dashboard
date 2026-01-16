@@ -53,7 +53,7 @@ th{color:var(--muted)}
 <div class="card">
 
 <h1>New Transaction</h1>
-<div class="sub">Form Phase · Ledger-Complete · Test-Ready</div>
+<div class="sub">Form Phase · Ledger-Complete · Stable</div>
 
 <label>Date</label>
 <input type="date" id="date">
@@ -69,7 +69,7 @@ th{color:var(--muted)}
 <label>Level-1</label>
 <select id="level1"></select>
 
-<div id="catWrap">
+<div id="catWrap" class="hidden">
   <label>Category</label>
   <select id="category"></select>
 
@@ -80,12 +80,12 @@ th{color:var(--muted)}
 <label>Amount</label>
 <input type="number" id="amount">
 
-<div id="fromWrap">
+<div id="fromWrap" class="hidden">
   <label>From Account</label>
   <select id="fromAccount"></select>
 </div>
 
-<div id="toWrap">
+<div id="toWrap" class="hidden">
   <label>To Account</label>
   <select id="toAccount"></select>
 </div>
@@ -126,81 +126,105 @@ date.valueAsDate=new Date();
 
 let DATA={}, submitting=false;
 
-fetch(API+"?mode=dropdowns").then(r=>r.json()).then(d=>{
+/* ---------- Load dropdown data ---------- */
+fetch(API+"?mode=dropdowns")
+.then(r=>r.json())
+.then(d=>{
   DATA=d;
   fill(level1,d.level1,true);
   fill(fromAccount,d.accounts,true);
   fill(toAccount,d.accounts,true);
 });
 
+/* ---------- Helpers ---------- */
 function fill(sel,arr,blank){
-  sel.innerHTML=blank?"<option value=''>Select</option>":"";
+  sel.innerHTML = blank ? "<option value=''>Select</option>" : "";
   arr.forEach(v=>{
     const o=document.createElement("option");
     o.value=o.textContent=v;
     sel.appendChild(o);
   });
 }
-
 function hide(...els){els.forEach(e=>e.classList.add("hidden"))}
 function show(...els){els.forEach(e=>e.classList.remove("hidden"))}
 function resetCats(){category.innerHTML=subCategory.innerHTML="<option value=''>Select</option>"}
 
+/* ---------- Transaction Type Logic ---------- */
 txnType.onchange=()=>{
-  show(catWrap,fromWrap,toWrap);
-  hide(personWrap);
-  fromAccount.disabled=false;
-  amount.disabled=false;
+  hide(catWrap,fromWrap,toWrap,personWrap);
+  resetCats();
+  relatedPerson.innerHTML=""; otherPerson.value="";
 
   if(txnType.value==="Expense"){
-    hide(toWrap);
+    show(fromWrap);
   }
   if(txnType.value==="Income"){
-    hide(fromWrap);
+    show(toWrap);
   }
   if(txnType.value==="Transfer"){
-    hide(catWrap,personWrap);
+    show(fromWrap,toWrap);
     level1.value="Transfer";
   }
 };
 
+/* ---------- Level-1 Logic (FIXED) ---------- */
 level1.onchange=()=>{
+  hide(catWrap,personWrap);
   resetCats();
-  hide(personWrap);
+  relatedPerson.innerHTML=""; otherPerson.value="";
 
+  // EMI
   if(level1.value==="EMI"){
+    show(catWrap,fromWrap);
+    hide(toWrap);
+
     category.innerHTML="<option>Loan EMI</option>";
     fill(subCategory,DATA.categories.EMI?.["Loan EMI"]||[],true);
+
     fromAccount.value="HDFC";
     fromAccount.disabled=true;
+    return;
   }
-  else if(level1.value==="Receivable"){
-    show(personWrap);
+
+  // RECEIVABLE
+  if(level1.value==="Receivable"){
+    show(personWrap,toWrap);
+    hide(fromWrap);
+
     fill(relatedPerson,DATA.receivables||[],true);
+    return;
   }
-  else if(level1.value==="Payable"){
-    show(personWrap);
+
+  // PAYABLE
+  if(level1.value==="Payable"){
+    show(personWrap,fromWrap);
+    hide(toWrap);
+
     fill(relatedPerson,DATA.payables||[],true);
+    return;
   }
-  else{
-    fill(category,Object.keys(DATA.categories[level1.value]||{}),true);
-  }
+
+  // NORMAL INCOME / EXPENSE
+  show(catWrap);
+  fill(category,Object.keys(DATA.categories[level1.value]||{}),true);
 };
 
+/* ---------- Category → Sub-Category ---------- */
 category.onchange=()=>{
   fill(subCategory,DATA.categories[level1.value]?.[category.value]||[],true);
 };
 
+/* ---------- Transfer From ≠ To ---------- */
 fromAccount.onchange=()=>{
   if(txnType.value==="Transfer"){
     fill(toAccount,DATA.accounts.filter(a=>a!==fromAccount.value),true);
   }
 };
 
+/* ---------- Save ---------- */
 saveBtn.onclick=async()=>{
   if(submitting) return;
-  submitting=true;
-  saveBtn.disabled=true;
+  submitting=true; saveBtn.disabled=true;
   error.textContent="";
 
   const related = relatedPerson.value || otherPerson.value || "";
@@ -227,8 +251,7 @@ saveBtn.onclick=async()=>{
 
   if(r.status!=="success"){
     error.textContent=r.message;
-    submitting=false;
-    saveBtn.disabled=false;
+    submitting=false; saveBtn.disabled=false;
     return;
   }
 
@@ -236,12 +259,20 @@ saveBtn.onclick=async()=>{
   setTimeout(()=>location.reload(),900);
 };
 
+/* ---------- Last-10 Transactions ---------- */
 toggleRecent.onclick=()=>{
   recentWrap.classList.toggle("hidden");
   if(!recentWrap.classList.contains("hidden")){
-    fetch(API+"?mode=recent&type=transactions").then(r=>r.json()).then(rows=>{
+    fetch(API+"?mode=recent&type=transactions")
+    .then(r=>r.json())
+    .then(rows=>{
       recentBody.innerHTML=rows.map(r=>`
-        <tr><td>${r.date}</td><td>${r.type}</td><td>${r.category}</td><td>${r.amount}</td></tr>
+        <tr>
+          <td>${r.date}</td>
+          <td>${r.type}</td>
+          <td>${r.category}</td>
+          <td>${r.amount}</td>
+        </tr>
       `).join("");
     });
   }
