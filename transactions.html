@@ -71,14 +71,9 @@ button{
 button:active{transform:scale(.97)}
 button.loading{opacity:.6;pointer-events:none}
 
-.msg{
-  text-align:center;
-  font-size:13px;
-  margin-top:12px;
-}
+.msg{font-size:13px;text-align:center;margin-top:12px}
 .error{color:var(--danger)}
 .success{color:var(--accent)}
-
 </style>
 </head>
 
@@ -87,7 +82,7 @@ button.loading{opacity:.6;pointer-events:none}
 <div class="card">
 
 <h1>New Transaction</h1>
-<div class="sub">Smart finance entry · no manual sheet work</div>
+<div class="sub">Single source of truth · Finance only</div>
 
 <label>Date</label>
 <input type="date" id="date">
@@ -137,53 +132,80 @@ $("date").valueAsDate=new Date();
 
 let DATA={};
 
+/* ---------- Load dropdown data ---------- */
 fetch(API+"?mode=dropdowns")
 .then(r=>r.json())
 .then(d=>{
   DATA=d;
-  fill($("level1"),d.level1);
-  fill($("fromAccount"),d.accounts);
+  fill($("level1"),d.level1,true);
+  fill($("fromAccount"),d.accounts,true);
   fill($("toAccount"),d.accounts,true);
 });
 
+/* ---------- Helpers ---------- */
 function fill(sel,arr,blank){
-  sel.innerHTML=blank?"<option></option>":"";
+  sel.innerHTML = blank ? "<option value=''>Select</option>" : "";
   arr.forEach(v=>{
     const o=document.createElement("option");
-    o.textContent=v;o.value=v;
+    o.value=o.textContent=v;
     sel.appendChild(o);
   });
 }
+function lock(ids){ids.forEach(i=>$(i).disabled=true)}
+function unlock(ids){ids.forEach(i=>$(i).disabled=false)}
+function clear(sel){sel.innerHTML="<option value=''>Select</option>"}
 
+/* ---------- Cascading dropdowns ---------- */
 $("level1").onchange=()=>{
-  const c=DATA.categories[$("level1").value]||{};
-  fill($("category"),Object.keys(c));
-  $("subCategory").innerHTML="";
+  clear($("category"));
+  clear($("subCategory"));
+  const cats = DATA.categories[$("level1").value] || {};
+  fill($("category"),Object.keys(cats),true);
 };
 
 $("category").onchange=()=>{
-  const s=DATA.categories[$("level1").value]?.[$("category").value]||[];
-  fill($("subCategory"),s);
+  clear($("subCategory"));
+  const subs = DATA.categories[$("level1").value]?.[$("category").value] || [];
+  fill($("subCategory"),subs,true);
 };
 
+/* ---------- Smart rules ---------- */
 $("txnType").onchange=()=>{
-  resetLocks();
+  resetFormLocks();
+
   if($("txnType").value==="Income"){
+    // Salary only
     $("level1").value="Income";
+    $("level1").dispatchEvent(new Event("change"));
+
     $("category").value="Salary";
+    $("category").dispatchEvent(new Event("change"));
+
     $("subCategory").innerHTML="<option>Monthly Salary</option>";
     $("amount").value=40188;
+
     $("fromAccount").innerHTML="<option>Customer Capital</option>";
     $("toAccount").value="IDFC";
-    lock(["level1","category","amount","fromAccount","toAccount"]);
+
+    lock(["level1","category","subCategory","amount","fromAccount","toAccount"]);
+  }
+
+  if($("txnType").value==="Expense"){
+    // Allow EMI or Normal Expense
+    unlock(["level1","category","subCategory","amount","fromAccount","toAccount"]);
+  }
+
+  if($("txnType").value==="Transfer"){
+    $("category").disabled=true;
+    $("subCategory").disabled=true;
   }
 };
 
-function lock(ids){ids.forEach(i=>$(i).disabled=true)}
-function resetLocks(){
-  ["level1","category","amount","fromAccount","toAccount"].forEach(i=>$(i).disabled=false);
+function resetFormLocks(){
+  unlock(["level1","category","subCategory","amount","fromAccount","toAccount"]);
 }
 
+/* ---------- Save ---------- */
 $("saveBtn").onclick=async()=>{
   $("error").textContent="";
   $("success").textContent="";
