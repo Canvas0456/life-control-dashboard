@@ -1,317 +1,280 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Transaction Entry</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- Apple-like font -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --bg:#f5f5f7;
-  --card:rgba(255,255,255,.75);
-  --border:rgba(0,0,0,.08);
-  --text:#1d1d1f;
-  --muted:#6e6e73;
-  --accent:#0071e3;
-  --success:#34c759;
-  --danger:#ff3b30;
-  --radius:18px;
+:root {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --primary: #007aff;
+  --danger: #ff3b30;
+  --text: #1c1c1e;
+  --muted: #6e6e73;
+  --radius: 18px;
 }
 
-*{box-sizing:border-box}
+* { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI"; }
 
-body{
-  margin:0;
-  font-family:Inter,-apple-system,BlinkMacSystemFont;
-  background:var(--bg);
-  color:var(--text);
+body {
+  background: var(--bg);
+  margin: 0;
+  padding: 20px;
 }
 
-.container{
-  max-width:480px;
-  margin:auto;
-  padding:24px 16px 40px;
+.container {
+  max-width: 520px;
+  margin: auto;
 }
 
-h1{
-  font-size:26px;
-  font-weight:600;
-  margin:0 0 4px;
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  animation: fadeIn 0.4s ease;
 }
 
-.subtitle{
-  color:var(--muted);
-  margin-bottom:6px;
+h1 {
+  margin: 0 0 6px;
+  font-size: 22px;
 }
 
-#commitInfo{
-  font-size:12px;
-  color:var(--muted);
-  margin-bottom:18px;
+.sub {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 16px;
 }
 
-.card{
-  background:var(--card);
-  backdrop-filter:blur(20px);
-  border-radius:var(--radius);
-  border:1px solid var(--border);
-  padding:20px;
-  animation:slideUp .5s ease;
+label {
+  display: block;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--muted);
 }
 
-@keyframes slideUp{
-  from{transform:translateY(12px);opacity:0}
-  to{transform:none;opacity:1}
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  font-size: 14px;
 }
 
-.field{margin-bottom:14px}
+textarea { resize: none; }
 
-label{
-  font-size:13px;
-  color:var(--muted);
-  display:block;
-  margin-bottom:6px;
+.hidden { display: none; }
+
+button {
+  width: 100%;
+  margin-top: 22px;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: var(--primary);
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
 }
 
-input,select{
-  width:100%;
-  padding:12px 14px;
-  font-size:15px;
-  border-radius:12px;
-  border:1px solid var(--border);
-  background:#fff;
-  outline:none;
-  transition:.2s;
+button:disabled {
+  opacity: 0.6;
 }
 
-input:focus,select:focus{
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(0,113,227,.15);
+.error {
+  color: var(--danger);
+  font-size: 12px;
+  margin-top: 6px;
 }
 
-.inline{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
+.success {
+  text-align: center;
+  color: green;
+  margin-top: 14px;
+  font-size: 14px;
 }
 
-button{
-  width:100%;
-  padding:14px;
-  border-radius:14px;
-  border:none;
-  font-size:16px;
-  font-weight:600;
-  background:var(--accent);
-  color:#fff;
-  cursor:pointer;
-  transition:.15s;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
-button:hover{
-  transform:translateY(-1px);
-  box-shadow:0 6px 18px rgba(0,113,227,.3);
-}
-
-.status{
-  margin-top:14px;
-  text-align:center;
-  font-weight:500;
-}
-
-.success{color:var(--success)}
-.error{color:var(--danger)}
 </style>
 </head>
 
 <body>
 <div class="container">
+  <div class="card">
+    <h1>Add Transaction</h1>
+    <div class="sub">Clean • Structured • AI-Ready</div>
 
-<h1>Transaction Entry</h1>
-<div class="subtitle">Clean • Controlled • Real-time</div>
-<div id="commitInfo">Loading version…</div>
+    <label>Transaction Date</label>
+    <input type="date" id="date"/>
 
-<div class="card">
-<form id="txnForm">
-
-<div class="field">
-  <label>Date</label>
-  <input type="date" id="date" required>
-</div>
-
-<div class="inline">
-  <div class="field">
-    <label>Amount</label>
-    <input type="number" id="amount" placeholder="₹" required>
-  </div>
-  <div class="field">
-    <label>Type</label>
-    <select id="txnType" required>
+    <label>Transaction Type</label>
+    <select id="txnType">
       <option value="">Select</option>
-      <option>Expense</option>
       <option>Income</option>
+      <option>Expense</option>
       <option>Transfer</option>
     </select>
+
+    <div id="levelBlock">
+      <label>Level</label>
+      <select id="level"></select>
+    </div>
+
+    <div id="catBlock">
+      <label>Category</label>
+      <select id="category"></select>
+    </div>
+
+    <div id="subBlock">
+      <label>Sub-Category</label>
+      <select id="subCategory"></select>
+    </div>
+
+    <label>Amount (₹)</label>
+    <input type="number" id="amount"/>
+
+    <div id="fromBlock">
+      <label>From Account</label>
+      <select id="fromAccount"></select>
+    </div>
+
+    <div id="toBlock" class="hidden">
+      <label>To Account</label>
+      <select id="toAccount"></select>
+    </div>
+
+    <label>Notes</label>
+    <textarea id="notes" rows="2"></textarea>
+
+    <div class="error" id="error"></div>
+
+    <button id="saveBtn">Save Transaction</button>
+    <div class="success" id="success"></div>
   </div>
-</div>
-
-<div class="field">
-  <label>Level-1</label>
-  <select id="level1" required></select>
-</div>
-
-<div class="field">
-  <label>Category</label>
-  <select id="category" required></select>
-</div>
-
-<div class="field">
-  <label>Sub-Category</label>
-  <select id="subCategory" required></select>
-</div>
-
-<div class="inline">
-  <div class="field">
-    <label>From Account</label>
-    <select id="fromAccount" required></select>
-  </div>
-  <div class="field">
-    <label>To Account</label>
-    <select id="toAccount"></select>
-  </div>
-</div>
-
-<div class="field">
-  <label>Description</label>
-  <input type="text" id="description" placeholder="Optional note">
-</div>
-
-<button type="submit">Save Transaction</button>
-<div class="status" id="status"></div>
-
-</form>
-</div>
 </div>
 
 <script>
-/* ================= CONFIG ================= */
-const API =
-"https://script.google.com/macros/s/AKfycbx0yqBiy_b6vq4J6ddJJo-2-cwQdbTmSJ9BYtOdVIdqZ12-XNi6nfBF4T_msoKgPmNqtg/exec";
+const API = "YOUR_APPS_SCRIPT_EXEC_URL";
 
-/* 🔴 CHANGE THIS */
-const GITHUB_USER = "Canvas0456";
-const REPO_NAME = "life-control-dashboard";
-const FILE_PATH = "transactions.html";
+const el = id => document.getElementById(id);
+const error = el("error");
+const success = el("success");
 
-/* ============== DOM BINDINGS ============== */
-const level1 = document.getElementById("level1");
-const category = document.getElementById("category");
-const subCategory = document.getElementById("subCategory");
-const fromAccount = document.getElementById("fromAccount");
-const toAccount = document.getElementById("toAccount");
-const status = document.getElementById("status");
-const date = document.getElementById("date");
-const amount = document.getElementById("amount");
-const txnType = document.getElementById("txnType");
-const description = document.getElementById("description");
+let master = {};
 
-let dropdowns = {};
+fetch(API + "?mode=dropdowns")
+.then(r => r.json())
+.then(d => {
+  master = d;
+  loadAccounts();
+});
 
-/* ============== AUTO DATE ============== */
-date.valueAsDate = new Date();
-
-/* ============== LOAD DROPDOWNS ============== */
-async function loadDropdowns(){
-  const res = await fetch(API + "?mode=dropdowns");
-  dropdowns = await res.json();
-
-  level1.innerHTML = `<option value="">Select</option>`;
-  dropdowns.level1.forEach(v=>{
-    level1.innerHTML += `<option value="${v}">${v}</option>`;
-  });
-
-  fromAccount.innerHTML = `<option value="">Select</option>`;
-  toAccount.innerHTML = `<option value="">Optional</option>`;
-  dropdowns.accounts.forEach(a=>{
-    fromAccount.innerHTML += `<option value="${a}">${a}</option>`;
-    toAccount.innerHTML += `<option value="${a}">${a}</option>`;
+function loadAccounts() {
+  ["fromAccount","toAccount"].forEach(id=>{
+    el(id).innerHTML = `<option value="">Select</option>` +
+      master.accounts.map(a=>`<option>${a}</option>`).join("");
   });
 }
 
-level1.onchange = ()=>{
-  category.innerHTML = `<option value="">Select</option>`;
-  subCategory.innerHTML = `<option value="">Select</option>`;
-  const cats = dropdowns.categories[level1.value] || {};
-  Object.keys(cats).forEach(c=>{
-    category.innerHTML += `<option value="${c}">${c}</option>`;
-  });
+el("txnType").onchange = () => {
+  resetDynamic();
+  const t = el("txnType").value;
+
+  if (!t) return;
+
+  if (t === "Income") {
+    el("level").innerHTML = `<option>Income</option>`;
+    loadCategories("Income");
+    el("toBlock").classList.remove("hidden");
+  }
+
+  if (t === "Expense") {
+    loadLevels(["Variable","Savings","Sinking"]);
+    el("fromBlock").classList.remove("hidden");
+  }
+
+  if (t === "Transfer") {
+    el("level").innerHTML = `<option>Transfer</option>`;
+    loadCategories("Transfer");
+    el("fromBlock").classList.remove("hidden");
+    el("toBlock").classList.remove("hidden");
+  }
 };
 
-category.onchange = ()=>{
-  subCategory.innerHTML = `<option value="">Select</option>`;
-  (dropdowns.categories[level1.value][category.value] || [])
-    .forEach(s=>{
-      subCategory.innerHTML += `<option value="${s}">${s}</option>`;
-    });
-};
+el("level").onchange = () => loadCategories(el("level").value);
+el("category").onchange = () => loadSub(el("level").value, el("category").value);
 
-/* ============== SUBMIT ============== */
-document.getElementById("txnForm").onsubmit = async e=>{
-  e.preventDefault();
-  status.textContent = "Saving…";
-  status.className = "status";
+function loadLevels(arr){
+  el("level").innerHTML = `<option value="">Select</option>` +
+    arr.map(v=>`<option>${v}</option>`).join("");
+}
+
+function loadCategories(l){
+  const cats = master.categories[l] || {};
+  el("category").innerHTML = `<option value="">Select</option>` +
+    Object.keys(cats).map(c=>`<option>${c}</option>`).join("");
+}
+
+function loadSub(l,c){
+  const subs = master.categories[l][c] || [];
+  el("subCategory").innerHTML = `<option value="">Select</option>` +
+    subs.map(s=>`<option>${s}</option>`).join("");
+}
+
+function resetDynamic(){
+  ["level","category","subCategory"].forEach(id=>el(id).innerHTML="");
+  el("fromBlock").classList.add("hidden");
+  el("toBlock").classList.add("hidden");
+}
+
+el("saveBtn").onclick = async () => {
+  error.textContent = "";
+  success.textContent = "";
+
+  if (!el("date").value || new Date(el("date").value) < new Date("2026-02-01"))
+    return error.textContent = "Date must be Feb-2026 or later";
+
+  if (!el("txnType").value || !el("level").value || !el("category").value || !el("subCategory").value)
+    return error.textContent = "Please complete all category fields";
+
+  if (!el("amount").value || el("amount").value <= 0)
+    return error.textContent = "Amount must be greater than zero";
 
   const payload = {
-    type:"transaction",
-    date:date.value,
-    amount:amount.value,
-    txnType:txnType.value,
-    level1:level1.value,
-    category:category.value,
-    subCategory:subCategory.value,
-    fromAccount:fromAccount.value,
-    toAccount:toAccount.value,
-    description:description.value
+    type: "transaction",
+    date: el("date").value,
+    txnType: el("txnType").value,
+    level1: el("level").value,
+    category: el("category").value,
+    subCategory: el("subCategory").value,
+    amount: el("amount").value,
+    fromAccount: el("fromAccount").value,
+    toAccount: el("toAccount").value,
+    notes: el("notes").value
   };
 
-  const res = await fetch(API,{
-    method:"POST",
-    body:JSON.stringify(payload)
-  }).then(r=>r.json());
+  el("saveBtn").disabled = true;
 
-  status.textContent = res.message;
-  status.className = "status " + (res.status==="success"?"success":"error");
+  const res = await fetch(API, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
 
-  if(res.status==="success"){
-    document.getElementById("txnForm").reset();
-    date.valueAsDate = new Date();
-  }
+  const r = await res.json();
+  el("saveBtn").disabled = false;
+
+  if (r.status !== "success")
+    return error.textContent = r.message;
+
+  success.textContent = "Transaction saved successfully";
+  document.querySelector("form")?.reset();
 };
-
-/* ============== GITHUB COMMIT TIMESTAMP ============== */
-async function loadCommitInfo(){
-  try{
-    const url =
-      `https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/commits?path=${FILE_PATH}&per_page=1`;
-    const res = await fetch(url);
-    const data = await res.json();
-    if(!data[0]) throw "";
-    const d = new Date(data[0].commit.committer.date);
-    document.getElementById("commitInfo").textContent =
-      "Last Updated: " + d.toLocaleString();
-  }catch{
-    document.getElementById("commitInfo").textContent =
-      "Version info unavailable";
-  }
-}
-
-/* ============== INIT ============== */
-loadDropdowns();
-loadCommitInfo();
 </script>
-
 </body>
 </html>
