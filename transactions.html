@@ -1,62 +1,158 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Transaction Entry</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Transaction Entry · Kaiwalya Muley</title>
 
 <style>
+/* ---------- THEME ---------- */
 :root{
-  --bg:#0f172a;--card:#111827;--field:#1f2933;
-  --accent:#22c55e;--text:#e5e7eb;--muted:#9ca3af;
-  --danger:#ef4444;--radius:18px
+  --bg:#0b1220;
+  --glass:rgba(255,255,255,.06);
+  --border:rgba(255,255,255,.12);
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+  --accent:#4ade80;
+  --danger:#ef4444;
+  --radius:18px;
+  --blur:blur(18px);
 }
-*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI"}
+
+/* ---------- BASE ---------- */
+*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto}
 body{
-  margin:0;min-height:100vh;padding:20px;color:var(--text);
+  margin:0;
   background:
-    linear-gradient(180deg,rgba(15,23,42,.92),rgba(15,23,42,.98)),
-    url("https://images.unsplash.com/photo-1565372918674-89e6c8c0d39b");
-  background-size:cover;background-position:center
+    radial-gradient(1200px 500px at 10% -10%,#1e293b,transparent),
+    radial-gradient(800px 400px at 90% 10%,#020617,transparent),
+    var(--bg);
+  color:var(--text);
+  min-height:100vh;
 }
-.container{max-width:680px;margin:auto}
+
+/* ---------- HEADER ---------- */
+header{
+  position:sticky;top:0;z-index:10;
+  backdrop-filter:var(--blur);
+  background:linear-gradient(180deg,rgba(2,6,23,.85),rgba(2,6,23,.65));
+  border-bottom:1px solid var(--border);
+  padding:14px 18px;
+}
+.header-wrap{
+  max-width:720px;margin:auto;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.title{
+  font-size:18px;font-weight:600;
+}
+.subtitle{
+  font-size:11px;color:var(--muted);
+}
+.live{
+  text-align:right;font-size:12px;color:var(--muted);
+}
+
+/* ---------- CARD ---------- */
+.container{max-width:720px;margin:22px auto;padding:0 14px}
 .card{
-  background:var(--card);border-radius:var(--radius);padding:22px;
-  box-shadow:0 30px 60px rgba(0,0,0,.5)
+  background:var(--glass);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px;
+  backdrop-filter:var(--blur);
+  animation:fadeUp .6s ease;
 }
-h1{margin:0 0 6px;font-size:22px}
-.sub{font-size:13px;color:var(--muted);margin-bottom:16px}
-label{display:block;margin-top:14px;font-size:13px;color:var(--muted)}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(16px)}
+  to{opacity:1;transform:none}
+}
+
+/* ---------- FORM ---------- */
+label{
+  font-size:12px;color:var(--muted);
+  display:block;margin-top:16px
+}
 input,select,textarea{
-  width:100%;background:var(--field);border:1px solid #334155;
-  border-radius:12px;padding:12px;color:var(--text);margin-top:6px
+  width:100%;
+  margin-top:6px;
+  padding:14px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:rgba(2,6,23,.7);
+  color:var(--text);
+  outline:none;
+  transition:.25s;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 2px rgba(74,222,128,.15)
 }
 textarea{resize:none}
 .hidden{display:none}
+
+/* ---------- BUTTONS ---------- */
 button{
-  width:100%;margin-top:18px;padding:14px;border:none;
-  border-radius:14px;background:var(--accent);color:#052e16;
-  font-weight:600;cursor:pointer
+  width:100%;
+  margin-top:22px;
+  padding:15px;
+  border-radius:16px;
+  border:none;
+  font-weight:600;
+  cursor:pointer;
+  transition:.25s;
 }
-button:disabled{opacity:.6}
-.secondary{background:#1f2933;color:var(--text)}
-.msg{text-align:center;font-size:13px;margin-top:10px}
-.error{color:var(--danger)} .success{color:var(--accent)}
-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
-th,td{padding:8px;border-bottom:1px solid #334155;text-align:left}
-th{color:var(--muted)}
+.primary{
+  background:linear-gradient(135deg,#22c55e,#4ade80);
+  color:#052e16;
+}
+.primary:disabled{opacity:.6}
+.secondary{
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  border:1px solid var(--border)
+}
+
+/* ---------- FEEDBACK ---------- */
+.msg{margin-top:10px;font-size:13px;text-align:center}
+.error{color:var(--danger)}
+.success{color:var(--accent)}
+
+/* ---------- TABLE ---------- */
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{
+  padding:10px;font-size:12px;
+  border-bottom:1px solid var(--border)
+}
+th{color:var(--muted);text-align:left}
+
+/* ---------- FOOTER ---------- */
+.footer{
+  margin-top:18px;
+  font-size:11px;
+  color:var(--muted);
+  text-align:center
+}
 </style>
 </head>
 
 <body>
+
+<header>
+  <div class="header-wrap">
+    <div>
+      <div class="title">New Transaction</div>
+      <div class="subtitle">Ledger-Driven · Finance System</div>
+    </div>
+    <div class="live" id="liveClock"></div>
+  </div>
+</header>
+
 <div class="container">
 <div class="card">
 
-<h1>New Transaction</h1>
-<div class="sub">Form Phase · Ledger-Complete · Stable</div>
-
 <label>Date</label>
-<input type="date" id="date">
+<input type="date" id="date" />
 
 <label>Transaction Type</label>
 <select id="txnType">
@@ -78,7 +174,7 @@ th{color:var(--muted)}
 </div>
 
 <label>Amount</label>
-<input type="number" id="amount">
+<input type="number" id="amount" />
 
 <div id="fromWrap" class="hidden">
   <label>From Account</label>
@@ -95,7 +191,7 @@ th{color:var(--muted)}
   <select id="relatedPerson"></select>
 
   <label>Other Person (optional)</label>
-  <input type="text" id="otherPerson" placeholder="Enter name">
+  <input type="text" id="otherPerson" placeholder="Enter name" />
 </div>
 
 <label>Notes</label>
@@ -104,9 +200,9 @@ th{color:var(--muted)}
 <div class="msg error" id="error"></div>
 <div class="msg success" id="success"></div>
 
-<button id="saveBtn">Save Transaction</button>
+<button class="primary" id="saveBtn">Save Transaction</button>
 
-<button id="toggleRecent" class="secondary">Show Last 10 Transactions</button>
+<button class="secondary" id="toggleRecent">Show Last 10 Transactions</button>
 <div id="recentWrap" class="hidden">
   <table>
     <thead>
@@ -116,118 +212,117 @@ th{color:var(--muted)}
   </table>
 </div>
 
+<div class="footer">Designed & Engineered by Kaiwalya Muley</div>
+
 </div>
 </div>
 
 <script>
+/* ---------- CONFIG ---------- */
 const API="https://script.google.com/macros/s/AKfycbx0qkMTieJu2dm1sfhd0zvJ8KgKCocfZHNIXyHw6adNjj5cTReMXGO2uKbB_do0PTPLMw/exec";
 const $=id=>document.getElementById(id);
 date.valueAsDate=new Date();
 
-let DATA={}, submitting=false;
+/* ---------- LIVE CLOCK ---------- */
+setInterval(()=>{
+  const d=new Date();
+  liveClock.textContent=
+    d.toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short",year:"numeric"})
+    +" · "+
+    d.toLocaleTimeString();
+},1000);
 
-/* ---------- Load dropdown data ---------- */
+/* ---------- DATA ---------- */
+let DATA={},submitting=false;
+
 fetch(API+"?mode=dropdowns")
 .then(r=>r.json())
 .then(d=>{
   DATA=d;
-  fill(level1,d.level1,true);
+  fill(level1,[],true);
   fill(fromAccount,d.accounts,true);
   fill(toAccount,d.accounts,true);
 });
 
-/* ---------- Helpers ---------- */
+/* ---------- HELPERS ---------- */
 function fill(sel,arr,blank){
-  sel.innerHTML = blank ? "<option value=''>Select</option>" : "";
+  sel.innerHTML=blank?"<option value=''>Select</option>":"";
   arr.forEach(v=>{
     const o=document.createElement("option");
     o.value=o.textContent=v;
     sel.appendChild(o);
   });
 }
-function hide(...els){els.forEach(e=>e.classList.add("hidden"))}
-function show(...els){els.forEach(e=>e.classList.remove("hidden"))}
+function hide(...e){e.forEach(x=>x.classList.add("hidden"))}
+function show(...e){e.forEach(x=>x.classList.remove("hidden"))}
 function resetCats(){category.innerHTML=subCategory.innerHTML="<option value=''>Select</option>"}
+function level1ByType(t){
+  return {
+    Income:["Income","Receivable"],
+    Expense:["Variable","Savings","Sinking","Payable","EMI"],
+    Transfer:["Transfer"]
+  }[t]||[];
+}
 
-/* ---------- Transaction Type Logic ---------- */
+/* ---------- LOGIC ---------- */
 txnType.onchange=()=>{
   hide(catWrap,fromWrap,toWrap,personWrap);
   resetCats();
-  relatedPerson.innerHTML=""; otherPerson.value="";
+  fill(level1,level1ByType(txnType.value),true);
 
-  if(txnType.value==="Expense"){
-    show(fromWrap);
-  }
-  if(txnType.value==="Income"){
-    show(toWrap);
-  }
+  if(txnType.value==="Expense") show(fromWrap);
+  if(txnType.value==="Income") show(toWrap);
   if(txnType.value==="Transfer"){
     show(fromWrap,toWrap);
     level1.value="Transfer";
   }
 };
 
-/* ---------- Level-1 Logic (FIXED) ---------- */
 level1.onchange=()=>{
   hide(catWrap,personWrap);
   resetCats();
-  relatedPerson.innerHTML=""; otherPerson.value="";
+  relatedPerson.innerHTML="";otherPerson.value="";
 
-  // EMI
+  if(level1.value==="Receivable"){
+    show(personWrap,toWrap);
+    hide(fromWrap);
+    fill(relatedPerson,DATA.receivables||[],true);
+    return;
+  }
+  if(level1.value==="Payable"){
+    show(personWrap,fromWrap);
+    hide(toWrap);
+    fill(relatedPerson,DATA.payables||[],true);
+    return;
+  }
   if(level1.value==="EMI"){
     show(catWrap,fromWrap);
     hide(toWrap);
-
     category.innerHTML="<option>Loan EMI</option>";
     fill(subCategory,DATA.categories.EMI?.["Loan EMI"]||[],true);
-
     fromAccount.value="HDFC";
     fromAccount.disabled=true;
     return;
   }
-
-  // RECEIVABLE
-  if(level1.value==="Receivable"){
-    show(personWrap,toWrap);
-    hide(fromWrap);
-
-    fill(relatedPerson,DATA.receivables||[],true);
-    return;
-  }
-
-  // PAYABLE
-  if(level1.value==="Payable"){
-    show(personWrap,fromWrap);
-    hide(toWrap);
-
-    fill(relatedPerson,DATA.payables||[],true);
-    return;
-  }
-
-  // NORMAL INCOME / EXPENSE
   show(catWrap);
   fill(category,Object.keys(DATA.categories[level1.value]||{}),true);
 };
 
-/* ---------- Category → Sub-Category ---------- */
 category.onchange=()=>{
   fill(subCategory,DATA.categories[level1.value]?.[category.value]||[],true);
 };
 
-/* ---------- Transfer From ≠ To ---------- */
 fromAccount.onchange=()=>{
   if(txnType.value==="Transfer"){
     fill(toAccount,DATA.accounts.filter(a=>a!==fromAccount.value),true);
   }
 };
 
-/* ---------- Save ---------- */
+/* ---------- SAVE ---------- */
 saveBtn.onclick=async()=>{
   if(submitting) return;
-  submitting=true; saveBtn.disabled=true;
+  submitting=true;saveBtn.disabled=true;
   error.textContent="";
-
-  const related = relatedPerson.value || otherPerson.value || "";
 
   const payload={
     type:"transaction",
@@ -239,7 +334,7 @@ saveBtn.onclick=async()=>{
     amount:amount.value,
     fromAccount:fromWrap.classList.contains("hidden")?"":fromAccount.value,
     toAccount:toWrap.classList.contains("hidden")?"":toAccount.value,
-    relatedTo:related,
+    relatedTo:relatedPerson.value||otherPerson.value||"",
     notes:notes.value
   };
 
@@ -251,32 +346,27 @@ saveBtn.onclick=async()=>{
 
   if(r.status!=="success"){
     error.textContent=r.message;
-    submitting=false; saveBtn.disabled=false;
+    submitting=false;saveBtn.disabled=false;
     return;
   }
-
   success.textContent="Transaction saved";
   setTimeout(()=>location.reload(),900);
 };
 
-/* ---------- Last-10 Transactions ---------- */
+/* ---------- LAST 10 ---------- */
 toggleRecent.onclick=()=>{
   recentWrap.classList.toggle("hidden");
   if(!recentWrap.classList.contains("hidden")){
     fetch(API+"?mode=recent&type=transactions")
     .then(r=>r.json())
     .then(rows=>{
-      recentBody.innerHTML=rows.map(r=>`
-        <tr>
-          <td>${r.date}</td>
-          <td>${r.type}</td>
-          <td>${r.category}</td>
-          <td>${r.amount}</td>
-        </tr>
-      `).join("");
+      recentBody.innerHTML=rows.map(r=>
+        `<tr><td>${r.date}</td><td>${r.type}</td><td>${r.category}</td><td>${r.amount}</td></tr>`
+      ).join("");
     });
   }
 };
 </script>
+
 </body>
 </html>
