@@ -160,11 +160,11 @@ canvas{width:100%;height:220px;margin-top:10px}
     </div>
     <div class="kpi">
       <div class="label" id="kpi2Label">Total Debit</div>
-      <div class="value negative" id="kpi2">–</div>
+      <div class="value" id="kpi2">–</div>
     </div>
     <div class="kpi">
       <div class="label" id="kpi3Label">Total Credit</div>
-      <div class="value positive" id="kpi3">–</div>
+      <div class="value" id="kpi3">–</div>
     </div>
     <div class="kpi">
       <div class="label" id="kpi4Label">Closing Balance</div>
@@ -175,7 +175,9 @@ canvas{width:100%;height:220px;margin-top:10px}
 
 <!-- TREND -->
 <div class="card">
-  <div style="font-size:13px;color:var(--muted)" id="trendTitle">Monthly Net Movement</div>
+  <div style="font-size:13px;color:var(--muted)" id="trendTitle">
+    Monthly Net Movement
+  </div>
   <canvas id="trend"></canvas>
 </div>
 
@@ -203,7 +205,7 @@ canvas{width:100%;height:220px;margin-top:10px}
 const API="https://script.google.com/macros/s/AKfycbx0qkMTieJu2dm1sfhd0zvJ8KgKCocfZHNIXyHw6adNjj5cTReMXGO2uKbB_do0PTPLMw/exec";
 const $=id=>document.getElementById(id);
 
-/* Live clock */
+/* Live Clock */
 setInterval(()=>{
   const d=new Date();
   liveClock.textContent=
@@ -211,7 +213,7 @@ setInterval(()=>{
     +" · "+d.toLocaleTimeString();
 },1000);
 
-/* Load ledgers */
+/* Load ledger names */
 function loadLedgerNames(){
   const type=ledgerType.value.toUpperCase();
   subtitle.textContent=type+" Ledger";
@@ -242,16 +244,16 @@ function updateLabels(){
     kpi3Label.textContent="Total Credit";
     kpi4Label.textContent="Closing Balance";
     trendTitle.textContent="Monthly Net Movement";
-  }else{
-    kpi1Label.textContent="Total Inflow";
-    kpi2Label.textContent="Total Outflow";
-    kpi3Label.textContent="—";
-    kpi4Label.textContent="Net Movement";
+  } else {
+    kpi1Label.textContent="Opening Balance";
+    kpi2Label.textContent="Total Inflow";
+    kpi3Label.textContent="Total Outflow";
+    kpi4Label.textContent="Closing Balance";
     trendTitle.textContent="Monthly Cash Flow";
   }
 }
 
-/* Load ledger */
+/* Load ledger data */
 function loadLedger(){
   if(!ledgerName.value) return;
 
@@ -263,14 +265,15 @@ function loadLedger(){
       kpi2.textContent=d.total_debit;
       kpi3.textContent=d.total_credit;
       kpi4.textContent=d.closing_balance;
-    }else{
-      kpi1.textContent=d.total_inflow;
-      kpi2.textContent=d.total_outflow;
-      kpi3.textContent="";
-      kpi4.textContent=d.net_movement;
+    } else {
+      kpi1.textContent=d.opening_balance;
+      kpi2.textContent=d.total_inflow;
+      kpi3.textContent=d.total_outflow;
+      kpi4.textContent=d.closing_balance;
     }
 
-    kpi4.className="value "+((d.net_movement||d.closing_balance)>=0?"positive":"negative");
+    kpi4.className =
+      "value " + (Number(kpi4.textContent)>=0?"positive":"negative");
 
     ledgerBody.innerHTML=d.entries.map(e=>`
       <tr>
@@ -286,7 +289,7 @@ function loadLedger(){
   });
 }
 
-/* Trend */
+/* Trend graph */
 function drawTrend(entries){
   const ctx=trend.getContext("2d");
   ctx.clearRect(0,0,trend.width,trend.height);
@@ -305,7 +308,6 @@ function drawTrend(entries){
   ctx.strokeStyle="#4ade80";
   ctx.lineWidth=2;
   ctx.beginPath();
-
   months.forEach((v,i)=>{
     const x=i*step+step/2;
     const y=h/2-(v/max)*(h/2-20);
