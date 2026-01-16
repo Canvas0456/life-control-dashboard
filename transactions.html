@@ -27,10 +27,7 @@ body{
   background-position:center;
   color:var(--text);
   padding:20px;
-  animation:fadeIn .6s ease;
 }
-@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1}}
-
 .container{max-width:640px;margin:auto;}
 .card{
   background:var(--card);
@@ -50,10 +47,9 @@ input,select,textarea{
   padding:12px;
   color:var(--text);
   margin-top:6px;
-  font-size:14px;
 }
-textarea{resize:none}
 select:disabled,input:disabled{opacity:.6}
+textarea{resize:none}
 
 button{
   width:100%;
@@ -63,15 +59,9 @@ button{
   border-radius:14px;
   background:var(--accent);
   color:#052e16;
-  font-size:15px;
   font-weight:600;
-  cursor:pointer;
-  transition:.25s;
 }
-button:active{transform:scale(.97)}
-button.loading{opacity:.6;pointer-events:none}
-
-.msg{font-size:13px;text-align:center;margin-top:12px}
+.msg{text-align:center;font-size:13px;margin-top:10px}
 .error{color:var(--danger)}
 .success{color:var(--accent)}
 </style>
@@ -82,7 +72,7 @@ button.loading{opacity:.6;pointer-events:none}
 <div class="card">
 
 <h1>New Transaction</h1>
-<div class="sub">Single source of truth · Finance only</div>
+<div class="sub">Finance system · zero manual sheets</div>
 
 <label>Date</label>
 <input type="date" id="date">
@@ -105,7 +95,7 @@ button.loading{opacity:.6;pointer-events:none}
 <select id="subCategory"></select>
 
 <label>Amount</label>
-<input type="number" id="amount" min="0">
+<input type="number" id="amount">
 
 <label>From Account</label>
 <select id="fromAccount"></select>
@@ -127,117 +117,83 @@ button.loading{opacity:.6;pointer-events:none}
 <script>
 const API="https://script.google.com/macros/s/AKfycbx0qkMTieJu2dm1sfhd0zvJ8KgKCocfZHNIXyHw6adNjj5cTReMXGO2uKbB_do0PTPLMw/exec";
 const $=id=>document.getElementById(id);
-
 $("date").valueAsDate=new Date();
 
 let DATA={};
 
-/* ---------- Load dropdown data ---------- */
-fetch(API+"?mode=dropdowns")
-.then(r=>r.json())
-.then(d=>{
+fetch(API+"?mode=dropdowns").then(r=>r.json()).then(d=>{
   DATA=d;
-  fill($("level1"),d.level1,true);
-  fill($("fromAccount"),d.accounts,true);
-  fill($("toAccount"),d.accounts,true);
+  fill(level1,d.level1,true);
+  fill(fromAccount,d.accounts,true);
+  fill(toAccount,d.accounts,true);
 });
 
-/* ---------- Helpers ---------- */
 function fill(sel,arr,blank){
   sel.innerHTML = blank ? "<option value=''>Select</option>" : "";
   arr.forEach(v=>{
-    const o=document.createElement("option");
+    let o=document.createElement("option");
     o.value=o.textContent=v;
     sel.appendChild(o);
   });
 }
-function lock(ids){ids.forEach(i=>$(i).disabled=true)}
-function unlock(ids){ids.forEach(i=>$(i).disabled=false)}
-function clear(sel){sel.innerHTML="<option value=''>Select</option>"}
 
-/* ---------- Cascading dropdowns ---------- */
-$("level1").onchange=()=>{
-  clear($("category"));
-  clear($("subCategory"));
-  const cats = DATA.categories[$("level1").value] || {};
-  fill($("category"),Object.keys(cats),true);
+level1.onchange=()=>{
+  resetCat();
+  if(level1.value==="EMI"){
+    category.innerHTML="<option>Loan EMI</option>";
+    subCategory.innerHTML="<option>Select EMI</option>";
+    fromAccount.value="HDFC";
+    fromAccount.disabled=true;
+  }else{
+    fill(category,Object.keys(DATA.categories[level1.value]||{}),true);
+  }
 };
 
-$("category").onchange=()=>{
-  clear($("subCategory"));
-  const subs = DATA.categories[$("level1").value]?.[$("category").value] || [];
-  fill($("subCategory"),subs,true);
+category.onchange=()=>{
+  fill(subCategory,DATA.categories[level1.value]?.[category.value]||[],true);
 };
 
-/* ---------- Smart rules ---------- */
-$("txnType").onchange=()=>{
-  resetFormLocks();
-
-  if($("txnType").value==="Income"){
-    // Salary only
-    $("level1").value="Income";
-    $("level1").dispatchEvent(new Event("change"));
-
-    $("category").value="Salary";
-    $("category").dispatchEvent(new Event("change"));
-
-    $("subCategory").innerHTML="<option>Monthly Salary</option>";
-    $("amount").value=40188;
-
-    $("fromAccount").innerHTML="<option>Customer Capital</option>";
-    $("toAccount").value="IDFC";
-
+txnType.onchange=()=>{
+  resetLocks();
+  if(txnType.value==="Transfer"){
+    level1.value="Transfer";
+    category.innerHTML="<option>Internal Transfer</option>";
+    subCategory.innerHTML="<option>Account Transfer</option>";
+    category.disabled=subCategory.disabled=true;
+  }
+  if(txnType.value==="Income"){
+    level1.value="Income";
+    category.innerHTML="<option>Salary</option>";
+    subCategory.innerHTML="<option>Monthly Salary</option>";
+    amount.value=40188;
+    fromAccount.innerHTML="<option>Customer Capital</option>";
+    toAccount.value="IDFC";
     lock(["level1","category","subCategory","amount","fromAccount","toAccount"]);
   }
-
-  if($("txnType").value==="Expense"){
-    // Allow EMI or Normal Expense
-    unlock(["level1","category","subCategory","amount","fromAccount","toAccount"]);
-  }
-
-  if($("txnType").value==="Transfer"){
-    $("category").disabled=true;
-    $("subCategory").disabled=true;
-  }
 };
 
-function resetFormLocks(){
-  unlock(["level1","category","subCategory","amount","fromAccount","toAccount"]);
-}
+function resetCat(){category.innerHTML=subCategory.innerHTML="<option value=''>Select</option>"}
+function lock(a){a.forEach(i=>$(i).disabled=true)}
+function resetLocks(){["level1","category","subCategory","amount","fromAccount","toAccount"].forEach(i=>$(i).disabled=false)}
 
-/* ---------- Save ---------- */
-$("saveBtn").onclick=async()=>{
-  $("error").textContent="";
-  $("success").textContent="";
-  $("saveBtn").classList.add("loading");
-
+saveBtn.onclick=async()=>{
+  error.textContent="";
   const payload={
     type:"transaction",
-    date:$("date").value,
-    txnType:$("txnType").value,
-    level1:$("level1").value,
-    category:$("category").value,
-    subCategory:$("subCategory").value,
-    amount:$("amount").value,
-    fromAccount:$("fromAccount").value,
-    toAccount:$("toAccount").value,
-    notes:$("notes").value
+    date:date.value,
+    txnType:txnType.value,
+    level1:level1.value,
+    category:category.value,
+    subCategory:subCategory.value,
+    amount:amount.value,
+    fromAccount:fromAccount.value,
+    toAccount:toAccount.value,
+    notes:notes.value
   };
-
-  const r=await fetch(API,{
-    method:"POST",
-    headers:{"Content-Type":"text/plain;charset=utf-8"},
-    body:JSON.stringify(payload)
-  }).then(r=>r.json());
-
-  if(r.status!=="success"){
-    $("error").textContent=r.message;
-    $("saveBtn").classList.remove("loading");
-    return;
-  }
-
-  $("success").textContent="Transaction saved";
-  setTimeout(()=>location.reload(),900);
+  const r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(payload)}).then(r=>r.json());
+  if(r.status!=="success"){error.textContent=r.message;return}
+  success.textContent="Saved";
+  setTimeout(()=>location.reload(),800);
 };
 </script>
 </body>
