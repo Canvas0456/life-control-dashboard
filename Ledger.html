@@ -37,7 +37,7 @@ header{
   border-bottom:1px solid var(--border);
 }
 .header-wrap{
-  max-width:980px;
+  max-width:1000px;
   margin:auto;
   padding:14px 18px;
   display:flex;
@@ -46,9 +46,9 @@ header{
 }
 .title{font-size:18px;font-weight:600}
 .subtitle{font-size:11px;color:var(--muted)}
-.live{font-size:12px;color:var(--muted);text-align:right}
+.live{font-size:12px;color:var(--muted)}
 
-.container{max-width:980px;margin:22px auto;padding:0 14px}
+.container{max-width:1000px;margin:22px auto;padding:0 14px}
 .card{
   background:var(--glass);
   backdrop-filter:var(--blur);
@@ -58,13 +58,8 @@ header{
   margin-bottom:18px;
 }
 
-label{
-  font-size:12px;color:var(--muted);
-  display:block;margin-top:12px
-}
-.select-wrap{
-  position:relative;margin-top:6px
-}
+label{font-size:12px;color:var(--muted);display:block;margin-top:12px}
+.select-wrap{position:relative;margin-top:6px}
 .select-wrap select{
   appearance:none;
   width:100%;
@@ -107,10 +102,7 @@ th,td{
 }
 th{color:var(--muted)}
 
-canvas{
-  width:100%;height:220px;
-  margin-top:10px;
-}
+canvas{width:100%;height:220px;margin-top:10px}
 
 .footer{
   text-align:center;
@@ -127,7 +119,7 @@ canvas{
   <div class="header-wrap">
     <div>
       <div class="title">Ledger</div>
-      <div class="subtitle">Person Ledger · Monthly Trend</div>
+      <div class="subtitle" id="subtitle">Person Ledger</div>
     </div>
     <div class="live" id="liveClock"></div>
   </div>
@@ -141,6 +133,7 @@ canvas{
   <div class="select-wrap">
     <select id="ledgerType">
       <option value="person">PERSON</option>
+      <option value="account">ACCOUNT</option>
     </select>
   </div>
 
@@ -162,27 +155,27 @@ canvas{
 <div class="card">
   <div class="kpis">
     <div class="kpi">
-      <div class="label">Opening Balance</div>
-      <div class="value" id="openBal">–</div>
+      <div class="label" id="kpi1Label">Opening Balance</div>
+      <div class="value" id="kpi1">–</div>
     </div>
     <div class="kpi">
-      <div class="label">Total Debit</div>
-      <div class="value negative" id="debit">–</div>
+      <div class="label" id="kpi2Label">Total Debit</div>
+      <div class="value negative" id="kpi2">–</div>
     </div>
     <div class="kpi">
-      <div class="label">Total Credit</div>
-      <div class="value positive" id="credit">–</div>
+      <div class="label" id="kpi3Label">Total Credit</div>
+      <div class="value positive" id="kpi3">–</div>
     </div>
     <div class="kpi">
-      <div class="label">Closing Balance</div>
-      <div class="value" id="closeBal">–</div>
+      <div class="label" id="kpi4Label">Closing Balance</div>
+      <div class="value" id="kpi4">–</div>
     </div>
   </div>
 </div>
 
-<!-- MONTHLY TREND -->
+<!-- TREND -->
 <div class="card">
-  <div style="font-size:13px;color:var(--muted)">Monthly Net Movement</div>
+  <div style="font-size:13px;color:var(--muted)" id="trendTitle">Monthly Net Movement</div>
   <canvas id="trend"></canvas>
 </div>
 
@@ -210,7 +203,7 @@ canvas{
 const API="https://script.google.com/macros/s/AKfycbx0qkMTieJu2dm1sfhd0zvJ8KgKCocfZHNIXyHw6adNjj5cTReMXGO2uKbB_do0PTPLMw/exec";
 const $=id=>document.getElementById(id);
 
-/* Live Clock */
+/* Live clock */
 setInterval(()=>{
   const d=new Date();
   liveClock.textContent=
@@ -218,31 +211,66 @@ setInterval(()=>{
     +" · "+d.toLocaleTimeString();
 },1000);
 
-/* Load PERSON ledgers from Ledger_Master */
-fetch(`${API}?mode=ledgers&type=PERSON`)
-.then(r=>r.json())
-.then(list=>{
-  ledgerName.innerHTML="<option value=''>Select</option>";
-  list.forEach(l=>{
-    const o=document.createElement("option");
-    o.value=o.textContent=l.name;
-    ledgerName.appendChild(o);
-  });
-});
+/* Load ledgers */
+function loadLedgerNames(){
+  const type=ledgerType.value.toUpperCase();
+  subtitle.textContent=type+" Ledger";
 
-[ledgerName,ledgerYear].forEach(el=>el.onchange=loadLedger);
+  fetch(`${API}?mode=ledgers&type=${type}`)
+    .then(r=>r.json())
+    .then(list=>{
+      ledgerName.innerHTML="<option value=''>Select</option>";
+      list.forEach(l=>{
+        const o=document.createElement("option");
+        o.value=o.textContent=l.name;
+        ledgerName.appendChild(o);
+      });
+    });
 
+  updateLabels();
+}
+
+ledgerType.onchange=loadLedgerNames;
+ledgerName.onchange=loadLedger;
+ledgerYear.onchange=loadLedger;
+
+/* KPI labels */
+function updateLabels(){
+  if(ledgerType.value==="person"){
+    kpi1Label.textContent="Opening Balance";
+    kpi2Label.textContent="Total Debit";
+    kpi3Label.textContent="Total Credit";
+    kpi4Label.textContent="Closing Balance";
+    trendTitle.textContent="Monthly Net Movement";
+  }else{
+    kpi1Label.textContent="Total Inflow";
+    kpi2Label.textContent="Total Outflow";
+    kpi3Label.textContent="—";
+    kpi4Label.textContent="Net Movement";
+    trendTitle.textContent="Monthly Cash Flow";
+  }
+}
+
+/* Load ledger */
 function loadLedger(){
   if(!ledgerName.value) return;
 
-  fetch(`${API}?mode=ledger&type=person&name=${encodeURIComponent(ledgerName.value)}&year=${ledgerYear.value}`)
+  fetch(`${API}?mode=ledger&type=${ledgerType.value}&name=${encodeURIComponent(ledgerName.value)}&year=${ledgerYear.value}`)
   .then(r=>r.json())
   .then(d=>{
-    openBal.textContent=d.opening_balance;
-    debit.textContent=d.total_debit;
-    credit.textContent=d.total_credit;
-    closeBal.textContent=d.closing_balance;
-    closeBal.className="value "+(d.closing_balance>=0?"positive":"negative");
+    if(ledgerType.value==="person"){
+      kpi1.textContent=d.opening_balance;
+      kpi2.textContent=d.total_debit;
+      kpi3.textContent=d.total_credit;
+      kpi4.textContent=d.closing_balance;
+    }else{
+      kpi1.textContent=d.total_inflow;
+      kpi2.textContent=d.total_outflow;
+      kpi3.textContent="";
+      kpi4.textContent=d.net_movement;
+    }
+
+    kpi4.className="value "+((d.net_movement||d.closing_balance)>=0?"positive":"negative");
 
     ledgerBody.innerHTML=d.entries.map(e=>`
       <tr>
@@ -258,7 +286,7 @@ function loadLedger(){
   });
 }
 
-/* Monthly Trend (Net) */
+/* Trend */
 function drawTrend(entries){
   const ctx=trend.getContext("2d");
   ctx.clearRect(0,0,trend.width,trend.height);
@@ -291,6 +319,9 @@ function drawTrend(entries){
   ctx.lineTo(w,h/2);
   ctx.stroke();
 }
+
+/* Init */
+loadLedgerNames();
 </script>
 
 </body>
