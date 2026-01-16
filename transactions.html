@@ -19,7 +19,7 @@ body{
     url("https://images.unsplash.com/photo-1565372918674-89e6c8c0d39b");
   background-size:cover;background-position:center
 }
-.container{max-width:640px;margin:auto}
+.container{max-width:680px;margin:auto}
 .card{
   background:var(--card);border-radius:var(--radius);padding:22px;
   box-shadow:0 30px 60px rgba(0,0,0,.5)
@@ -53,12 +53,12 @@ th{color:var(--muted)}
 <div class="card">
 
 <h1>New Transaction</h1>
-<div class="sub">Ledger-driven · Finance only</div>
+<div class="sub">Form Phase · Ledger-Complete · Test-Ready</div>
 
 <label>Date</label>
 <input type="date" id="date">
 
-<label>Type</label>
+<label>Transaction Type</label>
 <select id="txnType">
   <option value="">Select</option>
   <option>Income</option>
@@ -69,17 +69,21 @@ th{color:var(--muted)}
 <label>Level-1</label>
 <select id="level1"></select>
 
-<label id="catLabel">Category</label>
-<select id="category"></select>
+<div id="catWrap">
+  <label>Category</label>
+  <select id="category"></select>
 
-<label id="subCatLabel">Sub-Category</label>
-<select id="subCategory"></select>
+  <label>Sub-Category</label>
+  <select id="subCategory"></select>
+</div>
 
 <label>Amount</label>
 <input type="number" id="amount">
 
-<label id="fromLabel">From Account</label>
-<select id="fromAccount"></select>
+<div id="fromWrap">
+  <label>From Account</label>
+  <select id="fromAccount"></select>
+</div>
 
 <div id="toWrap">
   <label>To Account</label>
@@ -105,7 +109,9 @@ th{color:var(--muted)}
 <button id="toggleRecent" class="secondary">Show Last 10 Transactions</button>
 <div id="recentWrap" class="hidden">
   <table>
-    <thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th></tr></thead>
+    <thead>
+      <tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th></tr>
+    </thead>
     <tbody id="recentBody"></tbody>
   </table>
 </div>
@@ -117,6 +123,7 @@ th{color:var(--muted)}
 const API="https://script.google.com/macros/s/AKfycbx0qkMTieJu2dm1sfhd0zvJ8KgKCocfZHNIXyHw6adNjj5cTReMXGO2uKbB_do0PTPLMw/exec";
 const $=id=>document.getElementById(id);
 date.valueAsDate=new Date();
+
 let DATA={}, submitting=false;
 
 fetch(API+"?mode=dropdowns").then(r=>r.json()).then(d=>{
@@ -127,52 +134,61 @@ fetch(API+"?mode=dropdowns").then(r=>r.json()).then(d=>{
 });
 
 function fill(sel,arr,blank){
-  sel.innerHTML = blank ? "<option value=''>Select</option>" : "";
-  arr.forEach(v=>{const o=document.createElement("option");o.value=o.textContent=v;sel.appendChild(o)});
+  sel.innerHTML=blank?"<option value=''>Select</option>":"";
+  arr.forEach(v=>{
+    const o=document.createElement("option");
+    o.value=o.textContent=v;
+    sel.appendChild(o);
+  });
 }
 
-level1.onchange=()=>{
-  resetCategories();
-  fill(category,Object.keys(DATA.categories[level1.value]||{}),true);
-};
-
-category.onchange=()=>{
-  fill(subCategory,DATA.categories[level1.value]?.[category.value]||[],true);
-};
+function hide(...els){els.forEach(e=>e.classList.add("hidden"))}
+function show(...els){els.forEach(e=>e.classList.remove("hidden"))}
+function resetCats(){category.innerHTML=subCategory.innerHTML="<option value=''>Select</option>"}
 
 txnType.onchange=()=>{
-  resetVisibility();
-
-  if(txnType.value==="Transfer"){
-    level1.value="Transfer";
-    hide(catLabel,category,subCatLabel,subCategory,personWrap);
-    show(fromLabel,fromAccount,toWrap);
-  }
+  show(catWrap,fromWrap,toWrap);
+  hide(personWrap);
+  fromAccount.disabled=false;
+  amount.disabled=false;
 
   if(txnType.value==="Expense"){
     hide(toWrap);
   }
-
   if(txnType.value==="Income"){
-    hide(fromLabel,fromAccount);
+    hide(fromWrap);
   }
+  if(txnType.value==="Transfer"){
+    hide(catWrap,personWrap);
+    level1.value="Transfer";
+  }
+};
 
-  if(level1.value==="Receivable"){
+level1.onchange=()=>{
+  resetCats();
+  hide(personWrap);
+
+  if(level1.value==="EMI"){
+    category.innerHTML="<option>Loan EMI</option>";
+    fill(subCategory,DATA.categories.EMI?.["Loan EMI"]||[],true);
+    fromAccount.value="HDFC";
+    fromAccount.disabled=true;
+  }
+  else if(level1.value==="Receivable"){
     show(personWrap);
     fill(relatedPerson,DATA.receivables||[],true);
   }
-
-  if(level1.value==="Payable"){
+  else if(level1.value==="Payable"){
     show(personWrap);
     fill(relatedPerson,DATA.payables||[],true);
   }
-
-  if(txnType.value==="Income" && level1.value==="Income"){
-    amount.value=40188;
-    hide(personWrap);
-    fromAccount.innerHTML="<option>Customer Capital</option>";
-    toAccount.value="IDFC";
+  else{
+    fill(category,Object.keys(DATA.categories[level1.value]||{}),true);
   }
+};
+
+category.onchange=()=>{
+  fill(subCategory,DATA.categories[level1.value]?.[category.value]||[],true);
 };
 
 fromAccount.onchange=()=>{
@@ -181,20 +197,13 @@ fromAccount.onchange=()=>{
   }
 };
 
-function hide(...els){els.forEach(e=>e.classList.add("hidden"))}
-function show(...els){els.forEach(e=>e.classList.remove("hidden"))}
-function resetCategories(){category.innerHTML=subCategory.innerHTML="<option value=''>Select</option>"}
-function resetVisibility(){
-  show(catLabel,category,subCatLabel,subCategory,fromLabel,fromAccount,toWrap);
-  hide(personWrap);
-}
-
 saveBtn.onclick=async()=>{
   if(submitting) return;
-  submitting=true; saveBtn.disabled=true; error.textContent="";
+  submitting=true;
+  saveBtn.disabled=true;
+  error.textContent="";
 
-  const related =
-    relatedPerson.value || otherPerson.value || "";
+  const related = relatedPerson.value || otherPerson.value || "";
 
   const payload={
     type:"transaction",
@@ -204,22 +213,36 @@ saveBtn.onclick=async()=>{
     category:category.value,
     subCategory:subCategory.value,
     amount:amount.value,
-    fromAccount:fromAccount.value,
+    fromAccount:fromWrap.classList.contains("hidden")?"":fromAccount.value,
     toAccount:toWrap.classList.contains("hidden")?"":toAccount.value,
     relatedTo:related,
     notes:notes.value
   };
 
-  const r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(payload)}).then(r=>r.json());
-  if(r.status!=="success"){error.textContent=r.message;submitting=false;saveBtn.disabled=false;return}
-  success.textContent="Saved"; setTimeout(()=>location.reload(),800);
+  const r=await fetch(API,{
+    method:"POST",
+    headers:{"Content-Type":"text/plain"},
+    body:JSON.stringify(payload)
+  }).then(r=>r.json());
+
+  if(r.status!=="success"){
+    error.textContent=r.message;
+    submitting=false;
+    saveBtn.disabled=false;
+    return;
+  }
+
+  success.textContent="Transaction saved";
+  setTimeout(()=>location.reload(),900);
 };
 
 toggleRecent.onclick=()=>{
   recentWrap.classList.toggle("hidden");
   if(!recentWrap.classList.contains("hidden")){
     fetch(API+"?mode=recent&type=transactions").then(r=>r.json()).then(rows=>{
-      recentBody.innerHTML=rows.map(r=>`<tr><td>${r.date}</td><td>${r.type}</td><td>${r.category}</td><td>${r.amount}</td></tr>`).join("");
+      recentBody.innerHTML=rows.map(r=>`
+        <tr><td>${r.date}</td><td>${r.type}</td><td>${r.category}</td><td>${r.amount}</td></tr>
+      `).join("");
     });
   }
 };
