@@ -1,106 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Transaction Entry</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Transaction</title>
 
 <style>
 :root {
-  --bg: #f5f7fb;
-  --card: #ffffff;
-  --primary: #007aff;
-  --danger: #ff3b30;
-  --text: #1c1c1e;
-  --muted: #6e6e73;
-  --radius: 18px;
+  --bg:#f5f7fb;
+  --card:#ffffff;
+  --primary:#007aff;
+  --danger:#ff3b30;
+  --text:#1c1c1e;
+  --muted:#6e6e73;
+  --radius:18px;
 }
-
-* { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI"; }
-
-body {
-  background: var(--bg);
-  margin: 0;
-  padding: 20px;
+*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI";}
+body{margin:0;background:var(--bg);padding:20px;}
+.container{max-width:520px;margin:auto;}
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:22px;
+  box-shadow:0 12px 30px rgba(0,0,0,.08);
 }
-
-.container {
-  max-width: 520px;
-  margin: auto;
+h1{margin:0 0 6px;font-size:22px;}
+.sub{font-size:13px;color:var(--muted);margin-bottom:16px;}
+label{display:block;margin-top:14px;font-size:13px;color:var(--muted);}
+input,select,textarea{
+  width:100%;padding:12px;margin-top:6px;
+  border-radius:12px;border:1px solid #ddd;font-size:14px;
 }
-
-.card {
-  background: var(--card);
-  border-radius: var(--radius);
-  padding: 22px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  animation: fadeIn 0.4s ease;
+textarea{resize:none}
+button{
+  width:100%;margin-top:22px;padding:14px;
+  border:none;border-radius:14px;
+  background:var(--primary);color:#fff;font-size:15px;
 }
-
-h1 {
-  margin: 0 0 6px;
-  font-size: 22px;
-}
-
-.sub {
-  color: var(--muted);
-  font-size: 13px;
-  margin-bottom: 16px;
-}
-
-label {
-  display: block;
-  margin-top: 14px;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-input, select, textarea {
-  width: 100%;
-  padding: 12px;
-  margin-top: 6px;
-  border-radius: 12px;
-  border: 1px solid #ddd;
-  font-size: 14px;
-}
-
-textarea { resize: none; }
-
-.hidden { display: none; }
-
-button {
-  width: 100%;
-  margin-top: 22px;
-  padding: 14px;
-  border: none;
-  border-radius: 14px;
-  background: var(--primary);
-  color: white;
-  font-size: 15px;
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.6;
-}
-
-.error {
-  color: var(--danger);
-  font-size: 12px;
-  margin-top: 6px;
-}
-
-.success {
-  text-align: center;
-  color: green;
-  margin-top: 14px;
-  font-size: 14px;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.error{color:var(--danger);font-size:12px;margin-top:8px}
+.success{color:#2ecc71;text-align:center;margin-top:12px}
+.hidden{display:none}
 </style>
 </head>
 
@@ -108,10 +47,10 @@ button:disabled {
 <div class="container">
   <div class="card">
     <h1>Add Transaction</h1>
-    <div class="sub">Clean • Structured • AI-Ready</div>
+    <div class="sub">Fast • Clean • Controlled</div>
 
-    <label>Transaction Date</label>
-    <input type="date" id="date"/>
+    <label>Date</label>
+    <input type="date" id="date">
 
     <label>Transaction Type</label>
     <select id="txnType">
@@ -121,23 +60,17 @@ button:disabled {
       <option>Transfer</option>
     </select>
 
-    <div id="levelBlock">
-      <label>Level</label>
-      <select id="level"></select>
-    </div>
+    <label>Level</label>
+    <select id="level"></select>
 
-    <div id="catBlock">
-      <label>Category</label>
-      <select id="category"></select>
-    </div>
+    <label>Category</label>
+    <select id="category"></select>
 
-    <div id="subBlock">
-      <label>Sub-Category</label>
-      <select id="subCategory"></select>
-    </div>
+    <label>Sub-Category</label>
+    <select id="subCategory"></select>
 
     <label>Amount (₹)</label>
-    <input type="number" id="amount"/>
+    <input type="number" id="amount">
 
     <div id="fromBlock">
       <label>From Account</label>
@@ -153,127 +86,105 @@ button:disabled {
     <textarea id="notes" rows="2"></textarea>
 
     <div class="error" id="error"></div>
-
     <button id="saveBtn">Save Transaction</button>
     <div class="success" id="success"></div>
   </div>
 </div>
 
 <script>
-const API = "YOUR_APPS_SCRIPT_EXEC_URL";
+const API = "https://script.google.com/macros/s/AKfycbx0qkMTieJu2dm1sfhd0zvJ8KgKCocfZHNIXyHw6adNjj5cTReMXGO2uKbB_do0PTPLMw/exec";
 
-const el = id => document.getElementById(id);
-const error = el("error");
-const success = el("success");
-
+const $ = id => document.getElementById(id);
 let master = {};
 
 fetch(API + "?mode=dropdowns")
-.then(r => r.json())
-.then(d => {
-  master = d;
+.then(r=>r.json())
+.then(d=>{
+  master=d;
   loadAccounts();
 });
 
-function loadAccounts() {
+function loadAccounts(){
   ["fromAccount","toAccount"].forEach(id=>{
-    el(id).innerHTML = `<option value="">Select</option>` +
-      master.accounts.map(a=>`<option>${a}</option>`).join("");
+    $(id).innerHTML="<option value=''>Select</option>"+master.accounts.map(a=>`<option>${a}</option>`).join("");
   });
 }
 
-el("txnType").onchange = () => {
-  resetDynamic();
-  const t = el("txnType").value;
+$("txnType").onchange=()=>{
+  reset();
+  const t=$("txnType").value;
+  if(!t)return;
 
-  if (!t) return;
-
-  if (t === "Income") {
-    el("level").innerHTML = `<option>Income</option>`;
+  if(t==="Income"){
+    $("level").innerHTML="<option>Income</option>";
     loadCategories("Income");
-    el("toBlock").classList.remove("hidden");
+    $("toBlock").classList.remove("hidden");
   }
 
-  if (t === "Expense") {
+  if(t==="Expense"){
     loadLevels(["Variable","Savings","Sinking"]);
-    el("fromBlock").classList.remove("hidden");
   }
 
-  if (t === "Transfer") {
-    el("level").innerHTML = `<option>Transfer</option>`;
+  if(t==="Transfer"){
+    $("level").innerHTML="<option>Transfer</option>";
     loadCategories("Transfer");
-    el("fromBlock").classList.remove("hidden");
-    el("toBlock").classList.remove("hidden");
+    $("toBlock").classList.remove("hidden");
   }
 };
 
-el("level").onchange = () => loadCategories(el("level").value);
-el("category").onchange = () => loadSub(el("level").value, el("category").value);
+$("level").onchange=()=>loadCategories($("level").value);
+$("category").onchange=()=>loadSub($("level").value,$("category").value);
 
 function loadLevels(arr){
-  el("level").innerHTML = `<option value="">Select</option>` +
-    arr.map(v=>`<option>${v}</option>`).join("");
+  $("level").innerHTML="<option value=''>Select</option>"+arr.map(v=>`<option>${v}</option>`).join("");
 }
-
 function loadCategories(l){
-  const cats = master.categories[l] || {};
-  el("category").innerHTML = `<option value="">Select</option>` +
-    Object.keys(cats).map(c=>`<option>${c}</option>`).join("");
+  $("category").innerHTML="<option value=''>Select</option>"+
+    Object.keys(master.categories[l]||{}).map(c=>`<option>${c}</option>`).join("");
 }
-
 function loadSub(l,c){
-  const subs = master.categories[l][c] || [];
-  el("subCategory").innerHTML = `<option value="">Select</option>` +
-    subs.map(s=>`<option>${s}</option>`).join("");
+  $("subCategory").innerHTML="<option value=''>Select</option>"+
+    (master.categories[l][c]||[]).map(s=>`<option>${s}</option>`).join("");
+}
+function reset(){
+  ["level","category","subCategory"].forEach(i=>$(i).innerHTML="");
+  $("toBlock").classList.add("hidden");
 }
 
-function resetDynamic(){
-  ["level","category","subCategory"].forEach(id=>el(id).innerHTML="");
-  el("fromBlock").classList.add("hidden");
-  el("toBlock").classList.add("hidden");
-}
+$("saveBtn").onclick=async()=>{
+  $("error").textContent="";$("success").textContent="";
 
-el("saveBtn").onclick = async () => {
-  error.textContent = "";
-  success.textContent = "";
+  if(new Date($("date").value)<new Date("2026-02-01"))
+    return $("error").textContent="January is locked. Start from Feb-2026.";
 
-  if (!el("date").value || new Date(el("date").value) < new Date("2026-02-01"))
-    return error.textContent = "Date must be Feb-2026 or later";
+  if(!$("txnType").value||!$("level").value||!$("category").value||!$("subCategory").value)
+    return $("error").textContent="Complete all category fields.";
 
-  if (!el("txnType").value || !el("level").value || !el("category").value || !el("subCategory").value)
-    return error.textContent = "Please complete all category fields";
+  if(!$("amount").value||$("amount").value<=0)
+    return $("error").textContent="Amount must be greater than zero.";
 
-  if (!el("amount").value || el("amount").value <= 0)
-    return error.textContent = "Amount must be greater than zero";
+  if($("txnType").value==="Transfer" && $("fromAccount").value===$("toAccount").value)
+    return $("error").textContent="From and To account cannot be same.";
 
-  const payload = {
-    type: "transaction",
-    date: el("date").value,
-    txnType: el("txnType").value,
-    level1: el("level").value,
-    category: el("category").value,
-    subCategory: el("subCategory").value,
-    amount: el("amount").value,
-    fromAccount: el("fromAccount").value,
-    toAccount: el("toAccount").value,
-    notes: el("notes").value
+  const payload={
+    type:"transaction",
+    date:$("date").value,
+    txnType:$("txnType").value,
+    level1:$("level").value,
+    category:$("category").value,
+    subCategory:$("subCategory").value,
+    amount:$("amount").value,
+    fromAccount:$("fromAccount").value,
+    toAccount:$("toAccount").value,
+    notes:$("notes").value
   };
 
-  el("saveBtn").disabled = true;
+  $("saveBtn").disabled=true;
+  const r=await fetch(API,{method:"POST",body:JSON.stringify(payload)}).then(r=>r.json());
+  $("saveBtn").disabled=false;
 
-  const res = await fetch(API, {
-    method: "POST",
-    body: JSON.stringify(payload)
-  });
-
-  const r = await res.json();
-  el("saveBtn").disabled = false;
-
-  if (r.status !== "success")
-    return error.textContent = r.message;
-
-  success.textContent = "Transaction saved successfully";
-  document.querySelector("form")?.reset();
+  if(r.status!=="success") return $("error").textContent=r.message;
+  $("success").textContent="Transaction saved successfully";
 };
 </script>
 </body>
