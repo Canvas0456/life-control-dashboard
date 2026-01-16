@@ -262,117 +262,93 @@ th{color:var(--muted);text-align:left}
 </div>
 
 <script>
-const API="https://script.google.com/macros/s/AKfycbx0qkMTieJu2dm1sfhd0zvJ8KgKCocfZHNIXyHw6adNjj5cTReMXGO2uKbB_do0PTPLMw/exec";
-const $=id=>document.getElementById(id);
-date.valueAsDate=new Date();
+const API = "YOUR_DEPLOYMENT_URL_HERE";
 
-/* Live Clock */
-setInterval(()=>{
-  const d=new Date();
-  liveClock.textContent=
-    d.toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short",year:"numeric"})
-    +" · "+d.toLocaleTimeString();
-},1000);
+let budgets = [];
 
-let DATA={},submitting=false;
-
-fetch(API+"?mode=dropdowns").then(r=>r.json()).then(d=>{
-  DATA=d;
-  fill(fromAccount,d.accounts,true);
-  fill(toAccount,d.accounts,true);
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadBudgets();
 });
 
-function fill(sel,arr,blank){
-  sel.innerHTML=blank?"<option value=''>Select</option>":"";
-  arr.forEach(v=>{
-    const o=document.createElement("option");
-    o.value=o.textContent=v;
-    sel.appendChild(o);
+/* ---------- LOAD BUDGET MASTER ---------- */
+async function loadBudgets(){
+  const res = await fetch(`${API}?mode=budgets`);
+  budgets = await res.json();
+}
+
+/* ---------- DROPDOWN ELEMENTS ---------- */
+const txnTypeEl   = document.getElementById("txnType");
+const level1El    = document.getElementById("level1");
+const categoryEl  = document.getElementById("category");
+const subCatEl    = document.getElementById("subCategory");
+
+/* ---------- EVENTS ---------- */
+txnTypeEl.addEventListener("change", resetAfterType);
+level1El.addEventListener("change", loadCategories);
+categoryEl.addEventListener("change", loadSubCategories);
+
+/* ---------- RESET ---------- */
+function resetAfterType(){
+  level1El.value = "";
+  categoryEl.innerHTML = `<option value="">Select</option>`;
+  subCatEl.innerHTML   = `<option value="">Select</option>`;
+}
+
+/* ---------- LOAD CATEGORY (FIXED) ---------- */
+function loadCategories(){
+  const txnType = txnTypeEl.value;
+  const level1  = level1El.value;
+
+  categoryEl.innerHTML = `<option value="">Select</option>`;
+  subCatEl.innerHTML   = `<option value="">Select</option>`;
+
+  if(!txnType || !level1) return;
+
+  const cats = [...new Set(
+    budgets
+      .filter(r =>
+        r.Type === txnType &&
+        r.Level_1 === level1
+      )
+      .map(r => r.Category)
+  )];
+
+  cats.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    categoryEl.appendChild(opt);
   });
 }
-function hide(...e){e.forEach(x=>x.classList.add("hidden"))}
-function show(...e){e.forEach(x=>x.classList.remove("hidden"))}
-function resetCats(){category.innerHTML=subCategory.innerHTML="<option value=''>Select</option>"}
-function level1ByType(t){
-  return {
-    Income:["Income","Receivable"],
-    Expense:["Variable","Savings","Sinking","Payable","EMI"],
-    Transfer:["Transfer"]
-  }[t]||[];
+
+/* ---------- LOAD SUB CATEGORY ---------- */
+function loadSubCategories(){
+  const txnType = txnTypeEl.value;
+  const level1  = level1El.value;
+  const cat     = categoryEl.value;
+
+  subCatEl.innerHTML = `<option value="">Select</option>`;
+  if(!cat) return;
+
+  const subs = [...new Set(
+    budgets
+      .filter(r =>
+        r.Type === txnType &&
+        r.Level_1 === level1 &&
+        r.Category === cat
+      )
+      .map(r => r.Sub_Category)
+  )];
+
+  subs.forEach(s => {
+    const opt = document.createElement("option");
+    opt.value = s;
+    opt.textContent = s;
+    subCatEl.appendChild(opt);
+  });
 }
-
-/* Logic */
-txnType.onchange=()=>{
-  hide(catWrap,fromWrap,toWrap,personWrap);
-  resetCats();
-  fill(level1,level1ByType(txnType.value),true);
-  if(txnType.value==="Expense") show(fromWrap);
-  if(txnType.value==="Income") show(toWrap);
-  if(txnType.value==="Transfer"){
-    show(fromWrap,toWrap);
-    level1.value="Transfer";
-  }
-};
-
-level1.onchange=()=>{
-  hide(catWrap,personWrap);
-  resetCats();relatedPerson.innerHTML="";otherPerson.value="";
-  if(level1.value==="Receivable"){
-    show(personWrap,toWrap);hide(fromWrap);
-    fill(relatedPerson,DATA.receivables||[],true);return;
-  }
-  if(level1.value==="Payable"){
-    show(personWrap,fromWrap);hide(toWrap);
-    fill(relatedPerson,DATA.payables||[],true);return;
-  }
-  if(level1.value==="EMI"){
-    show(catWrap,fromWrap);hide(toWrap);
-    category.innerHTML="<option>Loan EMI</option>";
-    fill(subCategory,DATA.categories.EMI?.["Loan EMI"]||[],true);
-    fromAccount.value="HDFC";fromAccount.disabled=true;return;
-  }
-  show(catWrap);
-  fill(category,Object.keys(DATA.categories[level1.value]||{}),true);
-};
-
-category.onchange=()=>fill(subCategory,DATA.categories[level1.value]?.[category.value]||[],true);
-
-fromAccount.onchange=()=>{
-  if(txnType.value==="Transfer")
-    fill(toAccount,DATA.accounts.filter(a=>a!==fromAccount.value),true);
-};
-
-saveBtn.onclick=async()=>{
-  if(submitting) return;
-  submitting=true;saveBtn.disabled=true;error.textContent="";
-  const payload={
-    type:"transaction",
-    date:date.value,
-    txnType:txnType.value,
-    level1:level1.value,
-    category:category.value,
-    subCategory:subCategory.value,
-    amount:amount.value,
-    fromAccount:fromWrap.classList.contains("hidden")?"":fromAccount.value,
-    toAccount:toWrap.classList.contains("hidden")?"":toAccount.value,
-    relatedTo:relatedPerson.value||otherPerson.value||"",
-    notes:notes.value
-  };
-  const r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(payload)}).then(r=>r.json());
-  if(r.status!=="success"){error.textContent=r.message;submitting=false;saveBtn.disabled=false;return;}
-  success.textContent="Transaction saved";
-  setTimeout(()=>location.reload(),900);
-};
-
-toggleRecent.onclick=()=>{
-  recentWrap.classList.toggle("hidden");
-  if(!recentWrap.classList.contains("hidden")){
-    fetch(API+"?mode=recent&type=transactions").then(r=>r.json()).then(rows=>{
-      recentBody.innerHTML=rows.map(r=>`<tr><td>${r.date}</td><td>${r.type}</td><td>${r.category}</td><td>${r.amount}</td></tr>`).join("");
-    });
-  }
-};
 </script>
+
 
 </body>
 </html>
