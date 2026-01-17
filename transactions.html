@@ -5,298 +5,243 @@
 <title>Daily Money Log</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<!-- Google Font -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
-/* ================= ROOT THEME ================= */
-:root {
-  --bg-primary: #0F172A;
-  --bg-card: #1E293B;
-  --accent-finance: #2DD4BF;
-  --accent-health: #FB7185;
-  --accent-ai: #818CF8;
-  --text-primary: #F8FAFC;
-  --glass-border: rgba(255,255,255,0.1);
-  --glass-bg: rgba(255,255,255,0.04);
+:root{
+  --bg-primary:#0F172A;
+  --bg-card:#1E293B;
+  --accent:#2DD4BF;
+  --text:#F8FAFC;
+  --glass:rgba(255,255,255,.06);
+  --border:rgba(255,255,255,.12);
 }
 
-/* ================= GLOBAL ================= */
-* { box-sizing: border-box; }
-html, body {
-  margin: 0;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg-primary);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  padding:24px;
 }
 
-body {
-  min-height: 100vh;
-  padding: 24px;
+#clock{
+  position:fixed;
+  top:14px;
+  right:22px;
+  font-size:.8rem;
+  opacity:.85;
 }
 
-/* ================= LIVE CLOCK ================= */
-#liveClock {
-  position: fixed;
-  top: 16px;
-  right: 24px;
-  font-size: 0.85rem;
-  opacity: 0.9;
-  letter-spacing: 0.5px;
+.container{max-width:1200px;margin:auto}
+
+.card{
+  background:var(--glass);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:20px;
 }
 
-/* ================= LAYOUT ================= */
-.container {
-  max-width: 1200px;
-  margin: auto;
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:20px;
 }
 
-.header {
-  margin-bottom: 24px;
+label{font-size:.72rem;opacity:.8;margin-top:14px;display:block}
+input,select{
+  width:100%;
+  margin-top:6px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:none;
+  background:#020617;
+  color:var(--text);
 }
 
-.header h1 {
-  font-weight: 500;
-  letter-spacing: 1px;
+.hidden{display:none}
+.locked{opacity:.5;pointer-events:none}
+
+button{
+  margin-top:20px;
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:999px;
+  background:var(--accent);
+  color:#022c22;
+  font-weight:600;
+  letter-spacing:1px;
+  cursor:pointer;
 }
 
-/* ================= BENTO GRID ================= */
-.bento {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
-  gap: 20px;
-}
-
-/* ================= GLASS CARD ================= */
-.card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  padding: 20px;
-  transition: transform .3s ease, box-shadow .3s ease;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 0 30px rgba(45,212,191,0.12);
-}
-
-/* ================= FORM ================= */
-label {
-  font-size: 0.75rem;
-  opacity: 0.8;
-  margin-top: 14px;
-  display: block;
-}
-
-input, select {
-  width: 100%;
-  margin-top: 6px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: none;
-  background: #0f172a;
-  color: var(--text-primary);
-}
-
-button {
-  margin-top: 20px;
-  width: 100%;
-  padding: 14px;
-  border-radius: 999px;
-  border: none;
-  font-size: 0.9rem;
-  letter-spacing: 1.5px;
-  background: var(--accent-finance);
-  color: #022c22;
-  cursor: pointer;
-  transition: all .3s ease;
-}
-
-button:hover {
-  box-shadow: 0 0 25px rgba(45,212,191,0.5);
-  transform: scale(1.03);
-}
-
-/* ================= LAST TRANSACTIONS ================= */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.8rem;
-}
-
-th, td {
-  padding: 10px;
-  text-align: left;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-th {
-  opacity: 0.6;
-}
-
-/* ================= FOOTER ================= */
-footer {
-  margin-top: 40px;
-  text-align: center;
-  font-size: 0.7rem;
-  opacity: 0.6;
+footer{
+  text-align:center;
+  margin-top:40px;
+  font-size:.7rem;
+  opacity:.6;
 }
 </style>
 </head>
 
 <body>
 
-<div id="liveClock"></div>
+<div id="clock"></div>
 
 <div class="container">
+<h2>💸 Daily Money Log</h2>
 
-  <div class="header">
-    <h1>💸 Daily Money Log</h1>
-  </div>
+<div class="grid">
 
-  <div class="bento">
+<!-- FORM -->
+<div class="card">
+<label>Date</label>
+<input type="date" id="txnDate">
 
-    <!-- ADD TRANSACTION -->
-    <div class="card">
-      <h3>Add Transaction</h3>
+<label>Type</label>
+<select id="txnType">
+  <option value="EXP">Expense</option>
+  <option value="INC">Income</option>
+  <option value="TRANSFER">Transfer</option>
+  <option value="SAV">Savings</option>
+  <option value="EMI">EMI</option>
+</select>
 
-      <label>Date</label>
-      <input type="date" id="txnDate">
+<div id="catBlock">
+<label>Category</label>
+<select id="category"></select>
 
-      <label>Type</label>
-      <select id="txnType">
-        <option>EXP</option>
-        <option>INC</option>
-        <option>TRANSFER</option>
-        <option>SAV</option>
-        <option>EMI</option>
-      </select>
+<label>Sub Category</label>
+<select id="subCategory"></select>
+</div>
 
-      <label>Category</label>
-      <select id="category"></select>
+<div id="emiBlock" class="hidden">
+<label>EMI</label>
+<select id="emiSelect"></select>
+</div>
 
-      <label>Sub Category</label>
-      <select id="subCategory"></select>
+<label>Amount</label>
+<input type="number" id="amount">
 
-      <label>Amount</label>
-      <input type="number" id="amount">
+<div id="fromBlock">
+<label>From Account</label>
+<select id="fromAccount"></select>
+</div>
 
-      <label>From Account</label>
-      <select id="fromAccount"></select>
+<div id="toBlock">
+<label>To Account</label>
+<select id="toAccount"></select>
+</div>
 
-      <label>To Account</label>
-      <select id="toAccount"></select>
+<label>Notes</label>
+<input id="notes">
 
-      <label>Notes</label>
-      <input id="notes">
+<button id="saveBtn" onclick="saveTxn()">SAVE TRANSACTION</button>
+</div>
 
-      <button onclick="saveTxn()">SAVE TRANSACTION</button>
-    </div>
-
-    <!-- LAST 10 -->
-    <div class="card">
-      <h3>Last 10 Transactions</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th><th>Type</th><th>Category</th><th>Accounts</th><th>Amount</th>
-          </tr>
-        </thead>
-        <tbody id="recent"></tbody>
-      </table>
-    </div>
-
-  </div>
-
-  <footer>
-    © Designed & Engineered by <b>Kaiwalya Muley</b>
-  </footer>
+<!-- RECENT -->
+<div class="card">
+<h4>Last 10 Transactions</h4>
+<table style="width:100%;font-size:.8rem">
+<thead>
+<tr><th>Date</th><th>Type</th><th>Category</th><th>Accounts</th><th>Amount</th></tr>
+</thead>
+<tbody id="recent"></tbody>
+</table>
+</div>
 
 </div>
 
-<script>
-/* ================= CONFIG ================= */
-const API = "https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
+<footer>
+© Designed & Engineered by <b>Kaiwalya Muley</b>
+</footer>
+</div>
 
-/* ================= LIVE CLOCK ================= */
+<script>
+const API="https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
+
+/* CLOCK */
 setInterval(()=>{
-  const d = new Date();
-  document.getElementById("liveClock").innerText =
-    d.toLocaleDateString(undefined,{weekday:'long',day:'2-digit',month:'short',year:'numeric'})
-    + " • " +
-    d.toLocaleTimeString();
+  const d=new Date();
+  clock.innerText=d.toLocaleDateString(undefined,{weekday:'long',day:'2-digit',month:'short',year:'numeric'})
+  +" • "+d.toLocaleTimeString();
 },1000);
 
-/* ================= INIT ================= */
-async function init(){
-  const [acc, cat, sub, recent] = await Promise.all([
-    fetch(API+"?module=txn&action=accounts").then(r=>r.json()),
-    fetch(API+"?module=txn&action=categories").then(r=>r.json()),
-    fetch(API+"?module=txn&action=subcategories").then(r=>r.json()),
-    fetch(API+"?module=txn&action=recent").then(r=>r.json())
+/* INIT */
+(async()=>{
+  const [acc,cat,sub,emi,rec]=await Promise.all([
+    fetch(API+"?action=accounts").then(r=>r.json()),
+    fetch(API+"?action=categories").then(r=>r.json()),
+    fetch(API+"?action=subcategories").then(r=>r.json()),
+    fetch(API+"?action=emis").then(r=>r.json()),
+    fetch(API+"?action=recent").then(r=>r.json())
   ]);
 
-  fillSelect("fromAccount", acc);
-  fillSelect("toAccount", acc);
-  fillSelect("category", cat);
+  fill(fromAccount,acc); fill(toAccount,acc);
+  fill(category,cat);
+  category.onchange=()=>fill(subCategory,sub[category.value]||[]);
+  emi.forEach(e=>emiSelect.innerHTML+=`<option value="${e.id}" data-amt="${e.amount}">${e.name}</option>`);
+  render(rec);
+  handleType();
+})();
 
-  document.getElementById("category").onchange = e=>{
-    fillSelect("subCategory", sub[e.target.value]||[]);
-  };
+/* TYPE RULES */
+txnType.onchange=handleType;
+fromAccount.onchange=()=>filterTransfer();
 
-  renderRecent(recent);
-}
-init();
+function handleType(){
+  const t=txnType.value;
 
-/* ================= HELPERS ================= */
-function fillSelect(id, arr){
-  const s = document.getElementById(id);
-  s.innerHTML="";
-  arr.forEach(v=>{
-    const o=document.createElement("option");
-    o.textContent=v; o.value=v;
-    s.appendChild(o);
-  });
-}
+  [catBlock,emiBlock,fromBlock,toBlock].forEach(b=>b.classList.add("hidden"));
+  amount.classList.remove("locked");
 
-function renderRecent(data){
-  document.getElementById("recent").innerHTML = data.map(r=>`
-    <tr>
-      <td>${r.date}</td>
-      <td>${r.type}</td>
-      <td>${r.category}</td>
-      <td>${r.from||""} → ${r.to||""}</td>
-      <td>₹ ${r.amount}</td>
-    </tr>
-  `).join("");
+  if(t==="EXP"){catBlock.classList.remove("hidden");fromBlock.classList.remove("hidden")}
+  if(t==="INC"){toBlock.classList.remove("hidden")}
+  if(t==="SAV"){toBlock.classList.remove("hidden")}
+  if(t==="TRANSFER"){fromBlock.classList.remove("hidden");toBlock.classList.remove("hidden");filterTransfer()}
+  if(t==="EMI"){
+    emiBlock.classList.remove("hidden");
+    fromBlock.classList.remove("hidden");
+    amount.classList.add("locked");
+    amount.value=emiSelect.selectedOptions[0]?.dataset.amt||"";
+  }
 }
 
-/* ================= SAVE ================= */
+/* PREVENT SAME ACCOUNT */
+function filterTransfer(){
+  [...toAccount.options].forEach(o=>o.hidden=o.value===fromAccount.value);
+}
+
+/* SAVE */
 async function saveTxn(){
-  const payload = {
-    txnDate: txnDate.value,
-    txnType: txnType.value,
-    category: category.value,
-    subCategory: subCategory.value,
-    amount: amount.value,
-    fromAccount: fromAccount.value,
-    toAccount: toAccount.value,
-    notes: notes.value,
+  saveBtn.disabled=true;
+  saveBtn.innerText="SAVING…";
+
+  const payload={
+    txnDate:txnDate.value,
+    txnType:txnType.value,
+    category:category.value||"",
+    subCategory:subCategory.value||"",
+    amount:amount.value,
+    fromAccount:fromAccount.value||"",
+    toAccount:toAccount.value||"",
+    emiId:emiSelect.value||"",
+    notes:notes.value,
     source:"WEB"
   };
 
-  await fetch(API,{
-    method:"POST",
-    body:JSON.stringify({
-      module:"txn",
-      action:"addTransaction",
-      payload
-    })
-  });
-
+  await fetch(API,{method:"POST",body:JSON.stringify({action:"addTransaction",payload})});
   location.reload();
+}
+
+/* HELPERS */
+function fill(sel,arr){sel.innerHTML="";arr.forEach(v=>sel.innerHTML+=`<option>${v}</option>`)}
+function render(d){
+  recent.innerHTML=d.map(r=>`
+    <tr><td>${r.date}</td><td>${r.type}</td><td>${r.category||""}</td>
+    <td>${r.from||""} → ${r.to||""}</td><td>₹${r.amount}</td></tr>`).join("");
 }
 </script>
 </body>
