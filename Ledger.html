@@ -1,253 +1,291 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Account Ledger</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Account Ledger</title>
 
-<style>
-:root {
-  --bg1:#F7F8FC; --bg2:#EEF2F7;
-  --card:#FFFFFF; --border:#E5E7EB;
-  --text:#374151; --muted:#6B7280;
-  --debit:#E4989B; --credit:#84A98C;
-  --accent:#9AA7D8;
-  --radius:14px;
-}
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #475569;
+      --green: #84a98c;
+      --red: #e4989b;
+      --accent: #94a3b8;
+    }
 
-body::before {
-  content:"";
-  position:fixed; inset:0;
-  background:
-    radial-gradient(circle at 15% 20%, #9AA7D8 0, transparent 35%),
-    radial-gradient(circle at 85% 80%, #7FB7A3 0, transparent 40%);
-  opacity:.035; pointer-events:none;
-}
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
 
-* { box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 24px;
+    }
 
-body {
-  margin:0;
-  background:linear-gradient(135deg,var(--bg1),var(--bg2));
-  color:var(--text);
-  min-height:100vh;
-  padding:32px 16px 40px;
-}
+    h1 {
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
 
-h1 { margin:0 0 20px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
 
-.card {
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:20px;
-  margin-bottom:20px;
-}
+    select, input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+    }
 
-label {
-  font-size:13px;
-  font-weight:500;
-  margin-bottom:6px;
-  display:block;
-}
+    button {
+      padding: 12px 18px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      font-size: 14px;
+    }
 
-select {
-  width:100%;
-  padding:10px 12px;
-  border-radius:8px;
-  border:1px solid var(--border);
-  font-size:14px;
-}
+    button.secondary {
+      background: #64748b;
+    }
 
-/* SUMMARY CARDS */
-.summary {
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:16px;
-  margin-bottom:20px;
-}
+    .filters {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
 
-.summary .box {
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:16px;
-}
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
 
-.summary .label {
-  font-size:12px;
-  color:var(--muted);
-}
+    .stat h4 {
+      margin: 0;
+      font-weight: 500;
+      font-size: 13px;
+      color: #64748b;
+    }
 
-.summary .value {
-  margin-top:6px;
-  font-size:18px;
-  font-weight:600;
-}
+    .stat p {
+      margin: 6px 0 0;
+      font-size: 22px;
+      font-weight: 600;
+    }
 
-.value.credit { color:var(--credit); }
-.value.debit { color:var(--debit); }
+    .green { color: var(--green); }
+    .red { color: var(--red); }
 
-table {
-  width:100%;
-  border-collapse:collapse;
-  font-size:13px;
-}
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
 
-thead th {
-  text-align:left;
-  padding:10px;
-  border-bottom:1px solid var(--border);
-  color:var(--muted);
-  position:sticky;
-  top:0;
-  background:#FFF;
-}
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
 
-tbody td {
-  padding:10px;
-  border-bottom:1px dashed var(--border);
-}
+    th {
+      font-weight: 600;
+      color: #64748b;
+    }
 
-td.right { text-align:right; }
-td.debit { color:var(--debit); }
-td.credit { color:var(--credit); }
-td.balance { font-weight:600; }
+    .amount-green { color: var(--green); }
+    .amount-red { color: var(--red); }
 
-@media(max-width:900px){
-  .summary { grid-template-columns:1fr 1fr; }
-}
-
-@media(max-width:600px){
-  .summary { grid-template-columns:1fr; }
-}
-</style>
+    @media (max-width: 768px) {
+      .filters {
+        grid-template-columns: 1fr;
+      }
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <div class="container">
+    <h1>Account Ledger</h1>
 
-<h1>Account Ledger</h1>
+    <!-- Filters -->
+    <div class="card filters">
+      <div>
+        <label>Select Account</label>
+        <select id="accountSelect"></select>
+      </div>
 
-<!-- ACCOUNT SELECT -->
-<div class="card">
-  <label>Select Account</label>
-  <select id="accountSelect">
-    <option value="">Loading accounts…</option>
-  </select>
-</div>
+      <div>
+        <label>From Date</label>
+        <input type="date" id="fromDate">
+      </div>
 
-<!-- SUMMARY -->
-<div class="summary">
-  <div class="box">
-    <div class="label">Opening Balance</div>
-    <div class="value" id="openBal">₹ 0</div>
-  </div>
-  <div class="box">
-    <div class="label">Net Inflow</div>
-    <div class="value credit" id="inflow">₹ 0</div>
-  </div>
-  <div class="box">
-    <div class="label">Net Outflow</div>
-    <div class="value debit" id="outflow">₹ 0</div>
-  </div>
-  <div class="box">
-    <div class="label">Closing Balance</div>
-    <div class="value" id="closeBal">₹ 0</div>
-  </div>
-</div>
+      <div>
+        <label>To Date</label>
+        <input type="date" id="toDate">
+      </div>
 
-<!-- LEDGER TABLE -->
-<div class="card">
-  <table>
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Txn ID</th>
-        <th>Type</th>
-        <th>Category</th>
-        <th class="right">Debit</th>
-        <th class="right">Credit</th>
-        <th class="right">Balance</th>
-      </tr>
-    </thead>
-    <tbody id="ledgerBody">
-      <tr><td colspan="7"><em>Select an account</em></td></tr>
-    </tbody>
-  </table>
-</div>
+      <div>
+        <button onclick="loadLedger()">Apply</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="card stats">
+      <div class="stat">
+        <h4>Opening Balance</h4>
+        <p id="opening">₹ 0.00</p>
+      </div>
+      <div class="stat">
+        <h4>Net Inflow</h4>
+        <p id="inflow" class="green">₹ 0.00</p>
+      </div>
+      <div class="stat">
+        <h4>Net Outflow</h4>
+        <p id="outflow" class="red">₹ 0.00</p>
+      </div>
+      <div class="stat">
+        <h4>Closing Balance</h4>
+        <p id="closing">₹ 0.00</p>
+      </div>
+    </div>
+
+    <!-- Ledger Table -->
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Txn ID</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Debit</th>
+            <th>Credit</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody id="ledgerBody">
+          <tr><td colspan="7">Select an account</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Monthly Summary -->
+    <div class="card">
+      <h3>Monthly Summary</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Debit</th>
+            <th>Credit</th>
+            <th>Net</th>
+          </tr>
+        </thead>
+        <tbody id="summaryBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Export -->
+    <div class="card">
+      <button onclick="exportExcel()">Export Excel</button>
+      <button class="secondary" onclick="exportPdf()">Export PDF</button>
+    </div>
+  </div>
 
 <script>
-/* 🔴 IMPORTANT — PUT YOUR LEDGER WEB APP URL HERE */
 const API = "https://script.google.com/macros/s/AKfycbzMO7aNBxJXJ2T7lRN8KQUvy8zmKsDNf_iAe1sfkoloFanBP4a_ui8lOCjxB9lZgRHuag/exec";
 
 const accountSelect = document.getElementById("accountSelect");
-const ledgerBody = document.getElementById("ledgerBody");
 
-const openBal = document.getElementById("openBal");
-const inflow = document.getElementById("inflow");
-const outflow = document.getElementById("outflow");
-const closeBal = document.getElementById("closeBal");
-
-/* LOAD ACCOUNTS */
 async function loadAccounts() {
-  try {
-    const accounts = await fetch(API + "?action=accounts").then(r => r.json());
-    accountSelect.innerHTML =
-      "<option value=''>Select</option>" +
-      accounts.map(a => `<option>${a}</option>`).join("");
-  } catch {
-    accountSelect.innerHTML = "<option>Error loading accounts</option>";
-  }
+  const data = await fetch(`${API}?action=accounts`).then(r => r.json());
+  accountSelect.innerHTML =
+    `<option value="">Select</option>` +
+    data.map(a => `<option value="${a}">${a}</option>`).join("");
 }
-loadAccounts();
 
-/* LOAD LEDGER */
-accountSelect.onchange = async () => {
-  const acc = accountSelect.value;
-  if (!acc) return;
+async function loadLedger() {
+  if (!accountSelect.value) return;
 
-  ledgerBody.innerHTML = "<tr><td colspan='7'>Loading…</td></tr>";
+  const from = fromDate.value;
+  const to = toDate.value;
 
   const data = await fetch(
-    API + "?action=ledger&account=" + encodeURIComponent(acc)
+    `${API}?action=ledger&account=${accountSelect.value}&from=${from}&to=${to}`
   ).then(r => r.json());
 
-  if (!data.length) {
-    ledgerBody.innerHTML = "<tr><td colspan='7'><em>No transactions</em></td></tr>";
-    resetSummary();
-    return;
-  }
+  let inflow = 0, outflow = 0;
 
-  let totalDebit = 0;
-  let totalCredit = 0;
+  ledgerBody.innerHTML = data.map(r => {
+    inflow += r.credit;
+    outflow += r.debit;
 
-  data.forEach(r => {
-    totalDebit += Number(r.debit || 0);
-    totalCredit += Number(r.credit || 0);
-  });
+    return `
+      <tr>
+        <td>${r.date}</td>
+        <td>${r.txnId}</td>
+        <td>${r.type}</td>
+        <td>${r.category}</td>
+        <td class="amount-red">₹ ${r.debit}</td>
+        <td class="amount-green">₹ ${r.credit}</td>
+        <td>₹ ${r.balance}</td>
+      </tr>
+    `;
+  }).join("");
 
-  openBal.textContent = "₹ " + data[0].balance;
-  inflow.textContent = "₹ " + totalCredit.toFixed(2);
-  outflow.textContent = "₹ " + totalDebit.toFixed(2);
-  closeBal.textContent = "₹ " + data[data.length - 1].balance;
+  opening.innerText = `₹ ${(data[0]?.balance - inflow + outflow || 0).toFixed(2)}`;
+  inflowEl.innerText = `₹ ${inflow.toFixed(2)}`;
+  outflowEl.innerText = `₹ ${outflow.toFixed(2)}`;
+  closing.innerText = `₹ ${(data.at(-1)?.balance || 0).toFixed(2)}`;
 
-  ledgerBody.innerHTML = data.map(r => `
+  loadSummary();
+}
+
+async function loadSummary() {
+  const data = await fetch(
+    `${API}?action=summary&account=${accountSelect.value}`
+  ).then(r => r.json());
+
+  summaryBody.innerHTML = data.map(r => `
     <tr>
-      <td>${r.date}</td>
-      <td>${r.txnId}</td>
-      <td>${r.type}</td>
-      <td>${r.category}</td>
-      <td class="right debit">${r.debit ? "₹ " + r.debit : ""}</td>
-      <td class="right credit">${r.credit ? "₹ " + r.credit : ""}</td>
-      <td class="right balance">₹ ${r.balance}</td>
+      <td>${r.month}</td>
+      <td>₹ ${r.debit}</td>
+      <td>₹ ${r.credit}</td>
+      <td>₹ ${r.net}</td>
     </tr>
   `).join("");
-};
-
-function resetSummary(){
-  openBal.textContent = inflow.textContent =
-  outflow.textContent = closeBal.textContent = "₹ 0";
 }
+
+function exportExcel() {
+  window.open(`${API}?action=exportExcel&account=${accountSelect.value}`);
+}
+
+function exportPdf() {
+  window.open(`${API}?action=exportPdf&account=${accountSelect.value}`);
+}
+
+loadAccounts();
 </script>
 
 </body>
