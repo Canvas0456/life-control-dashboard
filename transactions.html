@@ -1,98 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>Daily Money Log</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-:root {
-  --bg1:#F7F8FC; --bg2:#EEF2F7;
-  --card:#FFFFFF; --border:#E5E7EB;
-  --text:#374151; --muted:#6B7280;
-  --accent:#9AA7D8;
-  --radius:14px;
+:root{
+  --bg:#FDFCF9;
+  --card:#ffffff;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --green:#3E5C45;
+  --border:rgba(0,0,0,.05);
+  --radius:2rem;
 }
 
-body::before {
-  content:"";
-  position:fixed; inset:0;
-  background:
-    radial-gradient(circle at 15% 20%, #9AA7D8 0, transparent 35%),
-    radial-gradient(circle at 85% 80%, #7FB7A3 0, transparent 40%);
-  opacity:.035; pointer-events:none;
-}
-
-* { box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
-
-body {
+*{box-sizing:border-box}
+body{
   margin:0;
-  background:linear-gradient(135deg,var(--bg1),var(--bg2));
+  background:var(--bg);
+  font-family:Inter,system-ui;
   color:var(--text);
   min-height:100vh;
-  padding:80px 16px 40px;
+  padding:80px 16px;
 }
 
-.clock {
-  position:fixed; top:16px; right:20px;
-  font-size:13px; color:var(--muted);
-}
-
-.container {
-  max-width:1100px;
-  margin:auto;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:24px;
-}
-
-h1 { grid-column:span 2; margin:0; }
-
-.card {
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:24px;
-}
-
-label { font-size:13px; font-weight:500; margin-bottom:6px; display:block; }
-.field { margin-bottom:18px; }
-
-input,select,button {
-  width:100%; padding:10px 12px;
-  border-radius:8px;
-  border:1px solid var(--border);
-  font-size:14px;
-}
-
-input[readonly] { background:#F3F4F6; }
-
-button {
-  border:none;
-  background:var(--accent);
-  color:#fff;
-  font-weight:600;
-}
-
-.hidden { display:none; }
-
-table { width:100%; border-collapse:collapse; font-size:13px; }
-thead th {
-  text-align:left;
-  padding:8px;
-  border-bottom:1px solid var(--border);
+/* Header Clock */
+.clock{
+  position:fixed;
+  top:20px;
+  right:24px;
+  font-size:13px;
   color:var(--muted);
 }
-tbody td {
-  padding:8px;
-  border-bottom:1px dashed #E5E7EB;
-}
-td.amount { text-align:right; font-weight:600; }
-td.accounts { color:var(--muted); font-size:12px; }
 
-@media(max-width:900px){
-  .container { grid-template-columns:1fr; }
-  h1 { grid-column:span 1; }
+/* Card */
+.card{
+  max-width:460px;
+  margin:auto;
+  background:var(--card);
+  border-radius:var(--radius);
+  box-shadow:0 30px 60px rgba(0,0,0,.06);
+  padding:32px;
+  border:1px solid var(--border);
+  animation:fadeUp .4s ease;
+}
+
+h1{
+  font-family:"Playfair Display",serif;
+  margin:0 0 24px;
+}
+
+/* Hero Amount */
+.amount-hero{
+  font-size:3.5rem;
+  text-align:center;
+  border:none;
+  outline:none;
+  width:100%;
+  color:var(--green);
+  font-weight:600;
+  background:none;
+}
+
+/* Hidden Section */
+.form-body{
+  margin-top:24px;
+  display:none;
+  animation:slideUp .35s cubic-bezier(.25,1.2,.3,1);
+}
+
+label{
+  font-size:12px;
+  color:var(--muted);
+  display:block;
+  margin:18px 0 6px;
+}
+
+select,input,textarea{
+  width:100%;
+  padding:12px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  font-size:14px;
+  background:#fff;
+}
+
+textarea{resize:none}
+
+button{
+  margin-top:24px;
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:999px;
+  background:var(--green);
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+  transition:.3s;
+}
+button:hover{opacity:.9}
+
+/* Pills */
+.pills{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+}
+.pill{
+  padding:8px 14px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  cursor:pointer;
+  white-space:nowrap;
+}
+.pill.active{
+  background:var(--green);
+  color:white;
+}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1}
+}
+@keyframes slideUp{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1}
 }
 </style>
 </head>
@@ -101,201 +139,117 @@ td.accounts { color:var(--muted); font-size:12px; }
 
 <div class="clock" id="clock"></div>
 
-<div class="container">
-<h1>Daily Money Log</h1>
-
-<!-- FORM -->
 <div class="card">
-<form id="txnForm">
+<h1>Adding a Transaction</h1>
 
-<div class="field">
-<label>Date</label>
-<input type="date" id="txnDate" required>
-</div>
+<input id="amount" class="amount-hero" type="number" placeholder="₹ 0">
 
-<div class="field">
+<div class="form-body" id="formBody">
+
 <label>Type</label>
-<select id="txnType" required>
-<option value="">Select</option>
-<option value="INCOME">Income</option>
-<option value="EXP">Expense</option>
-<option value="EMI">EMI Payment</option>
-<option value="SAVINGS">Savings</option>
-<option value="TRANSFER">Transfer</option>
+<select id="txnType">
+  <option value="EXP">Expense</option>
+  <option value="INCOME">Income</option>
+  <option value="SAVINGS">Savings</option>
+  <option value="TRANSFER">Transfer</option>
+  <option value="EMI">EMI</option>
 </select>
-</div>
 
-<div class="field">
 <label>Category</label>
-<select id="category"></select>
-</div>
+<div class="pills" id="categoryPills"></div>
 
-<div class="field hidden" id="subBlock">
-<label>Sub Category</label>
-<select id="subCategory"></select>
-</div>
-
-<div class="field">
-<label>Amount</label>
-<input type="number" id="amount" required>
-</div>
-
-<div class="field hidden" id="emiBlock">
-<label>EMI</label>
-<select id="emiId"></select>
-</div>
-
-<div class="field hidden" id="fromBlock">
 <label>From Account</label>
 <select id="fromAccount"></select>
-</div>
 
-<div class="field hidden" id="toBlock">
 <label>To Account</label>
 <select id="toAccount"></select>
-</div>
 
-<div class="field">
-<label>Notes (Optional)</label>
-<input type="text" id="notes">
-</div>
+<label>Notes</label>
+<textarea id="notes" rows="2" placeholder="What was this for?"></textarea>
 
-<button id="saveBtn" type="submit">Save Transaction</button>
-</form>
+<button id="saveBtn">Save Transaction</button>
 </div>
-
-<!-- LAST 10 -->
-<div class="card">
-<h3>Last 10 Transactions</h3>
-<div id="recentTxns">Loading…</div>
-</div>
-
 </div>
 
 <script>
 const API="https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
-
 const $=id=>document.getElementById(id);
-const txnForm=$("txnForm");
 
-let accounts=[], categories=[], subMap={}, emiMap={};
-
-setInterval(()=>clock.textContent=new Date().toLocaleString("en-IN",{weekday:"short",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit",second:"2-digit"}),1000);
-
-(async function init(){
-  accounts=await fetch(API+"?action=accounts").then(r=>r.json());
-  categories=await fetch(API+"?action=categories").then(r=>r.json());
-  subMap=await fetch(API+"?action=subcategories").then(r=>r.json());
-  const emis=await fetch(API+"?action=emis").then(r=>r.json());
-
-  fromAccount.innerHTML=toAccount.innerHTML="<option></option>"+accounts.map(a=>`<option>${a}</option>`).join("");
-  category.innerHTML="<option></option>";
-
-  emis.forEach(e=>{
-    emiMap[e.id]=e.amount;
-    emiId.innerHTML+=`<option value="${e.id}">${e.name}</option>`;
+setInterval(()=>{
+  clock.textContent=new Date().toLocaleString("en-IN",{
+    weekday:"long",day:"2-digit",month:"short",
+    hour:"2-digit",minute:"2-digit",second:"2-digit"
   });
+},1000);
 
-  loadRecent();
+const categories={
+  EXP:["Living Essentials","Transport & Mobility","Lifestyle & Personal","Health & Wellness"],
+  INCOME:["Income"],
+  SAVINGS:["Savings"],
+  TRANSFER:["Transfer"],
+  EMI:["Financial Commitments"]
+};
+
+let selectedCategory="";
+
+/* Hero logic */
+amount.oninput=()=>{
+  if(+amount.value>0) formBody.style.display="block";
+  else formBody.style.display="none";
+};
+
+/* Type change */
+txnType.onchange=()=>{
+  renderCategories(txnType.value);
+};
+
+/* Render pills */
+function renderCategories(type){
+  categoryPills.innerHTML="";
+  categories[type].forEach(c=>{
+    const d=document.createElement("div");
+    d.className="pill";
+    d.textContent=c;
+    d.onclick=()=>{
+      document.querySelectorAll(".pill").forEach(p=>p.classList.remove("active"));
+      d.classList.add("active");
+      selectedCategory=c;
+    };
+    categoryPills.appendChild(d);
+  });
+  selectedCategory=categories[type][0];
+  categoryPills.firstChild.classList.add("active");
+}
+
+/* Init */
+(async()=>{
+  const acc=await fetch(API+"?action=accounts").then(r=>r.json());
+  fromAccount.innerHTML=toAccount.innerHTML=acc.map(a=>`<option>${a}</option>`).join("");
+  renderCategories("EXP");
 })();
 
-/* TYPE LOGIC */
-txnType.onchange=()=>{
-  [subBlock,fromBlock,toBlock,emiBlock].forEach(b=>b.classList.add("hidden"));
-  amount.readOnly=false;
-
-  category.innerHTML="<option></option>";
-
-  if(txnType.value==="INCOME"){
-    category.innerHTML="<option>Income</option>";
-    toBlock.classList.remove("hidden");
-  }
-
-  if(txnType.value==="EXP"){
-    categories.forEach(c=>category.innerHTML+=`<option>${c}</option>`);
-    subBlock.classList.remove("hidden");
-    fromBlock.classList.remove("hidden");
-  }
-
-  if(txnType.value==="SAVINGS"){
-    category.innerHTML="<option>Savings</option>";
-    fromBlock.classList.remove("hidden");
-  }
-
-  if(txnType.value==="EMI"){
-    category.innerHTML="<option>Financial Commitments</option>";
-    emiBlock.classList.remove("hidden");
-    fromBlock.classList.remove("hidden");
-  }
-
-  if(txnType.value==="TRANSFER"){
-    category.innerHTML="<option>Transfer</option>";
-    fromBlock.classList.remove("hidden");
-    toBlock.classList.remove("hidden");
-  }
-};
-
-category.onchange=()=>{
-  subCategory.innerHTML=(subMap[category.value]||[]).map(s=>`<option>${s}</option>`).join("");
-};
-
-emiId.onchange=()=>{
-  if(emiMap[emiId.value]){
-    amount.value=emiMap[emiId.value];
-    amount.readOnly=true;
-  }else{
-    amount.readOnly=false;
-  }
-};
-
-/* SAVE */
-txnForm.onsubmit=async e=>{
-  e.preventDefault();
-  saveBtn.disabled=true;
+/* Save */
+saveBtn.onclick=async()=>{
   saveBtn.textContent="Saving…";
-
   await fetch(API,{
     method:"POST",
     body:JSON.stringify({
       action:"addTransaction",
       payload:{
-        txnDate:txnDate.value,
+        txnDate:new Date().toISOString().slice(0,10),
         txnType:txnType.value,
-        category:category.value,
-        subCategory:subCategory.value,
-        amount:Number(amount.value),
+        category:selectedCategory,
+        amount:+amount.value,
         fromAccount:fromAccount.value,
         toAccount:toAccount.value,
-        emiId:emiId.value,
         notes:notes.value,
         source:"WEB"
       }
     })
   });
-
-  txnForm.reset();
-  saveBtn.disabled=false;
-  saveBtn.textContent="Save Transaction";
-  loadRecent();
+  saveBtn.textContent="Saved ✓";
+  setTimeout(()=>location.reload(),600);
 };
-
-/* RECENT */
-async function loadRecent(){
-  const box=$("recentTxns");
-  const data=await fetch(API+"?action=recent").then(r=>r.json());
-  box.innerHTML=`
-  <table>
-    <thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Accounts</th><th style="text-align:right">Amount</th></tr></thead>
-    <tbody>${data.map(t=>`
-      <tr>
-        <td>${t.date}</td>
-        <td>${t.type}</td>
-        <td>${t.category}</td>
-        <td class="accounts">${t.from||""}${t.to?" → "+t.to:""}</td>
-        <td class="amount">₹ ${t.amount}</td>
-      </tr>`).join("")}</tbody>
-  </table>`;
-}
 </script>
 
 </body>
