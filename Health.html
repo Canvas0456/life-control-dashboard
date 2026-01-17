@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
 <title>Daily Health Log</title>
 
-<!-- Google Font -->
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
@@ -13,100 +11,76 @@
   --sage: #9caf88;
   --dusty-rose: #d4a3a3;
   --warm-sand: #f5f2ed;
-  --glass: rgba(255, 255, 255, 0.7);
+  --glass: rgba(255, 255, 255, 0.75);
 }
 
 * { box-sizing: border-box; }
 
-body, html {
+body {
   margin: 0;
-  min-height: 100vh;
   font-family: 'Quicksand', sans-serif;
+  background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
 }
 
-.art-bg {
+/* ===== FIXED HUD ===== */
+.hud {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  font-size: 14px;
+  background: var(--glass);
+  padding: 10px 16px;
+  border-radius: 20px;
+}
+
+.clock {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  font-size: 14px;
+  background: var(--glass);
+  padding: 10px 16px;
+  border-radius: 20px;
+}
+
+/* ===== CARD ===== */
+.container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
   display: flex;
   justify-content: center;
-  padding: 40px 16px;
-  position: relative;
+  align-items: center;
 }
 
-.shape {
-  position: absolute;
-  filter: blur(80px);
-  z-index: 0;
-}
-.circle-one {
-  width: 400px; height: 400px;
-  background: var(--sage);
-  top: -10%; left: -10%;
-  opacity: 0.3;
-}
-.circle-two {
-  width: 300px; height: 300px;
-  background: var(--dusty-rose);
-  bottom: 10%; right: -5%;
-  opacity: 0.25;
-}
-
-/* Live Clock */
-.live-time {
-  position: fixed;
-  top: 14px;
-  right: 20px;
-  font-size: 0.9rem;
-  color: #555;
-  z-index: 10;
-  background: rgba(255,255,255,0.6);
-  padding: 6px 12px;
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-}
-
-/* Card */
-.glass-form {
-  width: 100%;
-  max-width: 420px;
+.card {
   background: var(--glass);
-  backdrop-filter: blur(15px);
+  backdrop-filter: blur(14px);
   border-radius: 30px;
   padding: 32px;
-  z-index: 1;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  width: 95%;
+  max-width: 420px;
 }
 
 h1 {
-  text-align: center;
-  font-weight: 400;
-  margin-bottom: 10px;
+  margin-top: 0;
+  font-weight: 500;
+  color: #555;
 }
 
-.streak {
-  text-align: center;
-  margin-bottom: 22px;
-  font-size: 0.95rem;
-}
-.streak span {
-  font-size: 1.8rem;
-}
-
-/* Inputs */
+/* ===== FORM ===== */
 label {
+  font-size: 13px;
+  color: #777;
   margin-top: 16px;
   display: block;
-  font-size: 0.85rem;
-  color: #666;
 }
 
 input, textarea {
   width: 100%;
+  margin-top: 6px;
   padding: 12px;
   border-radius: 14px;
   border: none;
   background: rgba(255,255,255,0.6);
-  margin-top: 6px;
   font-family: inherit;
 }
 
@@ -118,145 +92,138 @@ textarea { resize: none; }
   gap: 12px;
 }
 
-/* Button */
-.art-button {
-  margin-top: 26px;
+button {
+  margin-top: 28px;
   width: 100%;
-  padding: 15px;
+  padding: 16px;
+  border-radius: 30px;
   border: none;
-  border-radius: 50px;
   background: var(--sage);
-  color: #fff;
-  font-size: 1rem;
-  letter-spacing: 2px;
+  color: white;
+  font-size: 15px;
+  letter-spacing: 1px;
   cursor: pointer;
 }
-.art-button:disabled {
+
+button:disabled {
   background: #cfcfcf;
+  cursor: not-allowed;
 }
 </style>
 </head>
 
 <body>
-<div class="live-time" id="liveTime"></div>
 
-<div class="art-bg">
-  <div class="shape circle-one"></div>
-  <div class="shape circle-two"></div>
+<!-- STREAK -->
+<div class="hud" id="streakBox">🔥 Streak: 0 days</div>
 
-  <form class="glass-form" id="healthForm">
-    <h1>Daily Health Log</h1>
+<!-- LIVE CLOCK -->
+<div class="clock" id="liveClock"></div>
 
-    <div class="streak" id="streakBox">
-      🔥 <span>0</span> Day Streak
-    </div>
+<div class="container">
+<div class="card">
 
-    <label>Date</label>
-    <input type="date" id="entryDate" required />
+<h1>Daily Health Log</h1>
 
-    <div class="grid-2">
-      <div>
-        <label>Sleep Time</label>
-        <input type="time" id="sleepTime">
-      </div>
-      <div>
-        <label>Wake-up Time</label>
-        <input type="time" id="wakeTime">
-      </div>
-    </div>
+<label>Date</label>
+<input type="date" id="entryDate">
 
-    <label>Sleep Hours</label>
-    <input type="number" id="sleepHours" readonly>
+<div class="grid-2">
+  <div>
+    <label>Sleep Time</label>
+    <input type="time" id="sleepTime">
+  </div>
+  <div>
+    <label>Wake Time</label>
+    <input type="time" id="wakeTime">
+  </div>
+</div>
 
-    <div class="grid-2">
-      <div>
-        <label>Work Login</label>
-        <input type="time" id="workLogin">
-      </div>
-      <div>
-        <label>Work Logout</label>
-        <input type="time" id="workLogout">
-      </div>
-    </div>
+<label>Sleep Hours</label>
+<input id="sleepHours" readonly>
 
-    <label>Work Hours</label>
-    <input type="number" id="workHours" readonly>
+<div class="grid-2">
+  <div>
+    <label>Work Login</label>
+    <input type="time" id="workLogin">
+  </div>
+  <div>
+    <label>Work Logout</label>
+    <input type="time" id="workLogout">
+  </div>
+</div>
 
-    <label>Screen Time (hours)</label>
-    <input type="number" step="0.1" id="screenTime">
+<label>Work Hours</label>
+<input id="workHours" readonly>
 
-    <div class="grid-2">
-      <div>
-        <label>Steps</label>
-        <input type="number" id="steps">
-      </div>
-      <div>
-        <label>Workout (minutes)</label>
-        <input type="number" id="workoutMin">
-      </div>
-    </div>
+<label>Screen Time (hours)</label>
+<input id="screenTime" type="number">
 
-    <div class="grid-2">
-      <div>
-        <label>Water Intake (liters)</label>
-        <input type="number" step="0.1" id="waterLiters">
-      </div>
-      <div>
-        <label>Weight (kg)</label>
-        <input type="number" step="0.1" id="weightKg">
-      </div>
-    </div>
+<div class="grid-2">
+  <div>
+    <label>Steps</label>
+    <input id="steps" type="number">
+  </div>
+  <div>
+    <label>Workout (minutes)</label>
+    <input id="workoutMin" type="number">
+  </div>
+</div>
 
-    <label>Notes</label>
-    <textarea rows="3" id="notes"></textarea>
+<div class="grid-2">
+  <div>
+    <label>Water (liters)</label>
+    <input id="waterLiters" type="number" step="0.1">
+  </div>
+  <div>
+    <label>Weight (kg)</label>
+    <input id="weightKg" type="number" step="0.1">
+  </div>
+</div>
 
-    <button class="art-button" id="saveBtn">SAVE</button>
-  </form>
+<label>Notes</label>
+<textarea id="notes" rows="3"></textarea>
+
+<button id="saveBtn">SAVE HEALTH LOG</button>
+
+</div>
 </div>
 
 <script>
-/* ================= CONFIG ================= */
-const HEALTH_API_URL = "https://script.google.com/macros/s/AKfycbwJZKpjsMiyFG9F022EbeQFVWi-PINF0_zZbVo_WzisNwbQeNQ4mWUQp1oqqyFe_-ra/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwJZKpjsMiyFG9F022EbeQFVWi-PINF0_zZbVo_WzisNwbQeNQ4mWUQp1oqqyFe_-ra/exec";
 
-/* ================= LIVE TIME ================= */
-function updateClock() {
+/* ===== LIVE CLOCK ===== */
+setInterval(() => {
   const now = new Date();
-  document.getElementById("liveTime").innerText =
-    now.toLocaleDateString(undefined,{weekday:'short',day:'2-digit',month:'short'}) +
+  document.getElementById("liveClock").innerText =
+    now.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) +
     " • " +
-    now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-}
-setInterval(updateClock,1000); updateClock();
+    now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}, 1000);
 
-/* ================= TIME CALC ================= */
-function toMin(t){ if(!t) return null; const [h,m]=t.split(":"); return +h*60 + +m; }
+/* ===== TIME CALC ===== */
+function mins(t){ if(!t) return null; const [h,m]=t.split(":"); return h*60+ +m; }
 
 function calcSleep(){
-  const s=toMin(sleepTime.value), w=toMin(wakeTime.value);
+  const s=mins(sleepTime.value), w=mins(wakeTime.value);
   if(s==null||w==null) return;
-  let d=w-s; if(d<=0)d+=1440;
+  let d=w-s; if(d<=0) d+=1440;
   sleepHours.value=(d/60).toFixed(2);
 }
+
 function calcWork(){
-  const i=toMin(workLogin.value), o=toMin(workLogout.value);
+  const i=mins(workLogin.value), o=mins(workLogout.value);
   if(i==null||o==null||o<i) return;
   workHours.value=((o-i)/60).toFixed(2);
 }
+
 sleepTime.onchange=wakeTime.onchange=calcSleep;
 workLogin.onchange=workLogout.onchange=calcWork;
 
-/* ================= STREAK ================= */
-fetch(`${HEALTH_API_URL}?action=streak`)
-  .then(r=>r.json())
-  .then(d=>{
-    if(d.streak!==undefined)
-      document.querySelector("#streakBox span").innerText=d.streak;
-  });
-
-/* ================= SUBMIT ================= */
-healthForm.onsubmit = async e => {
-  e.preventDefault();
-  saveBtn.disabled=true; saveBtn.innerText="SAVING...";
+/* ===== SAVE ===== */
+saveBtn.onclick = async () => {
+  saveBtn.disabled = true;
+  saveBtn.innerText = "SAVING…";
 
   const payload = {
     entryDate: entryDate.value,
@@ -274,14 +241,29 @@ healthForm.onsubmit = async e => {
     notes: notes.value
   };
 
-  const res = await fetch(HEALTH_API_URL, {
-    method: "POST",
-    body: JSON.stringify(payload)
-  }).then(r=>r.json());
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    const text = await res.text();
 
-  alert(res.message || "Saved");
-  saveBtn.disabled=false; saveBtn.innerText="SAVE";
+    if (text === "OK") {
+      alert("Health log saved successfully");
+      location.reload();
+    } else if (text === "DUPLICATE") {
+      alert(`Health log for ${entryDate.value} already exists`);
+    } else {
+      alert("Save failed");
+    }
+  } catch {
+    alert("Network error");
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.innerText = "SAVE HEALTH LOG";
+  }
 };
 </script>
+
 </body>
 </html>
