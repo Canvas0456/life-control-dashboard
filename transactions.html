@@ -1,270 +1,289 @@
-/*************************************************
- * CONFIG — TRANSACTIONS SHEETS
- *************************************************/
-const SHEET_TXN      = "Transactions_Raw";
-const SHEET_ACCOUNTS = "Masters_Accounts";
-const SHEET_CATS     = "Masters_Categories";
-const SHEET_SUBCATS  = "Masters_SubCategories";
-const SHEET_EMI      = "Masters_EMI";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Daily Money Log</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-/*************************************************
- * CONFIG — HEALTH SHEET
- *************************************************/
-const HEALTH_SHEET_ID   = "1XEDF8vCpMg_9eLqRfFpN9h-PKaIBvIum6Cjc964AGDY";
-const HEALTH_SHEET_NAME = "Health_Raw";
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-/*************************************************
- * 🔑 SINGLE UNIFIED GET ENTRY POINT
- *************************************************/
-function doGet(e) {
-
-  // Health / API heartbeat
-  if (!e || !e.parameter || !e.parameter.action) {
-    return ContentService
-      .createTextOutput(JSON.stringify({
-        status: "API Live",
-        timestamp: new Date()
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-
-  const action = e.parameter.action;
-
-  switch (action) {
-
-    /* ========= TRANSACTIONS ========= */
-    case "accounts":
-      return respond(getAccounts());
-
-    case "categories":
-      return respond(getCategories());
-
-    case "subcategories":
-      return respond(getSubCategories());
-
-    case "emis":
-      return respond(getEmis());
-
-    case "recent":
-      return respond(getRecentTransactions());
-
-    case "balances":
-      return respond(getBalances());
-
-    /* ========= HEALTH ========= */
-    case "healthStatus":
-      return ContentService
-        .createTextOutput(JSON.stringify({
-          status: "Health API Live",
-          timestamp: new Date()
-        }))
-        .setMimeType(ContentService.MimeType.JSON);
-
-    default:
-      return respond({ error: "Invalid GET action" });
-  }
+<style>
+:root{
+  --bg:#0F172A;
+  --card:#1E293B;
+  --accent:#2DD4BF;
+  --text:#F8FAFC;
+  --glass:rgba(255,255,255,.06);
+  --border:rgba(255,255,255,.12);
 }
-
-/*************************************************
- * 🔐 SINGLE UNIFIED POST ENTRY POINT
- *************************************************/
-function doPost(e) {
-  try {
-    const body = JSON.parse(e.postData.contents);
-
-    /* ---------- TRANSACTIONS ---------- */
-    if (body.action === "addTransaction") {
-      return addTransaction(body.payload);
-    }
-
-    /* ---------- HEALTH ---------- */
-    if (body.action === "addHealth") {
-      return addHealthEntry(body.payload);
-    }
-
-    return respond({ error: "Invalid POST action" });
-
-  } catch (err) {
-    return respond({ error: err.message });
-  }
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  padding:24px;
 }
-
-/*************************************************
- * ============ TRANSACTIONS LOGIC ============
- *************************************************/
-function addTransaction(p) {
-  const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_TXN);
-
-  const txnDateObj = new Date(p.txnDate);
-  const mm = String(txnDateObj.getMonth() + 1).padStart(2, "0");
-  const dd = String(txnDateObj.getDate()).padStart(2, "0");
-
-  const serial = getNextTxnSerial(txnDateObj);
-  const txnId = `TXN-${mm}${dd}${String(serial).padStart(2, "0")}`;
-
-  sh.appendRow([
-    txnId,
-    new Date(),
-    p.txnDate,
-    p.txnType,
-    p.category,
-    p.subCategory || "",
-    Number(p.amount),
-    p.fromAccount || "",
-    p.toAccount || "",
-    p.emiId || "",
-    p.notes || "",
-    p.source || "WEB",
-    ""
-  ]);
-
-  return respond({ status: "SUCCESS", txnId });
+#clock{
+  position:fixed;
+  top:14px;
+  right:22px;
+  font-size:.8rem;
+  opacity:.85;
 }
-
-function getNextTxnSerial(txnDate) {
-  const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_TXN);
-  const lastRow = sh.getLastRow();
-  if (lastRow < 2) return 1;
-
-  const target = Utilities.formatDate(txnDate, "Asia/Kolkata", "yyyy-MM-dd");
-  const dates = sh.getRange(2, 3, lastRow - 1, 1).getValues();
-
-  let count = 0;
-  dates.forEach(r => {
-    if (!r[0]) return;
-    const d = Utilities.formatDate(new Date(r[0]), "Asia/Kolkata", "yyyy-MM-dd");
-    if (d === target) count++;
-  });
-
-  return count + 1;
+.container{max-width:1200px;margin:auto}
+.card{
+  background:var(--glass);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:20px;
 }
-
-function getAccounts()      { return getColumn(SHEET_ACCOUNTS, 2); }
-function getCategories()    { return getColumn(SHEET_CATS, 2); }
-function getEmis() {
-  const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_EMI);
-  const data = sh.getRange(2, 1, sh.getLastRow() - 1, 4).getValues();
-  return data.map(r => ({ id: r[0], name: r[1], amount: r[3] }));
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:20px;
 }
-
-function getSubCategories() {
-  const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_SUBCATS);
-  const data = sh.getRange(2, 2, sh.getLastRow() - 1, 2).getValues();
-  const map = {};
-  data.forEach(([cat, sub]) => {
-    if (!map[cat]) map[cat] = [];
-    map[cat].push(sub);
-  });
-  return map;
+label{font-size:.72rem;opacity:.8;margin-top:14px;display:block}
+input,select{
+  width:100%;
+  margin-top:6px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:none;
+  background:#020617;
+  color:var(--text);
 }
-
-function getRecentTransactions() {
-  const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_TXN);
-  const lastRow = sh.getLastRow();
-  const startRow = Math.max(2, lastRow - 9);
-  const data = sh.getRange(startRow, 1, lastRow - startRow + 1, 9).getValues();
-
-  return data.reverse().map(r => ({
-    date: Utilities.formatDate(new Date(r[2]), "Asia/Kolkata", "dd-MMM"),
-    type: r[3],
-    category: r[4],
-    from: r[7],
-    to: r[8],
-    amount: r[6]
-  }));
+.hidden{display:none}
+.locked{opacity:.5;pointer-events:none}
+button{
+  margin-top:20px;
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:999px;
+  background:var(--accent);
+  color:#022c22;
+  font-weight:600;
+  letter-spacing:1px;
+  cursor:pointer;
 }
-
-function getBalances() {
-  const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_TXN);
-  const data = sh.getRange(2, 1, sh.getLastRow() - 1, 9).getValues();
-  const balances = {};
-
-  data.forEach(r => {
-    const amt = Number(r[6]) || 0;
-    if (r[7]) balances[r[7]] = (balances[r[7]] || 0) - amt;
-    if (r[8]) balances[r[8]] = (balances[r[8]] || 0) + amt;
-  });
-
-  return Object.keys(balances).map(a => ({
-    account: a,
-    balance: balances[a].toFixed(2)
-  }));
+footer{
+  text-align:center;
+  margin-top:40px;
+  font-size:.7rem;
+  opacity:.6;
 }
+</style>
+</head>
 
-/*************************************************
- * ============ HEALTH LOGIC ============
- *************************************************/
-function addHealthEntry(data) {
-  const lock = LockService.getScriptLock();
-  lock.waitLock(10000);
+<body>
 
-  try {
-    const sheet = SpreadsheetApp
-      .openById(HEALTH_SHEET_ID)
-      .getSheetByName(HEALTH_SHEET_NAME);
+<div id="clock"></div>
 
-    const dates = sheet.getRange(2, 3, sheet.getLastRow(), 1).getValues().flat();
-    if (dates.includes(data.entryDate)) {
-      return respond({ status: "DUPLICATE" });
-    }
+<div class="container">
+<h2>💸 Daily Money Log</h2>
 
-    const toMin = t => {
-      if (!t) return null;
-      const [h, m] = t.split(":").map(Number);
-      return h * 60 + m;
-    };
+<div class="grid">
 
-    let sleepHours = "";
-    if (data.sleepTime && data.wakeTime) {
-      let diff = toMin(data.wakeTime) - toMin(data.sleepTime);
-      if (diff <= 0) diff += 1440;
-      sleepHours = (diff / 60).toFixed(2);
-    }
+<!-- FORM -->
+<div class="card">
+<label>Date</label>
+<input type="date" id="txnDate">
 
-    let workHours = "";
-    if (data.workLogin && data.workLogout) {
-      const diff = toMin(data.workLogout) - toMin(data.workLogin);
-      if (diff > 0) workHours = (diff / 60).toFixed(2);
-    }
+<label>Type</label>
+<select id="txnType">
+  <option value="EXP">Expense</option>
+  <option value="INC">Income</option>
+  <option value="TRANSFER">Transfer</option>
+  <option value="SAV">Savings</option>
+  <option value="EMI">EMI</option>
+</select>
 
-    const entryId = `HLT-${Utilities.formatDate(new Date(data.entryDate), "Asia/Kolkata", "MMdd")}`;
+<div id="catBlock">
+<label>Category</label>
+<select id="category"></select>
 
-    sheet.appendRow([
-      entryId,
-      new Date(),
-      data.entryDate,
-      data.sleepTime || "",
-      data.wakeTime || "",
-      sleepHours,
-      data.workLogin || "",
-      data.workLogout || "",
-      workHours,
-      data.steps || "",
-      data.workoutMin || "",
-      data.waterLiters || "",
-      data.weightKg || "",
-      data.notes || "",
-      data.screenTime || "",
-      "Web"
+<label>Sub Category</label>
+<select id="subCategory"></select>
+</div>
+
+<div id="emiBlock" class="hidden">
+<label>EMI</label>
+<select id="emiSelect"></select>
+</div>
+
+<label>Amount</label>
+<input type="number" id="amount">
+
+<div id="fromBlock">
+<label>From Account</label>
+<select id="fromAccount"></select>
+</div>
+
+<div id="toBlock">
+<label>To Account</label>
+<select id="toAccount"></select>
+</div>
+
+<label>Notes</label>
+<input id="notes">
+
+<button id="saveBtn">SAVE TRANSACTION</button>
+</div>
+
+<!-- RECENT -->
+<div class="card">
+<h4>Last 10 Transactions</h4>
+<table style="width:100%;font-size:.8rem">
+<thead>
+<tr>
+<th>Date</th><th>Type</th><th>Category</th><th>Accounts</th><th>Amount</th>
+</tr>
+</thead>
+<tbody id="recent"></tbody>
+</table>
+</div>
+
+</div>
+
+<footer>
+© Designed & Engineered by <b>Kaiwalya Muley</b>
+</footer>
+</div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
+
+/* CLOCK */
+setInterval(()=>{
+  const d=new Date();
+  clock.innerText =
+    d.toLocaleDateString(undefined,{weekday:'long',day:'2-digit',month:'short',year:'numeric'})
+    +" • "+d.toLocaleTimeString();
+},1000);
+
+/* SAFE INIT */
+document.addEventListener("DOMContentLoaded", init);
+
+async function init(){
+  try{
+    const [
+      accounts,
+      categories,
+      subcats,
+      emis,
+      recent
+    ] = await Promise.all([
+      fetch(API+"?action=accounts").then(r=>r.json()),
+      fetch(API+"?action=categories").then(r=>r.json()),
+      fetch(API+"?action=subcategories").then(r=>r.json()),
+      fetch(API+"?action=emis").then(r=>r.json()),
+      fetch(API+"?action=recent").then(r=>r.json())
     ]);
 
-    return respond({ status: "OK" });
+    fillSelect(fromAccount, accounts);
+    fillSelect(toAccount, accounts);
+    fillSelect(category, categories);
 
-  } finally {
-    lock.releaseLock();
+    category.onchange = () => {
+      const list = subcats[category.value] || [];
+      fillSelect(subCategory, list);
+    };
+
+    emiSelect.innerHTML = "";
+    emis.forEach(e=>{
+      emiSelect.innerHTML +=
+        `<option value="${e.id}" data-amt="${e.amount}">${e.name}</option>`;
+    });
+
+    renderRecent(recent);
+    handleType();
+
+    console.log("✅ Transactions API Loaded");
+  }
+  catch(err){
+    console.error("❌ INIT ERROR", err);
+    alert("Failed to load master data. Check API.");
   }
 }
 
-/*************************************************
- * UTILITIES
- *************************************************/
-function getColumn(sheetName, col) {
-  const sh = SpreadsheetApp.getActive().getSheetByName(sheetName);
-  return sh.getRange(2, col, sh.getLastRow() - 1, 1).getValues().flat().filter(String);
+/* TYPE RULES */
+txnType.onchange = handleType;
+fromAccount.onchange = filterTransfer;
+
+function handleType(){
+  const t = txnType.value;
+  catBlock.classList.add("hidden");
+  emiBlock.classList.add("hidden");
+  fromBlock.classList.add("hidden");
+  toBlock.classList.add("hidden");
+  amount.classList.remove("locked");
+
+  if(t==="EXP"){catBlock.classList.remove("hidden");fromBlock.classList.remove("hidden")}
+  if(t==="INC"){toBlock.classList.remove("hidden")}
+  if(t==="SAV"){toBlock.classList.remove("hidden")}
+  if(t==="TRANSFER"){fromBlock.classList.remove("hidden");toBlock.classList.remove("hidden");filterTransfer()}
+  if(t==="EMI"){
+    emiBlock.classList.remove("hidden");
+    fromBlock.classList.remove("hidden");
+    amount.classList.add("locked");
+    amount.value = emiSelect.selectedOptions[0]?.dataset.amt || "";
+  }
 }
 
-function respond(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
+function filterTransfer(){
+  [...toAccount.options].forEach(o=>{
+    o.hidden = o.value === fromAccount.value;
+  });
 }
+
+/* SAVE */
+saveBtn.onclick = async ()=>{
+  saveBtn.disabled = true;
+  saveBtn.innerText = "SAVING…";
+
+  const payload = {
+    txnDate: txnDate.value,
+    txnType: txnType.value,
+    category: category.value || "",
+    subCategory: subCategory.value || "",
+    amount: amount.value,
+    fromAccount: fromAccount.value || "",
+    toAccount: toAccount.value || "",
+    emiId: emiSelect.value || "",
+    notes: notes.value,
+    source: "WEB"
+  };
+
+  await fetch(API,{
+    method:"POST",
+    body:JSON.stringify({action:"addTransaction",payload})
+  });
+
+  location.reload();
+};
+
+/* HELPERS */
+function fillSelect(sel, arr){
+  sel.innerHTML = "";
+  arr.forEach(v=>{
+    sel.innerHTML += `<option value="${v}">${v}</option>`;
+  });
+}
+
+function renderRecent(rows){
+  recent.innerHTML = rows.map(r=>`
+    <tr>
+      <td>${r.date}</td>
+      <td>${r.type}</td>
+      <td>${r.category||""}</td>
+      <td>${r.from||""} → ${r.to||""}</td>
+      <td>₹${r.amount}</td>
+    </tr>
+  `).join("");
+}
+</script>
+
+</body>
+</html>
