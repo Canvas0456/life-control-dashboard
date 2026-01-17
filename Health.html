@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Daily Health Log</title>
+
+<style>
+body{
+  margin:0;
+  background:#f5f7fa;
+  font-family:Inter,system-ui,-apple-system;
+  color:#475569;
+}
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:24px;
+}
+.card{
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:18px;
+  padding:24px;
+}
+h1{
+  margin:0 0 16px 0;
+}
+label{
+  font-size:13px;
+  color:#64748b;
+}
+input,textarea{
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  border-radius:12px;
+  border:1px solid #e2e8f0;
+  font-size:14px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+button{
+  margin-top:20px;
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:#64748b;
+  color:white;
+  font-size:15px;
+  cursor:pointer;
+}
+.note{
+  font-size:12px;
+  color:#94a3b8;
+  margin-top:6px;
+}
+.success{
+  color:#16a34a;
+  margin-top:12px;
+  display:none;
+}
+@media(max-width:640px){
+  .grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>Daily Health Log</h1>
+
+<div class="card">
+
+<label>Date</label>
+<input type="date" id="date" />
+
+<div class="grid">
+  <div>
+    <label>Sleep Time</label>
+    <input type="time" id="sleep" />
+  </div>
+  <div>
+    <label>Wake-up Time</label>
+    <input type="time" id="wake" />
+  </div>
+</div>
+
+<div class="grid">
+  <div>
+    <label>Work Login</label>
+    <input type="time" id="login" />
+  </div>
+  <div>
+    <label>Work Logout</label>
+    <input type="time" id="logout" />
+  </div>
+</div>
+
+<div class="grid">
+  <div>
+    <label>Screen Time (hours)</label>
+    <input type="number" step="0.1" id="screen" placeholder="e.g. 6.5" />
+    <div class="note">Total mobile + laptop usage</div>
+  </div>
+  <div>
+    <label>Steps</label>
+    <input type="number" id="steps" placeholder="e.g. 6500" />
+  </div>
+</div>
+
+<div class="grid">
+  <div>
+    <label>Workout (minutes)</label>
+    <input type="number" id="workout" placeholder="e.g. 45" />
+  </div>
+  <div>
+    <label>Water Intake (Liters)</label>
+    <input type="number" step="0.1" id="water" placeholder="e.g. 2.5" />
+  </div>
+</div>
+
+<div class="grid">
+  <div>
+    <label>Weight (kg)</label>
+    <input type="number" step="0.1" id="weight" placeholder="Weekly (Sunday)" />
+    <div class="note">Optional · Enter once a week</div>
+  </div>
+</div>
+
+<label>Notes</label>
+<textarea id="notes" rows="3" placeholder="Energy levels, mood, eye strain, headaches, etc."></textarea>
+
+<button onclick="saveHealth()">Save Health Entry</button>
+
+<div class="success" id="successMsg">Health data saved successfully ✓</div>
+
+</div>
+</div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbym_eL9NPwlaT02_m7Fu1mEh9yllT3fB97UK9vbBLvr9dSIdhrkKX-dOK8V_qlKciAv/exec";
+
+document.getElementById("date").value =
+  new Date().toISOString().slice(0,10);
+
+function saveHealth(){
+  const payload = {
+    date: date.value,
+    sleep: sleep.value,
+    wake: wake.value,
+    login: login.value,
+    logout: logout.value,
+    screen: screen.value,
+    steps: steps.value,
+    workout: workout.value,
+    water: water.value,
+    weight: weight.value,
+    notes: notes.value
+  };
+
+  fetch(API, {
+    method:"POST",
+    body: JSON.stringify(payload)
+  })
+  .then(r=>r.text())
+  .then(()=>{
+    document.getElementById("successMsg").style.display="block";
+    setTimeout(()=>location.reload(),1200);
+  });
+}
+</script>
+
+</body>
+</html>
