@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Account Ledger</title>
 
 <style>
@@ -113,7 +113,7 @@ th{
 
 .empty{
   text-align:center;
-  color:#94a3b8;
+  color:var(--muted);
   padding:16px;
 }
 
@@ -133,9 +133,7 @@ th{
 <div class="card filters">
   <div>
     <label>Select Account</label>
-    <select id="accountSelect">
-      <option value="">Select Account</option>
-    </select>
+    <select id="accountSelect"></select>
   </div>
 
   <div>
@@ -193,19 +191,19 @@ th{
 </table>
 </div>
 
-<!-- MONTHLY SUMMARY -->
+<!-- CATEGORY BREAKUP -->
 <div class="card">
-<h3>Monthly Summary</h3>
+<h3>Category-wise Breakup</h3>
 <table>
 <thead>
 <tr>
-  <th>Month</th>
+  <th>Category</th>
   <th>Debit</th>
   <th>Credit</th>
   <th>Net</th>
 </tr>
 </thead>
-<tbody id="summaryBody">
+<tbody id="categoryBody">
 <tr><td colspan="4" class="empty">No data</td></tr>
 </tbody>
 </table>
@@ -218,7 +216,7 @@ const API = "https://script.google.com/macros/s/AKfycbzMO7aNBxJXJ2T7lRN8KQUvy8zm
 
 const accountSelect = document.getElementById("accountSelect");
 const ledgerBody = document.getElementById("ledgerBody");
-const summaryBody = document.getElementById("summaryBody");
+const categoryBody = document.getElementById("categoryBody");
 
 const openingEl = document.getElementById("opening");
 const inflowEl = document.getElementById("inflow");
@@ -232,24 +230,31 @@ async function loadAccounts(){
   accountSelect.innerHTML =
     `<option value="">Select Account</option>` +
     data.map(a=>`<option value="${a}">${a}</option>`).join("");
+
+  accountSelect.addEventListener("change", ()=>{
+    if(accountSelect.value){
+      loadLedger();
+    }
+  });
 }
 
 async function loadLedger(){
-  if(!accountSelect.value){
-    ledgerBody.innerHTML =
-      `<tr><td colspan="7" class="empty">Select an account</td></tr>`;
-    return;
-  }
+  if(!accountSelect.value) return;
 
   const from = fromDate.value;
   const to = toDate.value;
 
-  const res = await fetch(
-    `${API}?action=ledger&account=${accountSelect.value}&from=${from}&to=${to}`
-  );
+  let url = `${API}?action=ledger&account=${accountSelect.value}`;
+
+  if(from || to){
+    url += `&from=${from}&to=${to}`;
+  }
+
+  const res = await fetch(url);
   const data = await res.json();
 
   let inflow = 0, outflow = 0;
+  let categoryMap = {};
 
   if(!data.length){
     ledgerBody.innerHTML =
@@ -258,6 +263,13 @@ async function loadLedger(){
     ledgerBody.innerHTML = data.map(r=>{
       inflow += r.credit;
       outflow += r.debit;
+
+      if(!categoryMap[r.category]){
+        categoryMap[r.category] = { debit:0, credit:0 };
+      }
+      categoryMap[r.category].debit += r.debit;
+      categoryMap[r.category].credit += r.credit;
+
       return `
         <tr>
           <td>${r.date}</td>
@@ -276,32 +288,32 @@ async function loadLedger(){
   outflowEl.innerText = `₹ ${outflow.toFixed(2)}`;
   closingEl.innerText = `₹ ${(data.at(-1)?.balance || 0).toFixed(2)}`;
 
-  loadSummary();
+  renderCategoryBreakup(categoryMap);
 }
 
-async function loadSummary(){
-  const res = await fetch(
-    `${API}?action=summary&account=${accountSelect.value}`
-  );
-  const data = await res.json();
+function renderCategoryBreakup(map){
+  const rows = Object.keys(map);
 
-  if(!data.length){
-    summaryBody.innerHTML =
-      `<tr><td colspan="4" class="empty">No summary data</td></tr>`;
+  if(!rows.length){
+    categoryBody.innerHTML =
+      `<tr><td colspan="4" class="empty">No data</td></tr>`;
     return;
   }
 
-  summaryBody.innerHTML = data.map(r=>`
-    <tr>
-      <td>${r.month}</td>
-      <td>₹ ${r.debit}</td>
-      <td>₹ ${r.credit}</td>
-      <td>₹ ${r.net}</td>
-    </tr>
-  `).join("");
+  categoryBody.innerHTML = rows.map(c=>{
+    const d = map[c];
+    return `
+      <tr>
+        <td>${c}</td>
+        <td>₹ ${d.debit}</td>
+        <td>₹ ${d.credit}</td>
+        <td>₹ ${(d.credit - d.debit).toFixed(2)}</td>
+      </tr>`;
+  }).join("");
 }
 
 loadAccounts();
 </script>
+
 </body>
 </html>
