@@ -1,273 +1,297 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Account Ledger</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Account Ledger</title>
 
-  <style>
-    :root {
-      --bg: #f5f7fa;
-      --card: #ffffff;
-      --border: #e2e8f0;
-      --text: #475569;
-      --green: #84a98c;
-      --red: #e4989b;
-      --accent: #94a3b8;
-    }
+<style>
+:root{
+  --bg:#f5f7fa;
+  --card:#ffffff;
+  --border:#e2e8f0;
+  --text:#475569;
+  --green:#84a98c;
+  --red:#e4989b;
+  --muted:#94a3b8;
+}
 
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
+body{
+  margin:0;
+  font-family:Inter,system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
 
-    .container {
-      max-width: 1200px;
-      margin: auto;
-      padding: 24px;
-    }
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:24px;
+}
 
-    h1 {
-      margin-bottom: 16px;
-      font-weight: 600;
-    }
+h1{
+  font-size:28px;
+  font-weight:600;
+  margin-bottom:20px;
+}
 
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 20px;
-    }
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:24px;
+  margin-bottom:20px;
+}
 
-    select, input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      font-size: 14px;
-    }
+label{
+  font-size:13px;
+  color:#64748b;
+}
 
-    button {
-      padding: 12px 18px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      background: var(--accent);
-      color: #fff;
-      font-size: 14px;
-    }
+select,input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  font-size:14px;
+}
 
-    button.secondary {
-      background: #64748b;
-    }
+button{
+  padding:12px 18px;
+  border-radius:10px;
+  border:none;
+  background:#64748b;
+  color:#fff;
+  cursor:pointer;
+}
 
-    .filters {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr auto;
-      gap: 12px;
-      align-items: end;
-    }
+.filters{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr auto;
+  gap:12px;
+  align-items:end;
+}
 
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+}
 
-    .stat h4 {
-      margin: 0;
-      font-weight: 500;
-      font-size: 13px;
-      color: #64748b;
-    }
+.stat h4{
+  margin:0;
+  font-size:13px;
+  font-weight:500;
+  color:#64748b;
+}
 
-    .stat p {
-      margin: 6px 0 0;
-      font-size: 22px;
-      font-weight: 600;
-    }
+.stat p{
+  margin-top:6px;
+  font-size:22px;
+  font-weight:600;
+}
 
-    .green { color: var(--green); }
-    .red { color: var(--red); }
+.green{color:var(--green)}
+.red{color:var(--red)}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
 
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-    }
+th,td{
+  padding:10px;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+}
 
-    th {
-      font-weight: 600;
-      color: #64748b;
-    }
+th{
+  color:#64748b;
+  font-weight:600;
+}
 
-    .amount-green { color: var(--green); }
-    .amount-red { color: var(--red); }
+.empty{
+  text-align:center;
+  color:#94a3b8;
+  padding:16px;
+}
 
-    @media (max-width: 768px) {
-      .filters {
-        grid-template-columns: 1fr;
-      }
-      .stats {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-  </style>
+@media(max-width:768px){
+  .filters{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
+}
+</style>
 </head>
 
 <body>
-  <div class="container">
-    <h1>Account Ledger</h1>
+<div class="container">
 
-    <!-- Filters -->
-    <div class="card filters">
-      <div>
-        <label>Select Account</label>
-        <select id="accountSelect"></select>
-      </div>
+<h1>Account Ledger</h1>
 
-      <div>
-        <label>From Date</label>
-        <input type="date" id="fromDate">
-      </div>
-
-      <div>
-        <label>To Date</label>
-        <input type="date" id="toDate">
-      </div>
-
-      <div>
-        <button onclick="loadLedger()">Apply</button>
-      </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="card stats">
-      <div class="stat">
-        <h4>Opening Balance</h4>
-        <p id="opening">₹ 0.00</p>
-      </div>
-      <div class="stat">
-        <h4>Net Inflow</h4>
-        <p id="inflow" class="green">₹ 0.00</p>
-      </div>
-      <div class="stat">
-        <h4>Net Outflow</h4>
-        <p id="outflow" class="red">₹ 0.00</p>
-      </div>
-      <div class="stat">
-        <h4>Closing Balance</h4>
-        <p id="closing">₹ 0.00</p>
-      </div>
-    </div>
-
-    <!-- Ledger Table -->
-    <div class="card">
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Txn ID</th>
-            <th>Type</th>
-            <th>Category</th>
-            <th>Debit</th>
-            <th>Credit</th>
-            <th>Balance</th>
-          </tr>
-        </thead>
-        <tbody id="ledgerBody">
-          <tr><td colspan="7">Select an account</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Monthly Summary -->
-    <div class="card">
-      <h3>Monthly Summary</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Month</th>
-            <th>Debit</th>
-            <th>Credit</th>
-            <th>Net</th>
-          </tr>
-        </thead>
-        <tbody id="summaryBody"></tbody>
-      </table>
-    </div>
-
-    <!-- Export -->
-    <div class="card">
-      <button onclick="exportExcel()">Export Excel</button>
-      <button class="secondary" onclick="exportPdf()">Export PDF</button>
-    </div>
+<!-- FILTERS -->
+<div class="card filters">
+  <div>
+    <label>Select Account</label>
+    <select id="accountSelect">
+      <option value="">Select Account</option>
+    </select>
   </div>
 
+  <div>
+    <label>From Date</label>
+    <input type="date" id="fromDate">
+  </div>
+
+  <div>
+    <label>To Date</label>
+    <input type="date" id="toDate">
+  </div>
+
+  <div>
+    <button onclick="loadLedger()">Apply</button>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="card stats">
+  <div class="stat">
+    <h4>Opening Balance</h4>
+    <p id="opening">₹ 0.00</p>
+  </div>
+  <div class="stat">
+    <h4>Net Inflow</h4>
+    <p id="inflow" class="green">₹ 0.00</p>
+  </div>
+  <div class="stat">
+    <h4>Net Outflow</h4>
+    <p id="outflow" class="red">₹ 0.00</p>
+  </div>
+  <div class="stat">
+    <h4>Closing Balance</h4>
+    <p id="closing">₹ 0.00</p>
+  </div>
+</div>
+
+<!-- LEDGER TABLE -->
+<div class="card">
+<table>
+<thead>
+<tr>
+  <th>Date</th>
+  <th>Txn ID</th>
+  <th>Type</th>
+  <th>Category</th>
+  <th>Debit</th>
+  <th>Credit</th>
+  <th>Balance</th>
+</tr>
+</thead>
+<tbody id="ledgerBody">
+<tr><td colspan="7" class="empty">Select an account</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- MONTHLY SUMMARY -->
+<div class="card">
+<h3>Monthly Summary</h3>
+<table>
+<thead>
+<tr>
+  <th>Month</th>
+  <th>Debit</th>
+  <th>Credit</th>
+  <th>Net</th>
+</tr>
+</thead>
+<tbody id="summaryBody">
+<tr><td colspan="4" class="empty">No data</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+
 <script>
-const API = "https://script.google.com/macros/s/AKfycbzMO7aNBxJXJ2T7lRN8KQUvy8zmKsDNf_iAe1sfkoloFanBP4a_ui8lOCjxB9lZgRHuag/exec";
+const API = "PASTE_LEDGER_DEPLOYMENT_URL_HERE";
 
 const accountSelect = document.getElementById("accountSelect");
+const ledgerBody = document.getElementById("ledgerBody");
+const summaryBody = document.getElementById("summaryBody");
 
-async function loadAccounts() {
-  const data = await fetch(`${API}?action=accounts`).then(r => r.json());
+const openingEl = document.getElementById("opening");
+const inflowEl = document.getElementById("inflow");
+const outflowEl = document.getElementById("outflow");
+const closingEl = document.getElementById("closing");
+
+async function loadAccounts(){
+  const res = await fetch(`${API}?action=accounts`);
+  const data = await res.json();
+
   accountSelect.innerHTML =
-    `<option value="">Select</option>` +
-    data.map(a => `<option value="${a}">${a}</option>`).join("");
+    `<option value="">Select Account</option>` +
+    data.map(a=>`<option value="${a}">${a}</option>`).join("");
 }
 
-async function loadLedger() {
-  if (!accountSelect.value) return;
+async function loadLedger(){
+  if(!accountSelect.value){
+    ledgerBody.innerHTML =
+      `<tr><td colspan="7" class="empty">Select an account</td></tr>`;
+    return;
+  }
 
   const from = fromDate.value;
   const to = toDate.value;
 
-  const data = await fetch(
+  const res = await fetch(
     `${API}?action=ledger&account=${accountSelect.value}&from=${from}&to=${to}`
-  ).then(r => r.json());
+  );
+  const data = await res.json();
 
   let inflow = 0, outflow = 0;
 
-  ledgerBody.innerHTML = data.map(r => {
-    inflow += r.credit;
-    outflow += r.debit;
+  if(!data.length){
+    ledgerBody.innerHTML =
+      `<tr><td colspan="7" class="empty">No transactions</td></tr>`;
+  } else {
+    ledgerBody.innerHTML = data.map(r=>{
+      inflow += r.credit;
+      outflow += r.debit;
+      return `
+        <tr>
+          <td>${r.date}</td>
+          <td>${r.txnId}</td>
+          <td>${r.type}</td>
+          <td>${r.category}</td>
+          <td class="red">₹ ${r.debit}</td>
+          <td class="green">₹ ${r.credit}</td>
+          <td>₹ ${r.balance}</td>
+        </tr>`;
+    }).join("");
+  }
 
-    return `
-      <tr>
-        <td>${r.date}</td>
-        <td>${r.txnId}</td>
-        <td>${r.type}</td>
-        <td>${r.category}</td>
-        <td class="amount-red">₹ ${r.debit}</td>
-        <td class="amount-green">₹ ${r.credit}</td>
-        <td>₹ ${r.balance}</td>
-      </tr>
-    `;
-  }).join("");
-
-  opening.innerText = `₹ ${(data[0]?.balance - inflow + outflow || 0).toFixed(2)}`;
+  openingEl.innerText = `₹ ${(data[0]?.balance - inflow + outflow || 0).toFixed(2)}`;
   inflowEl.innerText = `₹ ${inflow.toFixed(2)}`;
   outflowEl.innerText = `₹ ${outflow.toFixed(2)}`;
-  closing.innerText = `₹ ${(data.at(-1)?.balance || 0).toFixed(2)}`;
+  closingEl.innerText = `₹ ${(data.at(-1)?.balance || 0).toFixed(2)}`;
 
   loadSummary();
 }
 
-async function loadSummary() {
-  const data = await fetch(
+async function loadSummary(){
+  const res = await fetch(
     `${API}?action=summary&account=${accountSelect.value}`
-  ).then(r => r.json());
+  );
+  const data = await res.json();
 
-  summaryBody.innerHTML = data.map(r => `
+  if(!data.length){
+    summaryBody.innerHTML =
+      `<tr><td colspan="4" class="empty">No summary data</td></tr>`;
+    return;
+  }
+
+  summaryBody.innerHTML = data.map(r=>`
     <tr>
       <td>${r.month}</td>
       <td>₹ ${r.debit}</td>
@@ -277,16 +301,7 @@ async function loadSummary() {
   `).join("");
 }
 
-function exportExcel() {
-  window.open(`${API}?action=exportExcel&account=${accountSelect.value}`);
-}
-
-function exportPdf() {
-  window.open(`${API}?action=exportPdf&account=${accountSelect.value}`);
-}
-
 loadAccounts();
 </script>
-
 </body>
 </html>
