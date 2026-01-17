@@ -1,354 +1,292 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Transaction Entry · Kaiwalya Muley</title>
+  <meta charset="UTF-8" />
+  <title>Transactions | Personal Finance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<style>
-/* ================= THEME ================= */
-:root{
-  --bg:#0b1220;
-  --glass:rgba(255,255,255,.06);
-  --border:rgba(255,255,255,.14);
-  --text:#e5e7eb;
-  --muted:#9ca3af;
-  --accent:#4ade80;
-  --danger:#ef4444;
-  --radius:18px;
-  --blur:blur(18px);
-}
+  <style>
+    /* =========================
+       NORDIC MINIMAL THEME
+    ========================== */
 
-*{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto}
+    :root {
+      --bg: #F5F7FA;
+      --card: #FFFFFF;
+      --border: #E2E8F0;
+      --text: #475569;
 
-body{
-  margin:0;
-  min-height:100vh;
-  background:
-    radial-gradient(900px 400px at 10% -10%,#1e293b,transparent),
-    radial-gradient(700px 350px at 90% 10%,#020617,transparent),
-    var(--bg);
-  color:var(--text);
-}
+      --income: #84A98C;
+      --expense: #E4989B;
+      --health: #A5B4FC;
 
-/* ================= HEADER ================= */
-header{
-  position:sticky;top:0;z-index:10;
-  backdrop-filter:var(--blur);
-  background:linear-gradient(180deg,rgba(2,6,23,.9),rgba(2,6,23,.7));
-  border-bottom:1px solid var(--border);
-}
-.header-wrap{
-  max-width:760px;
-  margin:auto;
-  padding:14px 18px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-.title{font-size:18px;font-weight:600}
-.subtitle{font-size:11px;color:var(--muted)}
-.live{font-size:12px;color:var(--muted);text-align:right}
+      --radius: 12px;
+    }
 
-/* ================= CARD ================= */
-.container{max-width:760px;margin:22px auto;padding:0 14px}
-.card{
-  background:var(--glass);
-  backdrop-filter:var(--blur);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:22px;
-  animation:fadeUp .6s ease;
-}
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(14px)}
-  to{opacity:1;transform:none}
-}
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
 
-/* ================= FORM ================= */
-label{
-  font-size:12px;
-  color:var(--muted);
-  margin-top:16px;
-  display:block;
-}
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 16px;
+    }
 
-input, textarea{
-  width:100%;
-  margin-top:6px;
-  padding:14px;
-  border-radius:16px;
-  border:1px solid var(--border);
-  background:rgba(2,6,23,.75);
-  color:var(--text);
-  transition:.25s;
-}
-input:focus, textarea:focus{
-  outline:none;
-  border-color:var(--accent);
-  box-shadow:0 0 0 2px rgba(74,222,128,.18);
-}
-textarea{resize:none}
+    .container {
+      width: 100%;
+      max-width: 520px;
+      animation: fadeUp 0.5s ease forwards;
+    }
 
-/* ================= MODERN SELECT ================= */
-.select-wrap{
-  position:relative;
-  margin-top:6px;
-}
-.select-wrap select{
-  appearance:none;
-  width:100%;
-  padding:14px 46px 14px 14px;
-  border-radius:16px;
-  border:1px solid var(--border);
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02)),
-    rgba(2,6,23,.75);
-  color:var(--text);
-  font-size:14px;
-  cursor:pointer;
-  transition:.25s;
-}
-.select-wrap select:hover{
-  border-color:rgba(255,255,255,.3);
-}
-.select-wrap select:focus{
-  outline:none;
-  border-color:var(--accent);
-  box-shadow:
-    0 0 0 2px rgba(74,222,128,.18),
-    inset 0 0 0 1px rgba(74,222,128,.25);
-}
-.select-wrap::after{
-  content:"▾";
-  position:absolute;
-  right:16px;
-  top:50%;
-  transform:translateY(-50%);
-  color:var(--muted);
-  pointer-events:none;
-  transition:.25s;
-}
-.select-wrap:focus-within::after{
-  color:var(--accent);
-  transform:translateY(-50%) rotate(180deg);
-}
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
 
-/* ================= BUTTONS ================= */
-button{
-  width:100%;
-  margin-top:22px;
-  padding:15px;
-  border-radius:18px;
-  border:none;
-  font-weight:600;
-  cursor:pointer;
-  transition:.25s;
-}
-.primary{
-  background:linear-gradient(135deg,#22c55e,#4ade80);
-  color:#052e16;
-}
-.primary:disabled{opacity:.6}
-.secondary{
-  background:rgba(255,255,255,.06);
-  color:var(--text);
-  border:1px solid var(--border);
-}
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
 
-.hidden{display:none}
-.msg{text-align:center;font-size:13px;margin-top:10px}
-.error{color:var(--danger)}
-.success{color:var(--accent)}
+    label {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      display: block;
+    }
 
-table{width:100%;border-collapse:collapse;margin-top:12px}
-th,td{
-  padding:10px;
-  font-size:12px;
-  border-bottom:1px solid var(--border);
-}
-th{color:var(--muted);text-align:left}
+    input,
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+    }
 
-.footer{
-  margin-top:18px;
-  text-align:center;
-  font-size:11px;
-  color:var(--muted);
-}
-</style>
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #CBD5E1;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      background: var(--health);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.95;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <div class="container">
+    <h1>Add Transaction</h1>
 
-<header>
-  <div class="header-wrap">
-    <div>
-      <div class="title">New Transaction</div>
-      <div class="subtitle">Designed by Kaiwalya Muley</div>
+    <div class="card">
+      <form id="txnForm">
+
+        <div class="field">
+          <label>Date</label>
+          <input type="date" id="txnDate" required />
+        </div>
+
+        <div class="field">
+          <label>Transaction Type</label>
+          <select id="txnType" required>
+            <option value="">Select</option>
+            <option value="INCOME">Income</option>
+            <option value="EXP">Expense</option>
+            <option value="EMI">EMI Payment</option>
+            <option value="SAVINGS">Savings</option>
+            <option value="TRANSFER">Transfer</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Category</label>
+          <select id="category"></select>
+        </div>
+
+        <div class="field">
+          <label>Sub-Category</label>
+          <select id="subCategory"></select>
+        </div>
+
+        <div class="field">
+          <label>Amount</label>
+          <input type="number" id="amount" required />
+        </div>
+
+        <div class="field" id="fromBlock">
+          <label>From Account</label>
+          <select id="fromAccount"></select>
+        </div>
+
+        <div class="field" id="toBlock">
+          <label>To Account</label>
+          <select id="toAccount"></select>
+        </div>
+
+        <div class="field">
+          <label>Description</label>
+          <input type="text" id="description" />
+        </div>
+
+        <button type="submit">Save Transaction</button>
+      </form>
     </div>
-    <div class="live" id="liveClock"></div>
   </div>
-</header>
 
-<div class="container">
-<div class="card">
+  <script>
+    const API_URL =
+      "https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
 
-<label>Date</label>
-<input type="date" id="date">
+    const txnType = document.getElementById("txnType");
+    const category = document.getElementById("category");
+    const subCategory = document.getElementById("subCategory");
+    const fromBlock = document.getElementById("fromBlock");
+    const toBlock = document.getElementById("toBlock");
+    const fromAccount = document.getElementById("fromAccount");
+    const toAccount = document.getElementById("toAccount");
 
-<label>Transaction Type</label>
-<div class="select-wrap">
-  <select id="txnType">
-    <option value="">Select</option>
-    <option>Income</option>
-    <option>Expense</option>
-    <option>Transfer</option>
-  </select>
-</div>
+    let subMap = {};
 
-<label>Level-1</label>
-<div class="select-wrap">
-  <select id="level1"></select>
-</div>
+    async function loadMasters() {
+      const accounts = await fetch(API_URL + "?action=accounts").then(r => r.json());
+      accounts.forEach(a => {
+        fromAccount.innerHTML += `<option value="${a}">${a}</option>`;
+        toAccount.innerHTML += `<option value="${a}">${a}</option>`;
+      });
 
-<div id="catWrap" class="hidden">
-  <label>Category</label>
-  <div class="select-wrap"><select id="category"></select></div>
+      const cats = await fetch(API_URL + "?action=categories").then(r => r.json());
+      cats.forEach(c => category.innerHTML += `<option value="${c}">${c}</option>`);
 
-  <label>Sub-Category</label>
-  <div class="select-wrap"><select id="subCategory"></select></div>
-</div>
+      subMap = await fetch(API_URL + "?action=subcategories").then(r => r.json());
+    }
 
-<label>Amount</label>
-<input type="number" id="amount">
+    category.addEventListener("change", () => {
+      subCategory.innerHTML = "";
+      (subMap[category.value] || []).forEach(s => {
+        subCategory.innerHTML += `<option value="${s}">${s}</option>`;
+      });
+    });
 
-<div id="fromWrap" class="hidden">
-  <label>From Account</label>
-  <div class="select-wrap"><select id="fromAccount"></select></div>
-</div>
+    txnType.addEventListener("change", applyRules);
 
-<div id="toWrap" class="hidden">
-  <label>To Account</label>
-  <div class="select-wrap"><select id="toAccount"></select></div>
-</div>
+    function applyRules() {
+      fromBlock.classList.add("hidden");
+      toBlock.classList.add("hidden");
+      category.disabled = false;
+      subCategory.disabled = false;
+      fromAccount.disabled = false;
 
-<div id="personWrap" class="hidden">
-  <label>Related Person</label>
-  <div class="select-wrap"><select id="relatedPerson"></select></div>
+      if (txnType.value === "INCOME") {
+        toBlock.classList.remove("hidden");
+      }
 
-  <label>Other Person (optional)</label>
-  <input type="text" id="otherPerson" placeholder="Enter name">
-</div>
+      if (txnType.value === "EXP") {
+        fromBlock.classList.remove("hidden");
+      }
 
-<label>Notes</label>
-<textarea id="notes" rows="2"></textarea>
+      if (txnType.value === "TRANSFER") {
+        fromBlock.classList.remove("hidden");
+        toBlock.classList.remove("hidden");
+      }
 
-<div class="msg error" id="error"></div>
-<div class="msg success" id="success"></div>
+      if (txnType.value === "SAVINGS") {
+        fromBlock.classList.remove("hidden");
+        category.value = "Savings";
+        category.disabled = true;
+      }
 
-<button class="primary" id="saveBtn">Save Transaction</button>
+      if (txnType.value === "EMI") {
+        fromBlock.classList.remove("hidden");
+        fromAccount.value = "HDFC Bank";
+        fromAccount.disabled = true;
 
-<button class="secondary" id="toggleRecent">Show Last 10 Transactions</button>
-<div id="recentWrap" class="hidden">
-  <table>
-    <thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th></tr></thead>
-    <tbody id="recentBody"></tbody>
-  </table>
-</div>
+        category.value = "Financial Commitments";
+        category.disabled = true;
 
-<div class="footer">Ledger-Driven Personal Finance System</div>
+        subCategory.innerHTML = "<option value='EMI'>EMI</option>";
+        subCategory.disabled = true;
+      }
+    }
 
-</div>
-</div>
+    document.getElementById("txnForm").addEventListener("submit", async e => {
+      e.preventDefault();
 
-<script>
-const API = "https://script.google.com/macros/s/AKfycbwPQXWOUhZy7S9lm60GsFV6bOgyYj_yqOpMZHG6i4diQwHk9KAy1zUBi2KD3RqNzZfSFw/exec";
+      if (txnType.value === "TRANSFER" && fromAccount.value === toAccount.value) {
+        alert("From and To Account cannot be the same.");
+        return;
+      }
 
-let budgets = [];
+      const payload = {
+        action: "addTransaction",
+        payload: {
+          txnDate: txnDate.value,
+          txnType: txnType.value,
+          category: category.value,
+          subCategory: subCategory.value,
+          amount: Number(amount.value),
+          fromAccount: fromAccount.value,
+          toAccount: toAccount.value,
+          description: description.value,
+          notes: ""
+        }
+      };
 
-document.addEventListener("DOMContentLoaded", async () => {
-  await loadBudgets();
-});
+      const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }).then(r => r.json());
 
-/* ---------- LOAD BUDGET MASTER ---------- */
-async function loadBudgets(){
-  const res = await fetch(`${API}?mode=budgets`);
-  budgets = await res.json();
-}
+      alert("Transaction saved");
+      e.target.reset();
+      applyRules();
+    });
 
-/* ---------- DROPDOWN ELEMENTS ---------- */
-const txnTypeEl   = document.getElementById("txnType");
-const level1El    = document.getElementById("level1");
-const categoryEl  = document.getElementById("category");
-const subCatEl    = document.getElementById("subCategory");
-
-/* ---------- EVENTS ---------- */
-txnTypeEl.addEventListener("change", resetAfterType);
-level1El.addEventListener("change", loadCategories);
-categoryEl.addEventListener("change", loadSubCategories);
-
-/* ---------- RESET ---------- */
-function resetAfterType(){
-  level1El.value = "";
-  categoryEl.innerHTML = `<option value="">Select</option>`;
-  subCatEl.innerHTML   = `<option value="">Select</option>`;
-}
-
-/* ---------- LOAD CATEGORY (FIXED) ---------- */
-function loadCategories(){
-  const txnType = txnTypeEl.value;
-  const level1  = level1El.value;
-
-  categoryEl.innerHTML = `<option value="">Select</option>`;
-  subCatEl.innerHTML   = `<option value="">Select</option>`;
-
-  if(!txnType || !level1) return;
-
-  const cats = [...new Set(
-    budgets
-      .filter(r =>
-        r.Type === txnType &&
-        r.Level_1 === level1
-      )
-      .map(r => r.Category)
-  )];
-
-  cats.forEach(c => {
-    const opt = document.createElement("option");
-    opt.value = c;
-    opt.textContent = c;
-    categoryEl.appendChild(opt);
-  });
-}
-
-/* ---------- LOAD SUB CATEGORY ---------- */
-function loadSubCategories(){
-  const txnType = txnTypeEl.value;
-  const level1  = level1El.value;
-  const cat     = categoryEl.value;
-
-  subCatEl.innerHTML = `<option value="">Select</option>`;
-  if(!cat) return;
-
-  const subs = [...new Set(
-    budgets
-      .filter(r =>
-        r.Type === txnType &&
-        r.Level_1 === level1 &&
-        r.Category === cat
-      )
-      .map(r => r.Sub_Category)
-  )];
-
-  subs.forEach(s => {
-    const opt = document.createElement("option");
-    opt.value = s;
-    opt.textContent = s;
-    subCatEl.appendChild(opt);
-  });
-}
-</script>
-
-
+    loadMasters();
+  </script>
 </body>
 </html>
