@@ -1,287 +1,300 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>Daily Money Log</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <style>
-:root{
-  --bg:#0F172A;
-  --card:#1E293B;
-  --accent:#2DD4BF;
-  --text:#F8FAFC;
-  --glass:rgba(255,255,255,.06);
-  --border:rgba(255,255,255,.12);
+:root {
+  --bg1:#F7F8FC; --bg2:#EEF2F7;
+  --card:#FFFFFF; --border:#E5E7EB;
+  --text:#374151; --muted:#6B7280;
+  --accent:#9AA7D8;
+  --radius:14px;
 }
-*{box-sizing:border-box}
-body{
+
+body::before {
+  content:"";
+  position:fixed; inset:0;
+  background:
+    radial-gradient(circle at 15% 20%, #9AA7D8 0, transparent 35%),
+    radial-gradient(circle at 85% 80%, #7FB7A3 0, transparent 40%);
+  opacity:.035; pointer-events:none;
+}
+
+* { box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+
+body {
   margin:0;
-  background:var(--bg);
+  background:linear-gradient(135deg,var(--bg1),var(--bg2));
   color:var(--text);
-  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  padding:80px 16px 40px;
+}
+
+.clock {
+  position:fixed; top:16px; right:20px;
+  font-size:13px; color:var(--muted);
+}
+
+.container {
+  max-width:1100px;
+  margin:auto;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+}
+
+h1 { grid-column:span 2; margin:0; }
+
+.card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
   padding:24px;
 }
-#clock{
-  position:fixed;
-  top:14px;
-  right:22px;
-  font-size:.8rem;
-  opacity:.85;
-}
-.container{max-width:1200px;margin:auto}
-.card{
-  background:var(--glass);
-  backdrop-filter:blur(14px);
+
+label { font-size:13px; font-weight:500; margin-bottom:6px; display:block; }
+.field { margin-bottom:18px; }
+
+input,select,button {
+  width:100%; padding:10px 12px;
+  border-radius:8px;
   border:1px solid var(--border);
-  border-radius:18px;
-  padding:20px;
+  font-size:14px;
 }
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-  gap:20px;
-}
-label{font-size:.72rem;opacity:.8;margin-top:14px;display:block}
-input,select{
-  width:100%;
-  margin-top:6px;
-  padding:10px 12px;
-  border-radius:12px;
+
+input[readonly] { background:#F3F4F6; }
+
+button {
   border:none;
-  background:#020617;
-  color:var(--text);
-}
-.hidden{display:none}
-.locked{opacity:.5;pointer-events:none}
-button{
-  margin-top:20px;
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:999px;
   background:var(--accent);
-  color:#022c22;
+  color:#fff;
   font-weight:600;
-  letter-spacing:1px;
-  cursor:pointer;
 }
-footer{
-  text-align:center;
-  margin-top:40px;
-  font-size:.7rem;
-  opacity:.6;
+
+.hidden { display:none; }
+
+table { width:100%; border-collapse:collapse; font-size:13px; }
+thead th {
+  text-align:left;
+  padding:8px;
+  border-bottom:1px solid var(--border);
+  color:var(--muted);
+}
+tbody td {
+  padding:8px;
+  border-bottom:1px dashed #E5E7EB;
+}
+td.amount { text-align:right; font-weight:600; }
+td.accounts { color:var(--muted); font-size:12px; }
+
+@media(max-width:900px){
+  .container { grid-template-columns:1fr; }
+  h1 { grid-column:span 1; }
 }
 </style>
 </head>
 
 <body>
 
-<div id="clock"></div>
+<div class="clock" id="clock"></div>
 
 <div class="container">
-<h2>💸 Daily Money Log</h2>
-
-<div class="grid">
+<h1>Daily Money Log</h1>
 
 <!-- FORM -->
 <div class="card">
+<form id="txnForm">
+
+<div class="field">
 <label>Date</label>
-<input type="date" id="txnDate">
+<input type="date" id="txnDate" required>
+</div>
 
+<div class="field">
 <label>Type</label>
-<select id="txnType">
-  <option value="EXP">Expense</option>
-  <option value="INC">Income</option>
-  <option value="TRANSFER">Transfer</option>
-  <option value="SAV">Savings</option>
-  <option value="EMI">EMI</option>
+<select id="txnType" required>
+<option value="">Select</option>
+<option value="INCOME">Income</option>
+<option value="EXP">Expense</option>
+<option value="EMI">EMI Payment</option>
+<option value="SAVINGS">Savings</option>
+<option value="TRANSFER">Transfer</option>
 </select>
+</div>
 
-<div id="catBlock">
+<div class="field">
 <label>Category</label>
 <select id="category"></select>
+</div>
 
+<div class="field hidden" id="subBlock">
 <label>Sub Category</label>
 <select id="subCategory"></select>
 </div>
 
-<div id="emiBlock" class="hidden">
-<label>EMI</label>
-<select id="emiSelect"></select>
+<div class="field">
+<label>Amount</label>
+<input type="number" id="amount" required>
 </div>
 
-<label>Amount</label>
-<input type="number" id="amount">
+<div class="field hidden" id="emiBlock">
+<label>EMI</label>
+<select id="emiId"></select>
+</div>
 
-<div id="fromBlock">
+<div class="field hidden" id="fromBlock">
 <label>From Account</label>
 <select id="fromAccount"></select>
 </div>
 
-<div id="toBlock">
+<div class="field hidden" id="toBlock">
 <label>To Account</label>
 <select id="toAccount"></select>
 </div>
 
-<label>Notes</label>
-<input id="notes">
-
-<button id="saveBtn">SAVE TRANSACTION</button>
+<div class="field">
+<label>Notes (Optional)</label>
+<input type="text" id="notes">
 </div>
 
-<!-- RECENT -->
+<button id="saveBtn" type="submit">Save Transaction</button>
+</form>
+</div>
+
+<!-- LAST 10 -->
 <div class="card">
-<h4>Last 10 Transactions</h4>
-<table style="width:100%;font-size:.8rem">
-<thead>
-<tr>
-<th>Date</th><th>Type</th><th>Category</th><th>Accounts</th><th>Amount</th>
-</tr>
-</thead>
-<tbody id="recent"></tbody>
-</table>
+<h3>Last 10 Transactions</h3>
+<div id="recentTxns">Loading…</div>
 </div>
 
-</div>
-
-<footer>
-© Designed & Engineered by <b>Kaiwalya Muley</b>
-</footer>
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
+const API="https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
 
-/* CLOCK */
-setInterval(()=>{
-  const d=new Date();
-  clock.innerText =
-    d.toLocaleDateString(undefined,{weekday:'long',day:'2-digit',month:'short',year:'numeric'})
-    +" • "+d.toLocaleTimeString();
-},1000);
+const $=id=>document.getElementById(id);
+const txnForm=$("txnForm");
 
-/* SAFE INIT */
-document.addEventListener("DOMContentLoaded", init);
+let accounts=[], categories=[], subMap={}, emiMap={};
 
-async function init(){
-  try{
-    const [
-      accounts,
-      categories,
-      subcats,
-      emis,
-      recent
-    ] = await Promise.all([
-      fetch(API+"?action=accounts").then(r=>r.json()),
-      fetch(API+"?action=categories").then(r=>r.json()),
-      fetch(API+"?action=subcategories").then(r=>r.json()),
-      fetch(API+"?action=emis").then(r=>r.json()),
-      fetch(API+"?action=recent").then(r=>r.json())
-    ]);
+setInterval(()=>clock.textContent=new Date().toLocaleString("en-IN",{weekday:"short",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit",second:"2-digit"}),1000);
 
-    fillSelect(fromAccount, accounts);
-    fillSelect(toAccount, accounts);
-    fillSelect(category, categories);
+(async function init(){
+  accounts=await fetch(API+"?action=accounts").then(r=>r.json());
+  categories=await fetch(API+"?action=categories").then(r=>r.json());
+  subMap=await fetch(API+"?action=subcategories").then(r=>r.json());
+  const emis=await fetch(API+"?action=emis").then(r=>r.json());
 
-    category.onchange = () => {
-      const list = subcats[category.value] || [];
-      fillSelect(subCategory, list);
-    };
+  fromAccount.innerHTML=toAccount.innerHTML="<option></option>"+accounts.map(a=>`<option>${a}</option>`).join("");
+  category.innerHTML="<option></option>";
 
-    emiSelect.innerHTML = "";
-    emis.forEach(e=>{
-      emiSelect.innerHTML +=
-        `<option value="${e.id}" data-amt="${e.amount}">${e.name}</option>`;
-    });
+  emis.forEach(e=>{
+    emiMap[e.id]=e.amount;
+    emiId.innerHTML+=`<option value="${e.id}">${e.name}</option>`;
+  });
 
-    renderRecent(recent);
-    handleType();
+  loadRecent();
+})();
 
-    console.log("✅ Transactions API Loaded");
+/* TYPE LOGIC */
+txnType.onchange=()=>{
+  [subBlock,fromBlock,toBlock,emiBlock].forEach(b=>b.classList.add("hidden"));
+  amount.readOnly=false;
+
+  category.innerHTML="<option></option>";
+
+  if(txnType.value==="INCOME"){
+    category.innerHTML="<option>Income</option>";
+    toBlock.classList.remove("hidden");
   }
-  catch(err){
-    console.error("❌ INIT ERROR", err);
-    alert("Failed to load master data. Check API.");
+
+  if(txnType.value==="EXP"){
+    categories.forEach(c=>category.innerHTML+=`<option>${c}</option>`);
+    subBlock.classList.remove("hidden");
+    fromBlock.classList.remove("hidden");
   }
-}
 
-/* TYPE RULES */
-txnType.onchange = handleType;
-fromAccount.onchange = filterTransfer;
+  if(txnType.value==="SAVINGS"){
+    category.innerHTML="<option>Savings</option>";
+    fromBlock.classList.remove("hidden");
+  }
 
-function handleType(){
-  const t = txnType.value;
-  catBlock.classList.add("hidden");
-  emiBlock.classList.add("hidden");
-  fromBlock.classList.add("hidden");
-  toBlock.classList.add("hidden");
-  amount.classList.remove("locked");
-
-  if(t==="EXP"){catBlock.classList.remove("hidden");fromBlock.classList.remove("hidden")}
-  if(t==="INC"){toBlock.classList.remove("hidden")}
-  if(t==="SAV"){toBlock.classList.remove("hidden")}
-  if(t==="TRANSFER"){fromBlock.classList.remove("hidden");toBlock.classList.remove("hidden");filterTransfer()}
-  if(t==="EMI"){
+  if(txnType.value==="EMI"){
+    category.innerHTML="<option>Financial Commitments</option>";
     emiBlock.classList.remove("hidden");
     fromBlock.classList.remove("hidden");
-    amount.classList.add("locked");
-    amount.value = emiSelect.selectedOptions[0]?.dataset.amt || "";
   }
-}
 
-function filterTransfer(){
-  [...toAccount.options].forEach(o=>{
-    o.hidden = o.value === fromAccount.value;
-  });
-}
+  if(txnType.value==="TRANSFER"){
+    category.innerHTML="<option>Transfer</option>";
+    fromBlock.classList.remove("hidden");
+    toBlock.classList.remove("hidden");
+  }
+};
+
+category.onchange=()=>{
+  subCategory.innerHTML=(subMap[category.value]||[]).map(s=>`<option>${s}</option>`).join("");
+};
+
+emiId.onchange=()=>{
+  if(emiMap[emiId.value]){
+    amount.value=emiMap[emiId.value];
+    amount.readOnly=true;
+  }else{
+    amount.readOnly=false;
+  }
+};
 
 /* SAVE */
-saveBtn.onclick = async ()=>{
-  saveBtn.disabled = true;
-  saveBtn.innerText = "SAVING…";
-
-  const payload = {
-    txnDate: txnDate.value,
-    txnType: txnType.value,
-    category: category.value || "",
-    subCategory: subCategory.value || "",
-    amount: amount.value,
-    fromAccount: fromAccount.value || "",
-    toAccount: toAccount.value || "",
-    emiId: emiSelect.value || "",
-    notes: notes.value,
-    source: "WEB"
-  };
+txnForm.onsubmit=async e=>{
+  e.preventDefault();
+  saveBtn.disabled=true;
+  saveBtn.textContent="Saving…";
 
   await fetch(API,{
     method:"POST",
-    body:JSON.stringify({action:"addTransaction",payload})
+    body:JSON.stringify({
+      action:"addTransaction",
+      payload:{
+        txnDate:txnDate.value,
+        txnType:txnType.value,
+        category:category.value,
+        subCategory:subCategory.value,
+        amount:Number(amount.value),
+        fromAccount:fromAccount.value,
+        toAccount:toAccount.value,
+        emiId:emiId.value,
+        notes:notes.value,
+        source:"WEB"
+      }
+    })
   });
 
-  location.reload();
+  txnForm.reset();
+  saveBtn.disabled=false;
+  saveBtn.textContent="Save Transaction";
+  loadRecent();
 };
 
-/* HELPERS */
-function fillSelect(sel, arr){
-  sel.innerHTML = "";
-  arr.forEach(v=>{
-    sel.innerHTML += `<option value="${v}">${v}</option>`;
-  });
-}
-
-function renderRecent(rows){
-  recent.innerHTML = rows.map(r=>`
-    <tr>
-      <td>${r.date}</td>
-      <td>${r.type}</td>
-      <td>${r.category||""}</td>
-      <td>${r.from||""} → ${r.to||""}</td>
-      <td>₹${r.amount}</td>
-    </tr>
-  `).join("");
+/* RECENT */
+async function loadRecent(){
+  const box=$("recentTxns");
+  const data=await fetch(API+"?action=recent").then(r=>r.json());
+  box.innerHTML=`
+  <table>
+    <thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Accounts</th><th style="text-align:right">Amount</th></tr></thead>
+    <tbody>${data.map(t=>`
+      <tr>
+        <td>${t.date}</td>
+        <td>${t.type}</td>
+        <td>${t.category}</td>
+        <td class="accounts">${t.from||""}${t.to?" → "+t.to:""}</td>
+        <td class="amount">₹ ${t.amount}</td>
+      </tr>`).join("")}</tbody>
+  </table>`;
 }
 </script>
 
