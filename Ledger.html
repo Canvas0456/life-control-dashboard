@@ -1,73 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Account Ledger</title>
 
 <style>
-:root{
-  --bg:#f5f7fa;
-  --card:#ffffff;
-  --border:#e2e8f0;
-  --text:#475569;
-  --green:#84a98c;
-  --red:#e4989b;
-  --muted:#94a3b8;
-}
-
-body{
-  margin:0;
-  font-family:Inter,system-ui,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-}
-
-.container{
-  max-width:1200px;
-  margin:auto;
-  padding:24px;
-}
-
-h1{
-  font-size:28px;
-  font-weight:600;
-  margin-bottom:20px;
-}
-
-.card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:24px;
-  margin-bottom:20px;
-}
-
-label{
-  font-size:13px;
-  color:#64748b;
-}
-
-select,input{
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  font-size:14px;
-}
-
-button{
-  padding:12px 18px;
-  border-radius:10px;
-  border:none;
-  background:#64748b;
-  color:#fff;
-  cursor:pointer;
-}
+body{margin:0;font-family:Inter,system-ui;background:#f5f7fa;color:#475569}
+.container{max-width:1200px;margin:auto;padding:24px}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;margin-bottom:20px}
+h1{margin-bottom:20px}
+label{font-size:13px;color:#64748b}
+select,input{width:100%;padding:12px;border-radius:10px;border:1px solid #e2e8f0}
+button{padding:12px 18px;border-radius:10px;border:none;background:#64748b;color:#fff;cursor:pointer}
 
 .filters{
   display:grid;
-  grid-template-columns:2fr 1fr 1fr auto;
+  grid-template-columns: 2fr 1fr 1fr 120px;
   gap:16px;
   align-items:end;
 }
@@ -78,44 +27,9 @@ button{
   gap:16px;
 }
 
-.stat h4{
-  margin:0;
-  font-size:13px;
-  font-weight:500;
-  color:#64748b;
-}
-
-.stat p{
-  margin-top:6px;
-  font-size:22px;
-  font-weight:600;
-}
-
-.green{color:var(--green)}
-.red{color:var(--red)}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-
-th,td{
-  padding:10px;
-  border-bottom:1px solid var(--border);
-  text-align:left;
-}
-
-th{
-  color:#64748b;
-  font-weight:600;
-}
-
-.empty{
-  text-align:center;
-  color:var(--muted);
-  padding:16px;
-}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid #e2e8f0}
+th{color:#64748b}
 
 @media(max-width:768px){
   .filters{grid-template-columns:1fr}
@@ -129,84 +43,38 @@ th{
 
 <h1>Account Ledger</h1>
 
-<!-- FILTERS -->
 <div class="card filters">
   <div>
-    <label>Select Account</label>
-    <select id="accountSelect">
-      <option value="">Select Account</option>
-    </select>
+    <label>Account</label>
+    <select id="account"></select>
   </div>
-
   <div>
     <label>From Date</label>
-    <input type="date" id="fromDate">
+    <input type="date" id="from">
   </div>
-
   <div>
     <label>To Date</label>
-    <input type="date" id="toDate">
+    <input type="date" id="to">
   </div>
-
   <div>
-    <button onclick="loadLedger(true)">Apply</button>
+    <button onclick="loadLedger()">Apply</button>
   </div>
 </div>
 
-<!-- STATS -->
 <div class="card stats">
-  <div class="stat">
-    <h4>Opening Balance</h4>
-    <p id="opening">₹ 0.00</p>
-  </div>
-  <div class="stat">
-    <h4>Net Inflow</h4>
-    <p id="inflow" class="green">₹ 0.00</p>
-  </div>
-  <div class="stat">
-    <h4>Net Outflow</h4>
-    <p id="outflow" class="red">₹ 0.00</p>
-  </div>
-  <div class="stat">
-    <h4>Closing Balance</h4>
-    <p id="closing">₹ 0.00</p>
-  </div>
+  <div><label>Opening</label><h2 id="opening">₹0</h2></div>
+  <div><label>Inflow</label><h2 id="inflow">₹0</h2></div>
+  <div><label>Outflow</label><h2 id="outflow">₹0</h2></div>
+  <div><label>Closing</label><h2 id="closing">₹0</h2></div>
 </div>
 
-<!-- LEDGER TABLE -->
 <div class="card">
 <table>
 <thead>
-<tr>
-  <th>Date</th>
-  <th>Txn ID</th>
-  <th>Type</th>
-  <th>Category</th>
-  <th>Debit</th>
-  <th>Credit</th>
-  <th>Balance</th>
-</tr>
+<tr><th>Date</th><th>Txn</th><th>Type</th><th>Category</th><th>Debit</th><th>Credit</th><th>Balance</th></tr>
 </thead>
-<tbody id="ledgerBody">
-<tr><td colspan="7" class="empty">Select an account</td></tr>
-</tbody>
-</table>
-</div>
-
-<!-- CATEGORY BREAKUP -->
-<div class="card">
-<h3>Category-wise Breakup</h3>
-<table>
-<thead>
-<tr>
-  <th>Category</th>
-  <th>Debit</th>
-  <th>Credit</th>
-  <th>Net</th>
-</tr>
-</thead>
-<tbody id="categoryBody">
-<tr><td colspan="4" class="empty">No data</td></tr>
+<tbody id="rows">
+<tr><td colspan="7">Select an account</td></tr>
 </tbody>
 </table>
 </div>
@@ -214,107 +82,47 @@ th{
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbzMO7aNBxJXJ2T7lRN8KQUvy8zmKsDNf_iAe1sfkoloFanBP4a_ui8lOCjxB9lZgRHuag/exec";
+const API = "PASTE_LEDGER_DEPLOYMENT_URL_HERE";
+const account = document.getElementById("account");
+const rows = document.getElementById("rows");
 
-const accountSelect = document.getElementById("accountSelect");
-const ledgerBody = document.getElementById("ledgerBody");
-const categoryBody = document.getElementById("categoryBody");
-
-const openingEl = document.getElementById("opening");
-const inflowEl = document.getElementById("inflow");
-const outflowEl = document.getElementById("outflow");
-const closingEl = document.getElementById("closing");
-
-/* Load only real account names */
-async function loadAccounts(){
-  const res = await fetch(`${API}?action=accounts`);
-  const data = await res.json();
-
-  const validAccounts = data.filter(a =>
-    !/^ACC\d+/i.test(a) && a.length > 3
-  );
-
-  accountSelect.innerHTML =
-    `<option value="">Select Account</option>` +
-    validAccounts.map(a=>`<option value="${a}">${a}</option>`).join("");
-
-  accountSelect.addEventListener("change", ()=>{
-    if(accountSelect.value){
-      loadLedger(false);
-    }
+fetch(`${API}?action=accounts`)
+  .then(r=>r.json())
+  .then(data=>{
+    account.innerHTML =
+      `<option value="">Select</option>` +
+      data.map(a=>`<option value="${a}">${a}</option>`).join("");
+    account.onchange = loadLedger;
   });
-}
 
-/* Load Ledger */
-async function loadLedger(isApply=false){
-  if(!accountSelect.value) return;
+function loadLedger(){
+  if(!account.value) return;
 
-  let url = `${API}?action=ledger&account=${accountSelect.value}`;
+  let url = `${API}?action=ledger&account=${account.value}`;
+  if(from.value || to.value) url += `&from=${from.value}&to=${to.value}`;
 
-  if(isApply && (fromDate.value || toDate.value)){
-    url += `&from=${fromDate.value}&to=${toDate.value}`;
-  }
+  fetch(url).then(r=>r.json()).then(data=>{
+    let inflow=0,outflow=0;
 
-  const res = await fetch(url);
-  const data = await res.json();
-
-  let inflow=0, outflow=0;
-  let categoryMap={};
-
-  if(!data.length){
-    ledgerBody.innerHTML =
-      `<tr><td colspan="7" class="empty">No transactions</td></tr>`;
-  } else {
-    ledgerBody.innerHTML = data.map(r=>{
-      inflow+=r.credit;
-      outflow+=r.debit;
-
-      categoryMap[r.category] ??= {debit:0, credit:0};
-      categoryMap[r.category].debit+=r.debit;
-      categoryMap[r.category].credit+=r.credit;
-
-      return `
-      <tr>
+    rows.innerHTML = data.map(r=>{
+      inflow+=r.credit; outflow+=r.debit;
+      return `<tr>
         <td>${r.date}</td>
         <td>${r.txnId}</td>
         <td>${r.type}</td>
         <td>${r.category}</td>
-        <td class="red">₹ ${r.debit}</td>
-        <td class="green">₹ ${r.credit}</td>
-        <td>₹ ${r.balance}</td>
+        <td>${r.debit}</td>
+        <td>${r.credit}</td>
+        <td>${r.balance}</td>
       </tr>`;
     }).join("");
-  }
 
-  openingEl.innerText = `₹ ${(data[0]?.balance - inflow + outflow || 0).toFixed(2)}`;
-  inflowEl.innerText = `₹ ${inflow.toFixed(2)}`;
-  outflowEl.innerText = `₹ ${outflow.toFixed(2)}`;
-  closingEl.innerText = `₹ ${(data.at(-1)?.balance || 0).toFixed(2)}`;
-
-  renderCategoryBreakup(categoryMap);
+    opening.textContent = "₹" + (data[0]?.balance - inflow + outflow || 0);
+    inflow.textContent = "₹" + inflow;
+    outflow.textContent = "₹" + outflow;
+    closing.textContent = "₹" + (data.at(-1)?.balance || 0);
+  });
 }
-
-function renderCategoryBreakup(map){
-  const keys = Object.keys(map);
-  if(!keys.length){
-    categoryBody.innerHTML =
-      `<tr><td colspan="4" class="empty">No data</td></tr>`;
-    return;
-  }
-
-  categoryBody.innerHTML = keys.map(c=>{
-    const d = map[c];
-    return `
-    <tr>
-      <td>${c}</td>
-      <td>₹ ${d.debit}</td>
-      <td>₹ ${d.credit}</td>
-      <td>₹ ${(d.credit-d.debit).toFixed(2)}</td>
-    </tr>`;
-  }).join("");
-}
-
-loadAccounts();
 </script>
 
 </body>
