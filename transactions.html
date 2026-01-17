@@ -15,7 +15,6 @@
   --border:rgba(0,0,0,0.05);
   --text:#1F2937;
   --muted:#6B7280;
-  --radius:2rem;
 }
 
 *{box-sizing:border-box;font-family:Inter,sans-serif}
@@ -23,23 +22,29 @@
 body{
   margin:0;
   background:var(--bg);
-  display:flex;
-  justify-content:center;
-  padding:40px 16px 80px;
+  padding:24px 16px 80px;
+}
+
+.liveTime{
+  position:fixed;
+  top:14px;
+  right:18px;
+  font-size:13px;
+  color:var(--muted);
 }
 
 .card{
-  width:100%;
   max-width:520px;
+  margin:60px auto 0;
   background:var(--card);
   border-radius:32px;
   padding:32px;
-  box-shadow:0 25px 60px rgba(0,0,0,0.08);
+  box-shadow:0 25px 60px rgba(0,0,0,.08);
 }
 
 h1{
   font-family:"Playfair Display",serif;
-  margin:0 0 24px;
+  margin:0 0 20px;
 }
 
 .amount{
@@ -49,12 +54,13 @@ h1{
   border:none;
   outline:none;
   width:100%;
+  background:transparent;
 }
 
 label{
   font-size:13px;
   color:var(--muted);
-  margin-top:20px;
+  margin-top:18px;
   display:block;
 }
 
@@ -70,30 +76,26 @@ textarea{resize:none}
 
 button{
   width:100%;
-  margin-top:30px;
+  margin-top:28px;
   padding:16px;
   border-radius:30px;
   border:none;
   background:var(--accent);
-  color:white;
+  color:#fff;
   font-size:16px;
   font-weight:600;
+  transition:.3s;
 }
+
+button.success{background:#16A34A}
+button.error{background:#DC2626}
 
 .hidden{display:none}
 
-.footer{
-  text-align:center;
-  margin-top:24px;
-  font-size:12px;
-  color:#9CA3AF;
-}
-
-/* Collapsible */
 details summary{
   cursor:pointer;
   font-weight:600;
-  margin-top:30px;
+  margin-top:28px;
 }
 
 table{
@@ -102,19 +104,30 @@ table{
   font-size:13px;
   margin-top:12px;
 }
-
 th,td{
   padding:8px;
   border-bottom:1px dashed #E5E7EB;
 }
 td:last-child{text-align:right}
+
+.footer{
+  text-align:center;
+  margin-top:24px;
+  font-size:12px;
+  color:#9CA3AF;
+}
 </style>
 </head>
 
 <body>
 
+<div class="liveTime" id="liveTime"></div>
+
 <div class="card">
 <h1>Adding a Transaction</h1>
+
+<label>Date</label>
+<input type="date" id="txnDate">
 
 <input id="amount" class="amount" type="number" placeholder="0">
 
@@ -176,6 +189,7 @@ const amt=document.getElementById("amount");
 const emi=document.getElementById("emiId");
 const from=document.getElementById("fromAcc");
 const to=document.getElementById("toAcc");
+const saveBtn=document.getElementById("saveBtn");
 
 const subWrap=document.getElementById("subWrap");
 const emiWrap=document.getElementById("emiWrap");
@@ -184,107 +198,136 @@ const toWrap=document.getElementById("toWrap");
 
 let accounts=[], subMap={}, emiMap={};
 
+document.getElementById("txnDate").value =
+  new Date().toISOString().slice(0,10);
+
+/* LIVE TIME */
+setInterval(()=>{
+  document.getElementById("liveTime").textContent =
+    new Date().toLocaleString("en-IN",{
+      weekday:"long",day:"2-digit",month:"short",
+      year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"
+    });
+},1000);
+
 (async()=>{
- accounts=await fetch(API+"?action=accounts").then(r=>r.json());
- subMap=await fetch(API+"?action=subcategories").then(r=>r.json());
- const emis=await fetch(API+"?action=emis").then(r=>r.json());
+  accounts=await fetch(API+"?action=accounts").then(r=>r.json());
+  subMap=await fetch(API+"?action=subcategories").then(r=>r.json());
+  const emis=await fetch(API+"?action=emis").then(r=>r.json());
 
- from.innerHTML=to.innerHTML="<option></option>"+accounts.map(a=>`<option>${a}</option>`).join("");
- emi.innerHTML="<option></option>"+emis.map(e=>{
-   emiMap[e.id]=e.amount;
-   return `<option value="${e.id}">${e.name}</option>`;
- }).join("");
+  from.innerHTML=to.innerHTML="<option></option>"+
+    accounts.map(a=>`<option>${a}</option>`).join("");
 
- loadRecent();
+  emi.innerHTML="<option></option>"+emis.map(e=>{
+    emiMap[e.id]=e.amount;
+    return `<option value="${e.id}">${e.name}</option>`;
+  }).join("");
+
+  loadRecent();
 })();
 
 type.onchange=()=>{
- cat.innerHTML="";
- subWrap.classList.add("hidden");
- emiWrap.classList.add("hidden");
- fromWrap.classList.add("hidden");
- toWrap.classList.add("hidden");
- amt.readOnly=false;
+  cat.innerHTML="";
+  subWrap.classList.add("hidden");
+  emiWrap.classList.add("hidden");
+  fromWrap.classList.add("hidden");
+  toWrap.classList.add("hidden");
+  amt.readOnly=false;
 
- if(type.value==="INCOME"){
-   cat.innerHTML="<option>Income</option>";
-   toWrap.classList.remove("hidden");
- }
-
- if(type.value==="EXP"){
-   Object.keys(subMap).forEach(c=>cat.innerHTML+=`<option>${c}</option>`);
-   fromWrap.classList.remove("hidden");
-   subWrap.classList.remove("hidden");
- }
-
- if(type.value==="SAVINGS"){
-   cat.innerHTML="<option>Savings</option>";
-   fromWrap.classList.remove("hidden");
- }
-
- if(type.value==="TRANSFER"){
-   cat.innerHTML="<option>Transfer</option>";
-   fromWrap.classList.remove("hidden");
-   toWrap.classList.remove("hidden");
- }
-
- if(type.value==="EMI"){
-   cat.innerHTML="<option>Financial Commitments</option>";
-   fromWrap.classList.remove("hidden");
-   emiWrap.classList.remove("hidden");
- }
+  if(type.value==="INCOME"){
+    cat.innerHTML="<option>Income</option>";
+    toWrap.classList.remove("hidden");
+  }
+  if(type.value==="EXP"){
+    Object.keys(subMap).forEach(c=>cat.innerHTML+=`<option>${c}</option>`);
+    fromWrap.classList.remove("hidden");
+    subWrap.classList.remove("hidden");
+  }
+  if(type.value==="SAVINGS"){
+    cat.innerHTML="<option>Savings</option>";
+    fromWrap.classList.remove("hidden");
+  }
+  if(type.value==="TRANSFER"){
+    cat.innerHTML="<option>Transfer</option>";
+    fromWrap.classList.remove("hidden");
+    toWrap.classList.remove("hidden");
+  }
+  if(type.value==="EMI"){
+    cat.innerHTML="<option>Financial Commitments</option>";
+    fromWrap.classList.remove("hidden");
+    emiWrap.classList.remove("hidden");
+  }
 };
 
 cat.onchange=()=>{
- sub.innerHTML=(subMap[cat.value]||[]).map(s=>`<option>${s}</option>`).join("");
+  sub.innerHTML=(subMap[cat.value]||[]).map(s=>`<option>${s}</option>`).join("");
 };
 
 from.onchange=()=>{
- if(type.value==="TRANSFER"){
-   to.innerHTML="<option></option>"+accounts.filter(a=>a!==from.value).map(a=>`<option>${a}</option>`).join("");
- }
+  if(type.value==="TRANSFER"){
+    to.innerHTML="<option></option>"+
+      accounts.filter(a=>a!==from.value)
+      .map(a=>`<option>${a}</option>`).join("");
+  }
 };
 
 emi.onchange=()=>{
- amt.value=emiMap[emi.value]||"";
- amt.readOnly=!!emiMap[emi.value];
+  amt.value=emiMap[emi.value]||"";
+  amt.readOnly=!!emiMap[emi.value];
 };
 
-document.getElementById("saveBtn").onclick=async()=>{
- await fetch(API,{
-   method:"POST",
-   body:JSON.stringify({
-     action:"addTransaction",
-     payload:{
-       txnDate:new Date().toISOString().slice(0,10),
-       txnType:type.value,
-       category:cat.value,
-       subCategory:sub.value,
-       amount:Number(amt.value),
-       fromAccount:from.value,
-       toAccount:to.value,
-       emiId:emi.value,
-       notes:notes.value,
-       source:"WEB"
-     }
-   })
- });
- location.reload();
+saveBtn.onclick=async()=>{
+  saveBtn.textContent="Saving…";
+  saveBtn.className="";
+
+  try{
+    await fetch(API,{
+      method:"POST",
+      body:JSON.stringify({
+        action:"addTransaction",
+        payload:{
+          txnDate:txnDate.value,
+          txnType:type.value,
+          category:cat.value,
+          subCategory:sub.value,
+          amount:Number(amt.value),
+          fromAccount:from.value,
+          toAccount:to.value,
+          emiId:emi.value,
+          notes:notes.value,
+          source:"WEB"
+        }
+      })
+    });
+
+    saveBtn.textContent="Saved ✓";
+    saveBtn.classList.add("success");
+    setTimeout(()=>location.reload(),800);
+
+  }catch{
+    saveBtn.textContent="Error";
+    saveBtn.classList.add("error");
+  }
 };
 
 async function loadRecent(){
- const d=await fetch(API+"?action=recent").then(r=>r.json());
- document.getElementById("recent").innerHTML=`
- <table>
- <thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Accounts</th><th>₹</th></tr></thead>
- <tbody>${d.map(t=>`
- <tr>
- <td>${t.date}</td>
- <td>${t.type}</td>
- <td>${t.category}</td>
- <td>${t.from||""}${t.to?" → "+t.to:""}</td>
- <td>${t.amount}</td>
- </tr>`).join("")}</tbody></table>`;
+  const d=await fetch(API+"?action=recent").then(r=>r.json());
+  document.getElementById("recent").innerHTML=`
+  <table>
+    <thead>
+      <tr><th>Date</th><th>Type</th><th>Category</th><th>Accounts</th><th>₹</th></tr>
+    </thead>
+    <tbody>
+    ${d.map(t=>`
+      <tr>
+        <td>${t.date}</td>
+        <td>${t.type}</td>
+        <td>${t.category}</td>
+        <td>${t.from||""}${t.to?" → "+t.to:""}</td>
+        <td>${t.amount}</td>
+      </tr>`).join("")}
+    </tbody>
+  </table>`;
 }
 </script>
 
