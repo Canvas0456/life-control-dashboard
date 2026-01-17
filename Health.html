@@ -206,29 +206,24 @@ async function saveHealth() {
   };
 
   try {
-    const res = await fetch(API_URL, {
+    await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
       body: JSON.stringify(payload)
     });
 
-    const data = await res.json();
+    btn.innerText = "SAVED ✓";
+    setTimeout(() => location.reload(), 800);
 
-    if (data.status === "success") {
-      btn.innerText = "SAVED ✓";
-      setTimeout(() => location.reload(), 800);
-    } else {
-      throw new Error(data.message);
-    }
-
-  } catch (err) {
+  } catch (e) {
     alert("Save failed");
-    btn.disabled = false;
     btn.innerText = "SAVE HEALTH LOG";
-    console.error(err);
+    btn.disabled = false;
   }
 }
 </script>
+
 
 </body>
 </html>
