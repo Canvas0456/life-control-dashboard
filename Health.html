@@ -6,222 +6,260 @@
 
   <title>Daily Health Log</title>
 
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      --bg: #F5F7FA;
-      --card: #FFFFFF;
-      --border: #E2E8F0;
-      --text: #475569;
-      --primary: #64748B;
-      --accent: #A5B4FC;
+      --sage: #9caf88;
+      --dusty-rose: #d4a3a3;
+      --warm-sand: #f5f2ed;
+      --glass: rgba(255, 255, 255, 0.7);
     }
 
-    * {
-      box-sizing: border-box;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-
-    body {
+    body, html {
       margin: 0;
-      background: var(--bg);
-      color: var(--text);
+      height: 100%;
+      font-family: 'Quicksand', sans-serif;
     }
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 24px;
+    .art-bg {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      padding: 20px;
+    }
+
+    .shape {
+      position: absolute;
+      filter: blur(80px);
+      z-index: 0;
+    }
+
+    .circle-one {
+      width: 400px;
+      height: 400px;
+      background: var(--sage);
+      top: -10%;
+      left: -10%;
+      opacity: 0.3;
+      border-radius: 50%;
+    }
+
+    .circle-two {
+      width: 300px;
+      height: 300px;
+      background: var(--dusty-rose);
+      bottom: 10%;
+      right: -5%;
+      opacity: 0.2;
+      border-radius: 50%;
+    }
+
+    .glass-form {
+      position: relative;
+      z-index: 1;
+      background: var(--glass);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 3rem;
+      border-radius: 30px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.05);
     }
 
     h1 {
-      font-size: 32px;
-      margin-bottom: 24px;
-      font-weight: 600;
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px;
+      color: #5a5a5a;
+      font-weight: 300;
+      letter-spacing: 1px;
+      text-align: center;
+      margin-bottom: 10px;
     }
 
     label {
       display: block;
-      font-size: 14px;
-      margin-bottom: 6px;
-      color: #64748B;
+      margin-top: 20px;
+      color: #7a7a7a;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
     }
 
     input, textarea {
       width: 100%;
-      padding: 12px 14px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      font-size: 15px;
-      background: #fff;
-    }
-
-    input:focus, textarea:focus {
-      outline: none;
-      border-color: var(--accent);
+      border: none;
+      background: rgba(255, 255, 255, 0.5);
+      padding: 12px;
+      border-radius: 12px;
+      color: #555;
+      font-size: 0.95rem;
     }
 
     textarea {
-      resize: vertical;
-      min-height: 80px;
+      resize: none;
     }
 
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: 16px;
     }
 
-    .grid-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 20px;
-    }
-
-    .section {
-      margin-bottom: 28px;
-    }
-
-    .hint {
-      font-size: 12px;
-      color: #94A3B8;
+    .note {
+      font-size: 0.75rem;
+      color: #8a8a8a;
       margin-top: 4px;
     }
 
-    .save-btn {
+    .art-button {
+      margin-top: 30px;
       width: 100%;
-      padding: 14px;
-      border-radius: 12px;
+      padding: 15px;
       border: none;
-      font-size: 16px;
-      font-weight: 600;
-      background: #818CF8;
+      border-radius: 50px;
+      background: var(--sage);
       color: white;
+      font-size: 1rem;
+      letter-spacing: 2px;
       cursor: pointer;
-      margin-top: 10px;
+      transition: all 0.3s ease;
     }
 
-    .save-btn:hover {
-      background: #6366F1;
+    .art-button:hover {
+      background: var(--dusty-rose);
+      box-shadow: 0 5px 15px rgba(212, 163, 163, 0.4);
     }
 
-    @media (max-width: 768px) {
-      .grid-2, .grid-3 {
+    @media (max-width: 480px) {
+      .grid-2 {
         grid-template-columns: 1fr;
+      }
+      .glass-form {
+        padding: 2rem;
       }
     }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <h1>Daily Health Log</h1>
 
-    <div class="card">
+<div class="art-bg">
+  <div class="shape circle-one"></div>
+  <div class="shape circle-two"></div>
 
-      <!-- DATE -->
-      <div class="section">
-        <label>Date</label>
-        <input type="date" id="entryDate">
+  <div class="glass-form">
+    <h1>Daily Health</h1>
+
+    <!-- DATE -->
+    <label>Date</label>
+    <input type="date" id="entryDate">
+
+    <!-- SLEEP -->
+    <div class="grid-2">
+      <div>
+        <label>Sleep Time</label>
+        <input type="time" id="sleepTime">
       </div>
-
-      <!-- SLEEP -->
-      <div class="section grid-2">
-        <div>
-          <label>Sleep Time</label>
-          <input type="time" id="sleepTime">
-        </div>
-        <div>
-          <label>Wake-up Time</label>
-          <input type="time" id="wakeTime">
-        </div>
+      <div>
+        <label>Wake-up Time</label>
+        <input type="time" id="wakeTime">
       </div>
-
-      <!-- WORK -->
-      <div class="section grid-2">
-        <div>
-          <label>Work Login</label>
-          <input type="time" id="workLogin">
-        </div>
-        <div>
-          <label>Work Logout</label>
-          <input type="time" id="workLogout">
-        </div>
-      </div>
-
-      <!-- ACTIVITY -->
-      <div class="section grid-2">
-        <div>
-          <label>Screen Time (hours)</label>
-          <input type="number" step="0.1" placeholder="e.g. 6.5" id="screenTime">
-          <div class="hint">Mobile + laptop combined</div>
-        </div>
-        <div>
-          <label>Steps</label>
-          <input type="number" placeholder="e.g. 6500" id="steps">
-        </div>
-      </div>
-
-      <!-- FITNESS -->
-      <div class="section grid-2">
-        <div>
-          <label>Workout (minutes)</label>
-          <input type="number" placeholder="e.g. 45" id="workout">
-        </div>
-        <div>
-          <label>Water Intake (liters)</label>
-          <input type="number" step="0.1" placeholder="e.g. 2.5" id="water">
-        </div>
-      </div>
-
-      <!-- WEIGHT -->
-      <div class="section">
-        <label>Weight (kg)</label>
-        <input type="number" step="0.1" placeholder="Weekly (Sunday)" id="weight">
-        <div class="hint">Optional · Enter once a week</div>
-      </div>
-
-      <!-- NOTES -->
-      <div class="section">
-        <label>Notes</label>
-        <textarea id="notes" placeholder="Energy, mood, headaches, eye strain, etc."></textarea>
-      </div>
-
-      <!-- SAVE -->
-      <button class="save-btn" onclick="saveHealth()">Save Health Log</button>
-
     </div>
+
+    <!-- WORK -->
+    <div class="grid-2">
+      <div>
+        <label>Work Login</label>
+        <input type="time" id="workLogin">
+      </div>
+      <div>
+        <label>Work Logout</label>
+        <input type="time" id="workLogout">
+      </div>
+    </div>
+
+    <!-- ACTIVITY -->
+    <label>Screen Time (hours)</label>
+    <input type="number" step="0.1" id="screenTime" placeholder="e.g. 6.5">
+
+    <label>Steps</label>
+    <input type="number" id="steps" placeholder="e.g. 6500">
+
+    <label>Workout (minutes)</label>
+    <input type="number" id="workout">
+
+    <label>Water Intake (liters)</label>
+    <input type="number" step="0.1" id="water">
+
+    <label>Weight (kg)</label>
+    <input type="number" step="0.1" id="weight">
+    <div class="note">Optional · Weekly entry</div>
+
+    <label>Notes</label>
+    <textarea id="notes" rows="3" placeholder="Energy, mood, eye strain, etc."></textarea>
+
+    <button class="art-button" id="saveBtn" onclick="saveHealthLog()">
+      SAVE
+    </button>
   </div>
+</div>
 
-  <script>
-    function saveHealth() {
-      const data = {
-        date: entryDate.value,
-        sleep: sleepTime.value,
-        wake: wakeTime.value,
-        login: workLogin.value,
-        logout: workLogout.value,
-        screen: screenTime.value,
-        steps: steps.value,
-        workout: workout.value,
-        water: water.value,
-        weight: weight.value,
-        notes: notes.value
-      };
+<script>
+  // Default date = today
+  document.getElementById("entryDate").value =
+    new Date().toISOString().slice(0,10);
 
-      google.script.run
-        .withSuccessHandler(() => {
-          alert("Health log saved successfully");
-          location.reload();
-        })
-        .saveHealthEntry(data);
-    }
-  </script>
+  function calculateDuration(startId, endId) {
+    const start = document.getElementById(startId).value;
+    const end = document.getElementById(endId).value;
+    if (!start || !end) return "";
+
+    const [sh, sm] = start.split(":").map(Number);
+    const [eh, em] = end.split(":").map(Number);
+
+    let startMin = sh * 60 + sm;
+    let endMin = eh * 60 + em;
+    if (endMin < startMin) endMin += 1440;
+
+    return ((endMin - startMin) / 60).toFixed(2);
+  }
+
+  function saveHealthLog() {
+    const btn = document.getElementById("saveBtn");
+    btn.disabled = true;
+    btn.innerText = "SAVING...";
+
+    const payload = {
+      entryDate: entryDate.value,
+      sleepTime: sleepTime.value,
+      wakeTime: wakeTime.value,
+      sleepHours: calculateDuration("sleepTime", "wakeTime"),
+      workLogin: workLogin.value,
+      workLogout: workLogout.value,
+      workHours: calculateDuration("workLogin", "workLogout"),
+      screenTime: screenTime.value,
+      steps: steps.value,
+      workoutMinutes: workout.value,
+      waterIntake: water.value,
+      weight: weight.value,
+      notes: notes.value
+    };
+
+    google.script.run
+      .withSuccessHandler(() => location.reload())
+      .withFailureHandler(err => {
+        alert(err.message);
+        btn.disabled = false;
+        btn.innerText = "SAVE";
+      })
+      .saveHealthEntry(payload);
+  }
+</script>
+
 </body>
 </html>
