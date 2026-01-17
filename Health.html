@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base target="_top">
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Daily Health Log</title>
 
-  <!-- Google Font -->
+  <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500&display=swap" rel="stylesheet">
 
   <style>
@@ -41,21 +40,17 @@
     }
 
     .circle-one {
-      width: 400px;
-      height: 400px;
+      width: 400px; height: 400px;
       background: var(--sage);
-      top: -10%;
-      left: -10%;
+      top: -10%; left: -10%;
       opacity: 0.3;
       border-radius: 50%;
     }
 
     .circle-two {
-      width: 300px;
-      height: 300px;
+      width: 300px; height: 300px;
       background: var(--dusty-rose);
-      bottom: 10%;
-      right: -5%;
+      bottom: 10%; right: -5%;
       opacity: 0.2;
       border-radius: 50%;
     }
@@ -65,8 +60,6 @@
       z-index: 1;
       background: var(--glass);
       backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
-      border: 1px solid rgba(255, 255, 255, 0.4);
       padding: 3rem;
       border-radius: 30px;
       width: 100%;
@@ -75,39 +68,36 @@
     }
 
     h1 {
-      color: #5a5a5a;
-      font-weight: 300;
-      letter-spacing: 1px;
       text-align: center;
+      font-weight: 300;
+      color: #5a5a5a;
       margin-bottom: 10px;
     }
 
     label {
+      margin-top: 18px;
       display: block;
-      margin-top: 20px;
-      color: #7a7a7a;
       font-size: 0.9rem;
-      margin-bottom: 8px;
+      color: #7a7a7a;
+      margin-bottom: 6px;
     }
 
     input, textarea {
       width: 100%;
       border: none;
-      background: rgba(255, 255, 255, 0.5);
+      background: rgba(255,255,255,0.55);
       padding: 12px;
       border-radius: 12px;
-      color: #555;
       font-size: 0.95rem;
+      color: #555;
     }
 
-    textarea {
-      resize: none;
-    }
+    textarea { resize: none; }
 
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 14px;
     }
 
     .note {
@@ -117,31 +107,26 @@
     }
 
     .art-button {
-      margin-top: 30px;
+      margin-top: 28px;
       width: 100%;
       padding: 15px;
-      border: none;
       border-radius: 50px;
+      border: none;
       background: var(--sage);
       color: white;
       font-size: 1rem;
       letter-spacing: 2px;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: 0.3s ease;
     }
 
     .art-button:hover {
       background: var(--dusty-rose);
-      box-shadow: 0 5px 15px rgba(212, 163, 163, 0.4);
     }
 
     @media (max-width: 480px) {
-      .grid-2 {
-        grid-template-columns: 1fr;
-      }
-      .glass-form {
-        padding: 2rem;
-      }
+      .grid-2 { grid-template-columns: 1fr; }
+      .glass-form { padding: 2rem; }
     }
   </style>
 </head>
@@ -155,11 +140,9 @@
   <div class="glass-form">
     <h1>Daily Health</h1>
 
-    <!-- DATE -->
     <label>Date</label>
     <input type="date" id="entryDate">
 
-    <!-- SLEEP -->
     <div class="grid-2">
       <div>
         <label>Sleep Time</label>
@@ -171,7 +154,6 @@
       </div>
     </div>
 
-    <!-- WORK -->
     <div class="grid-2">
       <div>
         <label>Work Login</label>
@@ -183,12 +165,11 @@
       </div>
     </div>
 
-    <!-- ACTIVITY -->
     <label>Screen Time (hours)</label>
-    <input type="number" step="0.1" id="screenTime" placeholder="e.g. 6.5">
+    <input type="number" step="0.1" id="screenTime">
 
     <label>Steps</label>
-    <input type="number" id="steps" placeholder="e.g. 6500">
+    <input type="number" id="steps">
 
     <label>Workout (minutes)</label>
     <input type="number" id="workout">
@@ -201,32 +182,25 @@
     <div class="note">Optional · Weekly entry</div>
 
     <label>Notes</label>
-    <textarea id="notes" rows="3" placeholder="Energy, mood, eye strain, etc."></textarea>
+    <textarea id="notes" rows="3"></textarea>
 
-    <button class="art-button" id="saveBtn" onclick="saveHealthLog()">
-      SAVE
-    </button>
+    <button class="art-button" id="saveBtn" onclick="saveHealthLog()">SAVE</button>
   </div>
 </div>
 
 <script>
-  // Default date = today
+  const HEALTH_API_URL = "https://script.google.com/macros/library/d/1VQiwvJwuBT02L6YLIiZxZnHmoBrQi8pjIArpnYxrhJTB-aABmVjTQNXD/3";
+
   document.getElementById("entryDate").value =
     new Date().toISOString().slice(0,10);
 
-  function calculateDuration(startId, endId) {
-    const start = document.getElementById(startId).value;
-    const end = document.getElementById(endId).value;
+  function hoursBetween(start, end) {
     if (!start || !end) return "";
-
     const [sh, sm] = start.split(":").map(Number);
     const [eh, em] = end.split(":").map(Number);
-
-    let startMin = sh * 60 + sm;
-    let endMin = eh * 60 + em;
-    if (endMin < startMin) endMin += 1440;
-
-    return ((endMin - startMin) / 60).toFixed(2);
+    let s = sh*60 + sm, e = eh*60 + em;
+    if (e < s) e += 1440;
+    return ((e - s)/60).toFixed(2);
   }
 
   function saveHealthLog() {
@@ -238,10 +212,10 @@
       entryDate: entryDate.value,
       sleepTime: sleepTime.value,
       wakeTime: wakeTime.value,
-      sleepHours: calculateDuration("sleepTime", "wakeTime"),
+      sleepHours: hoursBetween(sleepTime.value, wakeTime.value),
       workLogin: workLogin.value,
       workLogout: workLogout.value,
-      workHours: calculateDuration("workLogin", "workLogout"),
+      workHours: hoursBetween(workLogin.value, workLogout.value),
       screenTime: screenTime.value,
       steps: steps.value,
       workoutMinutes: workout.value,
@@ -250,14 +224,18 @@
       notes: notes.value
     };
 
-    google.script.run
-      .withSuccessHandler(() => location.reload())
-      .withFailureHandler(err => {
-        alert(err.message);
-        btn.disabled = false;
-        btn.innerText = "SAVE";
-      })
-      .saveHealthEntry(payload);
+    fetch(HEALTH_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(() => location.reload())
+    .catch(err => {
+      alert("Save failed");
+      btn.disabled = false;
+      btn.innerText = "SAVE";
+    });
   }
 </script>
 
