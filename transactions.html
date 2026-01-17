@@ -1,31 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>Daily Money Log</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
 :root{
-  --bg-primary:#0F172A;
-  --bg-card:#1E293B;
+  --bg:#0F172A;
+  --card:#1E293B;
   --accent:#2DD4BF;
   --text:#F8FAFC;
   --glass:rgba(255,255,255,.06);
   --border:rgba(255,255,255,.12);
 }
-
 *{box-sizing:border-box}
 body{
   margin:0;
-  background:var(--bg-primary);
+  background:var(--bg);
   color:var(--text);
   font-family:'Inter',sans-serif;
   padding:24px;
 }
-
 #clock{
   position:fixed;
   top:14px;
@@ -33,9 +31,7 @@ body{
   font-size:.8rem;
   opacity:.85;
 }
-
 .container{max-width:1200px;margin:auto}
-
 .card{
   background:var(--glass);
   backdrop-filter:blur(14px);
@@ -43,13 +39,11 @@ body{
   border-radius:18px;
   padding:20px;
 }
-
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
   gap:20px;
 }
-
 label{font-size:.72rem;opacity:.8;margin-top:14px;display:block}
 input,select{
   width:100%;
@@ -60,10 +54,8 @@ input,select{
   background:#020617;
   color:var(--text);
 }
-
 .hidden{display:none}
 .locked{opacity:.5;pointer-events:none}
-
 button{
   margin-top:20px;
   width:100%;
@@ -76,7 +68,6 @@ button{
   letter-spacing:1px;
   cursor:pointer;
 }
-
 footer{
   text-align:center;
   margin-top:40px;
@@ -138,7 +129,7 @@ footer{
 <label>Notes</label>
 <input id="notes">
 
-<button id="saveBtn" onclick="saveTxn()">SAVE TRANSACTION</button>
+<button id="saveBtn">SAVE TRANSACTION</button>
 </div>
 
 <!-- RECENT -->
@@ -146,7 +137,9 @@ footer{
 <h4>Last 10 Transactions</h4>
 <table style="width:100%;font-size:.8rem">
 <thead>
-<tr><th>Date</th><th>Type</th><th>Category</th><th>Accounts</th><th>Amount</th></tr>
+<tr>
+<th>Date</th><th>Type</th><th>Category</th><th>Accounts</th><th>Amount</th>
+</tr>
 </thead>
 <tbody id="recent"></tbody>
 </table>
@@ -160,41 +153,71 @@ footer{
 </div>
 
 <script>
-const API="https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
+const API = "https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
 
 /* CLOCK */
 setInterval(()=>{
   const d=new Date();
-  clock.innerText=d.toLocaleDateString(undefined,{weekday:'long',day:'2-digit',month:'short',year:'numeric'})
-  +" • "+d.toLocaleTimeString();
+  clock.innerText =
+    d.toLocaleDateString(undefined,{weekday:'long',day:'2-digit',month:'short',year:'numeric'})
+    +" • "+d.toLocaleTimeString();
 },1000);
 
-/* INIT */
-(async()=>{
-  const [acc,cat,sub,emi,rec]=await Promise.all([
-    fetch(API+"?action=accounts").then(r=>r.json()),
-    fetch(API+"?action=categories").then(r=>r.json()),
-    fetch(API+"?action=subcategories").then(r=>r.json()),
-    fetch(API+"?action=emis").then(r=>r.json()),
-    fetch(API+"?action=recent").then(r=>r.json())
-  ]);
+/* SAFE INIT */
+document.addEventListener("DOMContentLoaded", init);
 
-  fill(fromAccount,acc); fill(toAccount,acc);
-  fill(category,cat);
-  category.onchange=()=>fill(subCategory,sub[category.value]||[]);
-  emi.forEach(e=>emiSelect.innerHTML+=`<option value="${e.id}" data-amt="${e.amount}">${e.name}</option>`);
-  render(rec);
-  handleType();
-})();
+async function init(){
+  try{
+    const [
+      accounts,
+      categories,
+      subcats,
+      emis,
+      recent
+    ] = await Promise.all([
+      fetch(API+"?action=accounts").then(r=>r.json()),
+      fetch(API+"?action=categories").then(r=>r.json()),
+      fetch(API+"?action=subcategories").then(r=>r.json()),
+      fetch(API+"?action=emis").then(r=>r.json()),
+      fetch(API+"?action=recent").then(r=>r.json())
+    ]);
+
+    fillSelect(fromAccount, accounts);
+    fillSelect(toAccount, accounts);
+    fillSelect(category, categories);
+
+    category.onchange = () => {
+      const list = subcats[category.value] || [];
+      fillSelect(subCategory, list);
+    };
+
+    emiSelect.innerHTML = "";
+    emis.forEach(e=>{
+      emiSelect.innerHTML +=
+        `<option value="${e.id}" data-amt="${e.amount}">${e.name}</option>`;
+    });
+
+    renderRecent(recent);
+    handleType();
+
+    console.log("✅ Transactions API Loaded");
+  }
+  catch(err){
+    console.error("❌ INIT ERROR", err);
+    alert("Failed to load master data. Check API.");
+  }
+}
 
 /* TYPE RULES */
-txnType.onchange=handleType;
-fromAccount.onchange=()=>filterTransfer();
+txnType.onchange = handleType;
+fromAccount.onchange = filterTransfer;
 
 function handleType(){
-  const t=txnType.value;
-
-  [catBlock,emiBlock,fromBlock,toBlock].forEach(b=>b.classList.add("hidden"));
+  const t = txnType.value;
+  catBlock.classList.add("hidden");
+  emiBlock.classList.add("hidden");
+  fromBlock.classList.add("hidden");
+  toBlock.classList.add("hidden");
   amount.classList.remove("locked");
 
   if(t==="EXP"){catBlock.classList.remove("hidden");fromBlock.classList.remove("hidden")}
@@ -205,44 +228,62 @@ function handleType(){
     emiBlock.classList.remove("hidden");
     fromBlock.classList.remove("hidden");
     amount.classList.add("locked");
-    amount.value=emiSelect.selectedOptions[0]?.dataset.amt||"";
+    amount.value = emiSelect.selectedOptions[0]?.dataset.amt || "";
   }
 }
 
-/* PREVENT SAME ACCOUNT */
 function filterTransfer(){
-  [...toAccount.options].forEach(o=>o.hidden=o.value===fromAccount.value);
+  [...toAccount.options].forEach(o=>{
+    o.hidden = o.value === fromAccount.value;
+  });
 }
 
 /* SAVE */
-async function saveTxn(){
-  saveBtn.disabled=true;
-  saveBtn.innerText="SAVING…";
+saveBtn.onclick = async ()=>{
+  saveBtn.disabled = true;
+  saveBtn.innerText = "SAVING…";
 
-  const payload={
-    txnDate:txnDate.value,
-    txnType:txnType.value,
-    category:category.value||"",
-    subCategory:subCategory.value||"",
-    amount:amount.value,
-    fromAccount:fromAccount.value||"",
-    toAccount:toAccount.value||"",
-    emiId:emiSelect.value||"",
-    notes:notes.value,
-    source:"WEB"
+  const payload = {
+    txnDate: txnDate.value,
+    txnType: txnType.value,
+    category: category.value || "",
+    subCategory: subCategory.value || "",
+    amount: amount.value,
+    fromAccount: fromAccount.value || "",
+    toAccount: toAccount.value || "",
+    emiId: emiSelect.value || "",
+    notes: notes.value,
+    source: "WEB"
   };
 
-  await fetch(API,{method:"POST",body:JSON.stringify({action:"addTransaction",payload})});
+  await fetch(API,{
+    method:"POST",
+    body:JSON.stringify({action:"addTransaction",payload})
+  });
+
   location.reload();
-}
+};
 
 /* HELPERS */
-function fill(sel,arr){sel.innerHTML="";arr.forEach(v=>sel.innerHTML+=`<option>${v}</option>`)}
-function render(d){
-  recent.innerHTML=d.map(r=>`
-    <tr><td>${r.date}</td><td>${r.type}</td><td>${r.category||""}</td>
-    <td>${r.from||""} → ${r.to||""}</td><td>₹${r.amount}</td></tr>`).join("");
+function fillSelect(sel, arr){
+  sel.innerHTML = "";
+  arr.forEach(v=>{
+    sel.innerHTML += `<option value="${v}">${v}</option>`;
+  });
+}
+
+function renderRecent(rows){
+  recent.innerHTML = rows.map(r=>`
+    <tr>
+      <td>${r.date}</td>
+      <td>${r.type}</td>
+      <td>${r.category||""}</td>
+      <td>${r.from||""} → ${r.to||""}</td>
+      <td>₹${r.amount}</td>
+    </tr>
+  `).join("");
 }
 </script>
+
 </body>
 </html>
