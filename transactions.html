@@ -9,31 +9,19 @@
 :root {
   --bg1:#F7F8FC; --bg2:#EEF2F7;
   --card:#FFFFFF; --border:#E5E7EB;
-  --text:#374151;
+  --text:#374151; --muted:#6B7280;
   --accent:#9AA7D8;
   --radius:14px;
 }
 
-/* BACKGROUND STICKERS */
-body::before,
-body::after {
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  background-repeat:no-repeat;
-  opacity:0.035;
-}
-
+/* Soft Stickers */
 body::before {
-  background-image:
-    radial-gradient(circle at 10% 20%, #9AA7D8 0, transparent 35%),
-    radial-gradient(circle at 90% 80%, #7FB7A3 0, transparent 40%);
-}
-
-body::after {
-  background-image:
-    linear-gradient(120deg, transparent 75%, #E6A4A8 76%, transparent 80%);
+  content:"";
+  position:fixed; inset:0;
+  background:
+    radial-gradient(circle at 15% 20%, #9AA7D8 0, transparent 35%),
+    radial-gradient(circle at 85% 80%, #7FB7A3 0, transparent 40%);
+  opacity:.035; pointer-events:none;
 }
 
 * { box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
@@ -47,9 +35,8 @@ body {
 }
 
 .clock {
-  position:fixed;
-  top:16px; right:20px;
-  font-size:13px; color:#6B7280;
+  position:fixed; top:16px; right:20px;
+  font-size:13px; color:var(--muted);
 }
 
 .container {
@@ -74,8 +61,7 @@ label { font-size:13px; font-weight:500; margin-bottom:6px; display:block; }
 .field { margin-bottom:18px; }
 
 input,select,button {
-  width:100%;
-  padding:10px 12px;
+  width:100%; padding:10px 12px;
   border-radius:8px;
   border:1px solid var(--border);
   font-size:14px;
@@ -90,19 +76,24 @@ button {
   font-weight:600;
 }
 
-button:disabled {
-  opacity:0.6;
-}
+button:disabled { opacity:.6; cursor:not-allowed; }
 
 .hidden { display:none; }
 
-.txn {
-  display:flex;
-  justify-content:space-between;
-  font-size:13px;
-  padding:8px 0;
+/* TABLE */
+table { width:100%; border-collapse:collapse; font-size:13px; }
+thead th {
+  text-align:left;
+  padding:8px;
+  border-bottom:1px solid var(--border);
+  color:var(--muted);
+}
+tbody td {
+  padding:8px;
   border-bottom:1px dashed #E5E7EB;
 }
+td.amount { text-align:right; font-weight:600; }
+td.accounts { color:var(--muted); font-size:12px; }
 
 @media(max-width:900px){
   .container { grid-template-columns:1fr; }
@@ -189,6 +180,7 @@ button:disabled {
 <script>
 const API="https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
 
+const txnForm=document.getElementById("txnForm");
 const txnType=txnForm.txnType;
 const category=txnForm.category;
 const subCategory=txnForm.subCategory;
@@ -198,30 +190,34 @@ const fromAccount=txnForm.fromAccount;
 const toAccount=txnForm.toAccount;
 const saveBtn=document.getElementById("saveBtn");
 
-let allAccounts=[], allCategories=[], subMap={}, emiMap={};
+let allAccounts=[], subMap={}, emiMap={};
 
+/* CLOCK */
 setInterval(()=>clock.textContent=new Date().toLocaleString("en-IN",{weekday:"short",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}),1000);
 
-/* LOAD MASTERS */
-async function init() {
+/* INIT */
+async function init(){
   allAccounts = await fetch(API+"?action=accounts").then(r=>r.json());
-  allCategories = await fetch(API+"?action=categories").then(r=>r.json());
   subMap = await fetch(API+"?action=subcategories").then(r=>r.json());
 
   const emis = await fetch(API+"?action=emis").then(r=>r.json());
-  emis.forEach(e=>emiMap[e.id]=e.amount);
-  emiId.innerHTML="<option value=''>Select EMI</option>"+emis.map(e=>`<option value="${e.id}">${e.name}</option>`).join("");
+  emiId.innerHTML="<option value=''>Select EMI</option>";
+  emis.forEach(e=>{ emiMap[e.id]=e.amount; emiId.innerHTML+=`<option value="${e.id}">${e.name}</option>`; });
 
-  rebuildAccounts();
+  rebuildFrom();
   loadRecent();
 }
+init();
 
-function rebuildAccounts(exclude="") {
+/* ACCOUNT BUILDERS */
+function rebuildFrom(){
   fromAccount.innerHTML="<option value=''>Select</option>"+allAccounts.map(a=>`<option>${a}</option>`).join("");
+}
+function rebuildTo(exclude=""){
   toAccount.innerHTML="<option value=''>Select</option>"+allAccounts.filter(a=>a!==exclude).map(a=>`<option>${a}</option>`).join("");
 }
 
-/* TYPE LOGIC */
+/* TYPE RULES */
 txnType.onchange=()=>{
   fromBlock.classList.add("hidden");
   toBlock.classList.add("hidden");
@@ -230,22 +226,28 @@ txnType.onchange=()=>{
   amount.readOnly=false;
 
   category.innerHTML="";
-  if(txnType.value==="INCOME"){ category.innerHTML="<option>Income</option>"; }
+
+  if(txnType.value==="INCOME") category.innerHTML="<option>Income</option>";
+
   if(txnType.value==="EXP"){
     ["Living Essentials","Transport & Mobility","Lifestyle & Personal","Health & Wellness"]
     .forEach(c=>category.innerHTML+=`<option>${c}</option>`);
     subBlock.classList.remove("hidden");
     fromBlock.classList.remove("hidden");
   }
+
   if(txnType.value==="EMI"){
     category.innerHTML="<option>Financial Commitments</option>";
     emiBlock.classList.remove("hidden");
     fromBlock.classList.remove("hidden");
   }
+
   if(txnType.value==="TRANSFER"){
     category.innerHTML="<option>Transfer</option>";
     fromBlock.classList.remove("hidden");
     toBlock.classList.remove("hidden");
+    rebuildFrom();
+    rebuildTo();
   }
 };
 
@@ -259,14 +261,14 @@ emiId.onchange=()=>{
 };
 
 fromAccount.onchange=()=>{
-  if(txnType.value==="TRANSFER") rebuildAccounts(fromAccount.value);
+  if(txnType.value==="TRANSFER") rebuildTo(fromAccount.value);
 };
 
-/* SUBMIT — LOCK PAGE */
+/* SUBMIT */
 txnForm.onsubmit=async e=>{
   e.preventDefault();
   saveBtn.disabled=true;
-  [...txnForm.elements].forEach(el=>el.disabled=true);
+  saveBtn.textContent="Saving…";
 
   await fetch(API,{method:"POST",body:JSON.stringify({
     action:"addTransaction",
@@ -283,21 +285,40 @@ txnForm.onsubmit=async e=>{
     }
   })});
 
-  location.reload();
+  txnForm.reset();
+  saveBtn.disabled=false;
+  saveBtn.textContent="Save Transaction";
+
+  loadRecent();
 };
 
-/* RECENT */
+/* RECENT TABLE */
 async function loadRecent(){
-  const r=document.getElementById("recentTxns");
+  const box=document.getElementById("recentTxns");
   try{
     const data=await fetch(API+"?action=recent").then(r=>r.json());
-    r.innerHTML=data.map(t=>`<div class="txn"><span>${t.date} • ${t.type}</span><span>₹ ${t.amount}</span></div>`).join("");
+    box.innerHTML=`
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th><th>Type</th><th>Category</th><th>Accounts</th><th style="text-align:right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+        ${data.map(t=>`
+          <tr>
+            <td>${t.date}</td>
+            <td>${t.type}</td>
+            <td>${t.category}</td>
+            <td class="accounts">${t.from||""}${t.to?` → ${t.to}`:""}</td>
+            <td class="amount">₹ ${t.amount}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>`;
   }catch{
-    r.innerHTML="<em>No recent data</em>";
+    box.innerHTML="<em>No recent transactions</em>";
   }
 }
-
-init();
 </script>
 
 </body>
