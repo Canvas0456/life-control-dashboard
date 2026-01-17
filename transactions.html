@@ -6,10 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
-    /* ===============================
-       SOFT AURORA — ARTISTIC THEME
-    ================================ */
-
     :root {
       --bg1: #F7F8FC;
       --bg2: #EEF2F7;
@@ -39,7 +35,6 @@
       justify-content: center;
     }
 
-    /* Live Clock */
     .clock {
       position: fixed;
       top: 16px;
@@ -115,17 +110,12 @@
       display: none;
     }
 
-    /* Recent Transactions */
     .txn {
       display: flex;
       justify-content: space-between;
       font-size: 13px;
       padding: 10px 0;
       border-bottom: 1px dashed #E5E7EB;
-    }
-
-    .txn:last-child {
-      border-bottom: none;
     }
 
     footer {
@@ -142,86 +132,82 @@
     }
 
     @media (max-width: 900px) {
-      .container {
-        grid-template-columns: 1fr;
-      }
-      h1, footer {
-        grid-column: span 1;
-      }
+      .container { grid-template-columns: 1fr; }
+      h1, footer { grid-column: span 1; }
     }
   </style>
 </head>
 
 <body>
 
-  <div class="clock" id="clock"></div>
+<div class="clock" id="clock"></div>
 
-  <div class="container">
-    <h1>Add Transaction</h1>
+<div class="container">
+  <h1>Add Transaction</h1>
 
-    <!-- INPUT FORM -->
-    <div class="card">
-      <form id="txnForm">
+  <!-- FORM -->
+  <div class="card">
+    <form id="txnForm">
 
-        <div class="field">
-          <label>Date</label>
-          <input type="date" id="txnDate" required />
-        </div>
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="txnDate" required />
+      </div>
 
-        <div class="field">
-          <label>Type</label>
-          <select id="txnType" required>
-            <option value="">Select</option>
-            <option value="INCOME">Income</option>
-            <option value="EXP">Expense</option>
-            <option value="EMI">EMI Payment</option>
-            <option value="SAVINGS">Savings</option>
-            <option value="TRANSFER">Transfer</option>
-          </select>
-        </div>
+      <div class="field">
+        <label>Type</label>
+        <select id="txnType" required>
+          <option value="">Select</option>
+          <option value="INCOME">Income</option>
+          <option value="EXP">Expense</option>
+          <option value="EMI">EMI Payment</option>
+          <option value="SAVINGS">Savings</option>
+          <option value="TRANSFER">Transfer</option>
+        </select>
+      </div>
 
-        <div class="field">
-          <label>Category</label>
-          <select id="category"></select>
-        </div>
+      <div class="field">
+        <label>Category</label>
+        <select id="category"></select>
+      </div>
 
-        <div class="field">
-          <label>Sub Category</label>
-          <select id="subCategory"></select>
-        </div>
+      <div class="field hidden" id="subCategoryBlock">
+        <label>Sub Category</label>
+        <select id="subCategory"></select>
+      </div>
 
-        <div class="field">
-          <label>Amount</label>
-          <input type="number" id="amount" required />
-        </div>
+      <div class="field">
+        <label>Amount</label>
+        <input type="number" id="amount" required />
+      </div>
 
-        <div class="field hidden" id="emiBlock">
-          <label>EMI</label>
-          <select id="emiId"></select>
-        </div>
+      <div class="field hidden" id="emiBlock">
+        <label>EMI</label>
+        <select id="emiId"></select>
+      </div>
 
-        <div class="field hidden" id="fromBlock">
-          <label>From Account</label>
-          <select id="fromAccount"></select>
-        </div>
+      <div class="field hidden" id="fromBlock">
+        <label>From Account</label>
+        <select id="fromAccount"></select>
+      </div>
 
-        <div class="field hidden" id="toBlock">
-          <label>To Account</label>
-          <select id="toAccount"></select>
-        </div>
+      <div class="field hidden" id="toBlock">
+        <label>To Account</label>
+        <select id="toAccount"></select>
+      </div>
 
-        <button type="submit">Save Transaction</button>
-      </form>
-    </div>
-
-    <!-- LAST 10 TRANSACTIONS -->
-    <div class="card">
-      <h3 style="margin-top:0;font-size:16px;">Last 10 Transactions</h3>
-      <div id="recentTxns"></div>
-    </div>
-
-    <footer>© Kaiwalya Muley</footer>
+      <button type="submit">Save Transaction</button>
+    </form>
   </div>
+
+  <!-- RECENT -->
+  <div class="card">
+    <h3 style="margin-top:0;font-size:16px;">Last 10 Transactions</h3>
+    <div id="recentTxns"></div>
+  </div>
+
+  <footer>© Kaiwalya Muley</footer>
+</div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
@@ -229,6 +215,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1
 const txnType = document.getElementById("txnType");
 const category = document.getElementById("category");
 const subCategory = document.getElementById("subCategory");
+const subCategoryBlock = document.getElementById("subCategoryBlock");
 const amount = document.getElementById("amount");
 const emiBlock = document.getElementById("emiBlock");
 const emiId = document.getElementById("emiId");
@@ -236,21 +223,23 @@ const fromBlock = document.getElementById("fromBlock");
 const toBlock = document.getElementById("toBlock");
 const fromAccount = document.getElementById("fromAccount");
 const toAccount = document.getElementById("toAccount");
-const recentTxns = document.getElementById("recentTxns");
 
 let subMap = {}, emiMap = {};
+let allCategories = [];
+
+const CATEGORY_RULES = {
+  INCOME: ["Income"],
+  EXP: ["Living Essentials","Transport & Mobility","Lifestyle & Personal","Health & Wellness"],
+  EMI: ["Financial Commitments"],
+  SAVINGS: ["Savings"],
+  TRANSFER: ["Transfer"]
+};
 
 /* CLOCK */
 setInterval(() => {
-  const d = new Date();
-  clock.textContent = d.toLocaleString("en-IN", {
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit"
+  clock.textContent = new Date().toLocaleString("en-IN", {
+    weekday: "short", day: "2-digit", month: "short",
+    year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit"
   });
 }, 1000);
 
@@ -262,9 +251,7 @@ async function loadMasters() {
     toAccount.innerHTML += `<option>${a}</option>`;
   });
 
-  const cats = await fetch(API_URL + "?action=categories").then(r => r.json());
-  cats.forEach(c => category.innerHTML += `<option>${c}</option>`);
-
+  allCategories = await fetch(API_URL + "?action=categories").then(r => r.json());
   subMap = await fetch(API_URL + "?action=subcategories").then(r => r.json());
 
   const emis = await fetch(API_URL + "?action=emis").then(r => r.json());
@@ -275,6 +262,14 @@ async function loadMasters() {
   });
 }
 
+/* APPLY CATEGORY RULES */
+function applyCategoryRules() {
+  category.innerHTML = "";
+  const allowed = CATEGORY_RULES[txnType.value] || [];
+  allowed.forEach(c => category.innerHTML += `<option>${c}</option>`);
+  category.disabled = allowed.length === 1;
+}
+
 /* CATEGORY CHANGE */
 category.onchange = () => {
   subCategory.innerHTML = "";
@@ -283,7 +278,7 @@ category.onchange = () => {
   });
 };
 
-/* EMI AMOUNT LOCK */
+/* EMI AMOUNT */
 emiId.onchange = () => {
   if (emiMap[emiId.value]) {
     amount.value = emiMap[emiId.value];
@@ -291,17 +286,23 @@ emiId.onchange = () => {
   }
 };
 
-/* TYPE LOGIC */
+/* TYPE CHANGE */
 txnType.onchange = () => {
   fromBlock.classList.add("hidden");
   toBlock.classList.add("hidden");
   emiBlock.classList.add("hidden");
+  subCategoryBlock.classList.add("hidden");
   amount.readOnly = false;
 
-  if (txnType.value === "EXP" || txnType.value === "SAVINGS" || txnType.value === "EMI")
+  applyCategoryRules();
+
+  if (txnType.value === "EXP")
+    subCategoryBlock.classList.remove("hidden");
+
+  if (["EXP","SAVINGS","EMI"].includes(txnType.value))
     fromBlock.classList.remove("hidden");
 
-  if (txnType.value === "INCOME" || txnType.value === "TRANSFER")
+  if (["INCOME","TRANSFER"].includes(txnType.value))
     toBlock.classList.remove("hidden");
 
   if (txnType.value === "EMI")
