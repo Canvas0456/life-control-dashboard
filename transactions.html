@@ -6,21 +6,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
-    /* =========================
-       NORDIC MINIMAL THEME
-    ========================== */
+    /* ===============================
+       SOFT AURORA — ARTISTIC THEME
+    ================================ */
 
     :root {
-      --bg: #F5F7FA;
+      --bg1: #F7F8FC;
+      --bg2: #EEF2F7;
       --card: #FFFFFF;
-      --border: #E2E8F0;
-      --text: #475569;
+      --border: #E5E7EB;
+      --text: #374151;
 
-      --income: #84A98C;
-      --expense: #E4989B;
-      --health: #A5B4FC;
+      --income: #7FB7A3;
+      --expense: #E6A4A8;
+      --emi: #9AA7D8;
 
-      --radius: 12px;
+      --radius: 14px;
     }
 
     * {
@@ -30,25 +31,37 @@
 
     body {
       margin: 0;
-      background: var(--bg);
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
       color: var(--text);
       min-height: 100vh;
+      padding: 80px 16px 40px;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
-      padding: 40px 16px;
+    }
+
+    /* Live Clock */
+    .clock {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      font-size: 13px;
+      color: #6B7280;
     }
 
     .container {
       width: 100%;
-      max-width: 520px;
+      max-width: 900px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
       animation: fadeUp 0.5s ease forwards;
     }
 
     h1 {
+      grid-column: span 2;
       font-size: 22px;
       font-weight: 600;
-      margin-bottom: 20px;
+      margin-bottom: 4px;
     }
 
     .card {
@@ -65,21 +78,17 @@
       display: block;
     }
 
-    input,
-    select {
+    input, select {
       width: 100%;
       padding: 10px 12px;
       border-radius: 8px;
       border: 1px solid var(--border);
       font-size: 14px;
-      background: #fff;
       color: var(--text);
     }
 
-    input:focus,
-    select:focus {
-      outline: none;
-      border-color: #CBD5E1;
+    input[readonly] {
+      background: #F3F4F6;
     }
 
     .field {
@@ -93,7 +102,7 @@
       border: none;
       font-size: 14px;
       font-weight: 600;
-      background: var(--health);
+      background: var(--emi);
       color: #fff;
       cursor: pointer;
     }
@@ -106,23 +115,51 @@
       display: none;
     }
 
+    /* Recent Transactions */
+    .txn {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 10px 0;
+      border-bottom: 1px dashed #E5E7EB;
+    }
+
+    .txn:last-child {
+      border-bottom: none;
+    }
+
+    footer {
+      grid-column: span 2;
+      text-align: center;
+      font-size: 12px;
+      color: #9CA3AF;
+      margin-top: 12px;
+    }
+
     @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        grid-template-columns: 1fr;
       }
-      to {
-        opacity: 1;
-        transform: translateY(0);
+      h1, footer {
+        grid-column: span 1;
       }
     }
   </style>
 </head>
 
 <body>
+
+  <div class="clock" id="clock"></div>
+
   <div class="container">
     <h1>Add Transaction</h1>
 
+    <!-- INPUT FORM -->
     <div class="card">
       <form id="txnForm">
 
@@ -132,7 +169,7 @@
         </div>
 
         <div class="field">
-          <label>Transaction Type</label>
+          <label>Type</label>
           <select id="txnType" required>
             <option value="">Select</option>
             <option value="INCOME">Income</option>
@@ -149,7 +186,7 @@
         </div>
 
         <div class="field">
-          <label>Sub-Category</label>
+          <label>Sub Category</label>
           <select id="subCategory"></select>
         </div>
 
@@ -158,135 +195,152 @@
           <input type="number" id="amount" required />
         </div>
 
-        <div class="field" id="fromBlock">
+        <div class="field hidden" id="emiBlock">
+          <label>EMI</label>
+          <select id="emiId"></select>
+        </div>
+
+        <div class="field hidden" id="fromBlock">
           <label>From Account</label>
           <select id="fromAccount"></select>
         </div>
 
-        <div class="field" id="toBlock">
+        <div class="field hidden" id="toBlock">
           <label>To Account</label>
           <select id="toAccount"></select>
-        </div>
-
-        <div class="field">
-          <label>Description</label>
-          <input type="text" id="description" />
         </div>
 
         <button type="submit">Save Transaction</button>
       </form>
     </div>
+
+    <!-- LAST 10 TRANSACTIONS -->
+    <div class="card">
+      <h3 style="margin-top:0;font-size:16px;">Last 10 Transactions</h3>
+      <div id="recentTxns"></div>
+    </div>
+
+    <footer>© Kaiwalya Muley</footer>
   </div>
 
-  <script>
-    const API_URL =
-      "https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
 
-    const txnType = document.getElementById("txnType");
-    const category = document.getElementById("category");
-    const subCategory = document.getElementById("subCategory");
-    const fromBlock = document.getElementById("fromBlock");
-    const toBlock = document.getElementById("toBlock");
-    const fromAccount = document.getElementById("fromAccount");
-    const toAccount = document.getElementById("toAccount");
+const txnType = document.getElementById("txnType");
+const category = document.getElementById("category");
+const subCategory = document.getElementById("subCategory");
+const amount = document.getElementById("amount");
+const emiBlock = document.getElementById("emiBlock");
+const emiId = document.getElementById("emiId");
+const fromBlock = document.getElementById("fromBlock");
+const toBlock = document.getElementById("toBlock");
+const fromAccount = document.getElementById("fromAccount");
+const toAccount = document.getElementById("toAccount");
+const recentTxns = document.getElementById("recentTxns");
 
-    let subMap = {};
+let subMap = {}, emiMap = {};
 
-    async function loadMasters() {
-      const accounts = await fetch(API_URL + "?action=accounts").then(r => r.json());
-      accounts.forEach(a => {
-        fromAccount.innerHTML += `<option value="${a}">${a}</option>`;
-        toAccount.innerHTML += `<option value="${a}">${a}</option>`;
-      });
+/* CLOCK */
+setInterval(() => {
+  const d = new Date();
+  clock.textContent = d.toLocaleString("en-IN", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+}, 1000);
 
-      const cats = await fetch(API_URL + "?action=categories").then(r => r.json());
-      cats.forEach(c => category.innerHTML += `<option value="${c}">${c}</option>`);
+/* LOAD MASTERS */
+async function loadMasters() {
+  const accounts = await fetch(API_URL + "?action=accounts").then(r => r.json());
+  accounts.forEach(a => {
+    fromAccount.innerHTML += `<option>${a}</option>`;
+    toAccount.innerHTML += `<option>${a}</option>`;
+  });
 
-      subMap = await fetch(API_URL + "?action=subcategories").then(r => r.json());
-    }
+  const cats = await fetch(API_URL + "?action=categories").then(r => r.json());
+  cats.forEach(c => category.innerHTML += `<option>${c}</option>`);
 
-    category.addEventListener("change", () => {
-      subCategory.innerHTML = "";
-      (subMap[category.value] || []).forEach(s => {
-        subCategory.innerHTML += `<option value="${s}">${s}</option>`;
-      });
-    });
+  subMap = await fetch(API_URL + "?action=subcategories").then(r => r.json());
 
-    txnType.addEventListener("change", applyRules);
+  const emis = await fetch(API_URL + "?action=emis").then(r => r.json());
+  emiId.innerHTML = "<option value=''>Select EMI</option>";
+  emis.forEach(e => {
+    emiMap[e.id] = e.amount;
+    emiId.innerHTML += `<option value="${e.id}">${e.name}</option>`;
+  });
+}
 
-    function applyRules() {
-      fromBlock.classList.add("hidden");
-      toBlock.classList.add("hidden");
-      category.disabled = false;
-      subCategory.disabled = false;
-      fromAccount.disabled = false;
+/* CATEGORY CHANGE */
+category.onchange = () => {
+  subCategory.innerHTML = "";
+  (subMap[category.value] || []).forEach(s => {
+    subCategory.innerHTML += `<option>${s}</option>`;
+  });
+};
 
-      if (txnType.value === "INCOME") {
-        toBlock.classList.remove("hidden");
+/* EMI AMOUNT LOCK */
+emiId.onchange = () => {
+  if (emiMap[emiId.value]) {
+    amount.value = emiMap[emiId.value];
+    amount.readOnly = true;
+  }
+};
+
+/* TYPE LOGIC */
+txnType.onchange = () => {
+  fromBlock.classList.add("hidden");
+  toBlock.classList.add("hidden");
+  emiBlock.classList.add("hidden");
+  amount.readOnly = false;
+
+  if (txnType.value === "EXP" || txnType.value === "SAVINGS" || txnType.value === "EMI")
+    fromBlock.classList.remove("hidden");
+
+  if (txnType.value === "INCOME" || txnType.value === "TRANSFER")
+    toBlock.classList.remove("hidden");
+
+  if (txnType.value === "EMI")
+    emiBlock.classList.remove("hidden");
+};
+
+/* SUBMIT */
+txnForm.onsubmit = async e => {
+  e.preventDefault();
+
+  if (txnType.value === "EMI" && Number(amount.value) !== emiMap[emiId.value]) {
+    alert("EMI amount mismatch.");
+    return;
+  }
+
+  await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "addTransaction",
+      payload: {
+        txnDate: txnDate.value,
+        txnType: txnType.value,
+        category: category.value,
+        subCategory: subCategory.value,
+        amount: Number(amount.value),
+        fromAccount: fromAccount.value,
+        toAccount: toAccount.value,
+        emiId: emiId.value,
+        source: "WEB"
       }
+    })
+  });
 
-      if (txnType.value === "EXP") {
-        fromBlock.classList.remove("hidden");
-      }
+  alert("Transaction saved");
+  location.reload();
+};
 
-      if (txnType.value === "TRANSFER") {
-        fromBlock.classList.remove("hidden");
-        toBlock.classList.remove("hidden");
-      }
+loadMasters();
+</script>
 
-      if (txnType.value === "SAVINGS") {
-        fromBlock.classList.remove("hidden");
-        category.value = "Savings";
-        category.disabled = true;
-      }
-
-      if (txnType.value === "EMI") {
-        fromBlock.classList.remove("hidden");
-        fromAccount.value = "HDFC Bank";
-        fromAccount.disabled = true;
-
-        category.value = "Financial Commitments";
-        category.disabled = true;
-
-        subCategory.innerHTML = "<option value='EMI'>EMI</option>";
-        subCategory.disabled = true;
-      }
-    }
-
-    document.getElementById("txnForm").addEventListener("submit", async e => {
-      e.preventDefault();
-
-      if (txnType.value === "TRANSFER" && fromAccount.value === toAccount.value) {
-        alert("From and To Account cannot be the same.");
-        return;
-      }
-
-      const payload = {
-        action: "addTransaction",
-        payload: {
-          txnDate: txnDate.value,
-          txnType: txnType.value,
-          category: category.value,
-          subCategory: subCategory.value,
-          amount: Number(amount.value),
-          fromAccount: fromAccount.value,
-          toAccount: toAccount.value,
-          description: description.value,
-          notes: ""
-        }
-      };
-
-      const res = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-      }).then(r => r.json());
-
-      alert("Transaction saved");
-      e.target.reset();
-      applyRules();
-    });
-
-    loadMasters();
-  </script>
 </body>
 </html>
