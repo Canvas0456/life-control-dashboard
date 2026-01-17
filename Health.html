@@ -1,85 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <title>Daily Health Log</title>
 
 <style>
 :root {
-  --sage: #9caf88;
-  --dusty-rose: #d4a3a3;
-  --glass: rgba(255,255,255,0.75);
+  --sage:#9caf88; --rose:#d4a3a3; --glass:rgba(255,255,255,.75);
 }
-
 body {
-  margin: 0;
-  font-family: 'Quicksand', sans-serif;
-  background: linear-gradient(135deg,#fdfcfb,#e2d1c3);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  margin:0; font-family:Quicksand,sans-serif;
+  background:linear-gradient(135deg,#fdfcfb,#e2d1c3);
+  display:flex; justify-content:center; align-items:center; min-height:100vh;
 }
-
 .card {
-  background: var(--glass);
-  backdrop-filter: blur(14px);
-  padding: 32px;
-  border-radius: 30px;
-  width: 380px;
+  background:var(--glass); backdrop-filter:blur(15px);
+  padding:32px; border-radius:30px; width:400px; position:relative;
 }
-
-h1 {
-  text-align: center;
-  font-weight: 400;
+.top-left,.top-right {
+  position:fixed; top:16px; font-weight:600;
 }
-
-label {
-  display:block;
-  margin-top:14px;
-  font-size: 0.85rem;
+.top-left { left:20px; }
+.top-right { right:20px; }
+label { display:block; margin-top:14px; font-size:.85rem; }
+input,textarea {
+  width:100%; padding:12px; border-radius:12px; border:none; margin-top:6px;
 }
-
-input, textarea {
-  width:100%;
-  padding:12px;
-  border-radius:12px;
-  border:none;
-  margin-top:6px;
-}
-
 button {
-  margin-top:22px;
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:40px;
-  background: var(--sage);
-  color:white;
-  font-size:1rem;
-  cursor:pointer;
+  margin-top:22px; width:100%; padding:14px; border:none;
+  border-radius:40px; background:var(--sage); color:white;
+  font-size:1rem; cursor:pointer;
 }
-
-#statusMsg {
-  display:none;
-  text-align:center;
-  margin-top:14px;
-  font-weight:600;
-  color:#5f8f6d;
-  animation: pop .6s ease;
+button:disabled { opacity:.6; cursor:not-allowed; }
+#msg {
+  display:none; text-align:center; margin-top:12px;
+  font-weight:600; animation:pop .5s ease;
 }
-
-@keyframes pop {
-  from {transform:scale(.85);opacity:0}
-  to {transform:scale(1);opacity:1}
-}
+@keyframes pop { from{transform:scale(.8);opacity:0} to{transform:scale(1);opacity:1} }
 </style>
 </head>
 
 <body>
 
+<div class="top-left" id="streak">🔥 0 Day Streak</div>
+<div class="top-right" id="clock"></div>
+
 <div class="card">
-<h1>Daily Health Log</h1>
+<h2 style="text-align:center;font-weight:400">Daily Health Log</h2>
 
 <label>Date</label>
 <input type="date" id="entryDate">
@@ -87,7 +54,7 @@ button {
 <label>Sleep Time</label>
 <input type="time" id="sleepTime">
 
-<label>Wake-up Time</label>
+<label>Wake Time</label>
 <input type="time" id="wakeTime">
 
 <label>Work Login</label>
@@ -114,54 +81,60 @@ button {
 <label>Notes</label>
 <textarea id="notes"></textarea>
 
-<div id="statusMsg">🎉 Health data saved successfully!</div>
-
-<button onclick="saveHealth()">Save Health Log</button>
+<div id="msg"></div>
+<button id="saveBtn" onclick="save()">Save Health Log</button>
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwJZKpjsMiyFG9F022EbeQFVWi-PINF0_zZbVo_WzisNwbQeNQ4mWUQp1oqqyFe_-ra/exec";
+const API = "https://script.google.com/macros/s/AKfycbwJZKpjsMiyFG9F022EbeQFVWi-PINF0_zZbVo_WzisNwbQeNQ4mWUQp1oqqyFe_-ra/exec";
 
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("entryDate").value =
-    new Date().toISOString().split("T")[0];
-});
+entryDate.value = new Date().toISOString().split("T")[0];
 
-async function saveHealth() {
-  const payload = {
-    entryDate: entryDate.value,
-    sleepTime: sleepTime.value,
-    wakeTime: wakeTime.value,
-    workLogin: workLogin.value,
-    workLogout: workLogout.value,
-    screenTime: screenTime.value,
-    steps: steps.value,
-    workoutMin: workoutMin.value,
-    waterLiters: waterLiters.value,
-    weightKg: weightKg.value,
-    notes: notes.value
-  };
+function save() {
+  saveBtn.disabled = true;
+  saveBtn.textContent = "Saving...";
 
-  const res = await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify(payload)
+  fetch(API, {
+    method:"POST",
+    body:JSON.stringify({
+      entryDate:entryDate.value,
+      sleepTime:sleepTime.value,
+      wakeTime:wakeTime.value,
+      workLogin:workLogin.value,
+      workLogout:workLogout.value,
+      screenTime:screenTime.value,
+      steps:steps.value,
+      workoutMin:workoutMin.value,
+      waterLiters:waterLiters.value,
+      weightKg:weightKg.value,
+      notes:notes.value
+    })
+  })
+  .then(r=>r.text())
+  .then(t=>{
+    msg.style.display="block";
+    if(t==="OK"){
+      msg.style.color="#5f8f6d";
+      msg.textContent="🎉 Health log saved!";
+      setTimeout(()=>location.reload(),1500);
+    } else {
+      msg.style.color="#b85c5c";
+      msg.textContent="⚠ Health log for this date already exists";
+      saveBtn.disabled=false;
+      saveBtn.textContent="Save Health Log";
+    }
   });
-
-  const text = await res.text();
-
-  if (text === "OK") {
-    statusMsg.style.display = "block";
-    setTimeout(() => location.reload(), 1600);
-  } else if (text === "DUPLICATE") {
-    statusMsg.style.display = "block";
-    statusMsg.textContent = "⚠ Health log for this date already exists";
-    statusMsg.style.color = "#c06c6c";
-  } else {
-    statusMsg.style.display = "block";
-    statusMsg.textContent = "❌ Save failed";
-    statusMsg.style.color = "#c06c6c";
-  }
 }
+
+// ⏰ Live Clock
+setInterval(()=>{
+  const d=new Date();
+  clock.textContent=d.toLocaleDateString("en-IN",{weekday:"long",day:"2-digit",month:"short",year:"numeric"})+
+  " • "+d.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+},1000);
+
+// 🔥 Simple streak display (visual only – backend authoritative)
+streak.textContent="🔥 Keep the streak alive!";
 </script>
 
 </body>
