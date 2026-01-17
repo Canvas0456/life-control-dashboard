@@ -14,7 +14,6 @@
   --radius:14px;
 }
 
-/* Soft Stickers */
 body::before {
   content:"";
   position:fixed; inset:0;
@@ -80,7 +79,6 @@ button:disabled { opacity:.6; cursor:not-allowed; }
 
 .hidden { display:none; }
 
-/* TABLE */
 table { width:100%; border-collapse:collapse; font-size:13px; }
 thead th {
   text-align:left;
@@ -165,6 +163,11 @@ td.accounts { color:var(--muted); font-size:12px; }
 <select id="toAccount"></select>
 </div>
 
+<div class="field">
+<label>Notes (Optional)</label>
+<input type="text" id="notes" placeholder="Any additional details">
+</div>
+
 <button id="saveBtn" type="submit">Save Transaction</button>
 </form>
 </div>
@@ -188,14 +191,13 @@ const amount=txnForm.amount;
 const emiId=txnForm.emiId;
 const fromAccount=txnForm.fromAccount;
 const toAccount=txnForm.toAccount;
+const notes=document.getElementById("notes");
 const saveBtn=document.getElementById("saveBtn");
 
 let allAccounts=[], subMap={}, emiMap={};
 
-/* CLOCK */
 setInterval(()=>clock.textContent=new Date().toLocaleString("en-IN",{weekday:"short",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}),1000);
 
-/* INIT */
 async function init(){
   allAccounts = await fetch(API+"?action=accounts").then(r=>r.json());
   subMap = await fetch(API+"?action=subcategories").then(r=>r.json());
@@ -209,7 +211,6 @@ async function init(){
 }
 init();
 
-/* ACCOUNT BUILDERS */
 function rebuildFrom(){
   fromAccount.innerHTML="<option value=''>Select</option>"+allAccounts.map(a=>`<option>${a}</option>`).join("");
 }
@@ -217,23 +218,31 @@ function rebuildTo(exclude=""){
   toAccount.innerHTML="<option value=''>Select</option>"+allAccounts.filter(a=>a!==exclude).map(a=>`<option>${a}</option>`).join("");
 }
 
-/* TYPE RULES */
+/* TYPE RULES — FIXED SAVINGS */
 txnType.onchange=()=>{
   fromBlock.classList.add("hidden");
   toBlock.classList.add("hidden");
   emiBlock.classList.add("hidden");
   subBlock.classList.add("hidden");
   amount.readOnly=false;
-
   category.innerHTML="";
 
-  if(txnType.value==="INCOME") category.innerHTML="<option>Income</option>";
+  if(txnType.value==="INCOME"){
+    category.innerHTML="<option>Income</option>";
+    toBlock.classList.remove("hidden");
+    rebuildTo();
+  }
 
   if(txnType.value==="EXP"){
     ["Living Essentials","Transport & Mobility","Lifestyle & Personal","Health & Wellness"]
-    .forEach(c=>category.innerHTML+=`<option>${c}</option>`);
-    subBlock.classList.remove("hidden");
+      .forEach(c=>category.innerHTML+=`<option>${c}</option>`);
     fromBlock.classList.remove("hidden");
+    subBlock.classList.remove("hidden");
+  }
+
+  if(txnType.value==="SAVINGS"){
+    category.innerHTML="<option>Savings</option>";
+    fromBlock.classList.remove("hidden");   // ✅ FIX
   }
 
   if(txnType.value==="EMI"){
@@ -264,7 +273,6 @@ fromAccount.onchange=()=>{
   if(txnType.value==="TRANSFER") rebuildTo(fromAccount.value);
 };
 
-/* SUBMIT */
 txnForm.onsubmit=async e=>{
   e.preventDefault();
   saveBtn.disabled=true;
@@ -281,6 +289,7 @@ txnForm.onsubmit=async e=>{
       fromAccount:fromAccount.value,
       toAccount:toAccount.value,
       emiId:emiId.value,
+      notes:notes.value,
       source:"WEB"
     }
   })});
@@ -288,11 +297,9 @@ txnForm.onsubmit=async e=>{
   txnForm.reset();
   saveBtn.disabled=false;
   saveBtn.textContent="Save Transaction";
-
   loadRecent();
 };
 
-/* RECENT TABLE */
 async function loadRecent(){
   const box=document.getElementById("recentTxns");
   try{
