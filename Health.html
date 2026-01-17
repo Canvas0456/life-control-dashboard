@@ -1,155 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Daily Health Log</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Daily Health Log</title>
 
-  <!-- FONT -->
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500&display=swap" rel="stylesheet">
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <style>
-    :root {
-      --sage: #9caf88;
-      --dusty-rose: #d4a3a3;
-      --warm-sand: #f5f2ed;
-      --glass: rgba(255, 255, 255, 0.7);
-    }
+<style>
+:root {
+  --sage: #9caf88;
+  --dusty-rose: #d4a3a3;
+  --warm-sand: #f5f2ed;
+  --glass: rgba(255, 255, 255, 0.7);
+}
 
-    body, html {
-      margin: 0;
-      min-height: 100vh;
-      font-family: 'Quicksand', sans-serif;
-    }
+* { box-sizing: border-box; }
 
-    .art-bg {
-      min-height: 100vh;
-      background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-      padding: 20px;
-    }
+body, html {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Quicksand', sans-serif;
+}
 
-    .shape {
-      position: absolute;
-      filter: blur(80px);
-      z-index: 0;
-    }
+.art-bg {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+  display: flex;
+  justify-content: center;
+  padding: 40px 16px;
+  position: relative;
+}
 
-    .circle-one {
-      width: 400px;
-      height: 400px;
-      background: var(--sage);
-      top: -10%;
-      left: -10%;
-      opacity: 0.3;
-    }
+.shape {
+  position: absolute;
+  filter: blur(80px);
+  z-index: 0;
+}
+.circle-one {
+  width: 400px; height: 400px;
+  background: var(--sage);
+  top: -10%; left: -10%;
+  opacity: 0.3;
+}
+.circle-two {
+  width: 300px; height: 300px;
+  background: var(--dusty-rose);
+  bottom: 10%; right: -5%;
+  opacity: 0.25;
+}
 
-    .circle-two {
-      width: 300px;
-      height: 300px;
-      background: var(--dusty-rose);
-      bottom: 10%;
-      right: -5%;
-      opacity: 0.25;
-    }
+/* Live Clock */
+.live-time {
+  position: fixed;
+  top: 14px;
+  right: 20px;
+  font-size: 0.9rem;
+  color: #555;
+  z-index: 10;
+  background: rgba(255,255,255,0.6);
+  padding: 6px 12px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
 
-    .glass-form {
-      position: relative;
-      z-index: 1;
-      background: var(--glass);
-      backdrop-filter: blur(15px);
-      border-radius: 30px;
-      padding: 32px;
-      width: 100%;
-      max-width: 420px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-    }
+/* Card */
+.glass-form {
+  width: 100%;
+  max-width: 420px;
+  background: var(--glass);
+  backdrop-filter: blur(15px);
+  border-radius: 30px;
+  padding: 32px;
+  z-index: 1;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
 
-    h1 {
-      text-align: center;
-      font-weight: 400;
-      margin-bottom: 10px;
-      color: #5a5a5a;
-    }
+h1 {
+  text-align: center;
+  font-weight: 400;
+  margin-bottom: 10px;
+}
 
-    label {
-      display: block;
-      margin-top: 18px;
-      margin-bottom: 6px;
-      color: #6b6b6b;
-      font-size: 0.9rem;
-    }
+.streak {
+  text-align: center;
+  margin-bottom: 22px;
+  font-size: 0.95rem;
+}
+.streak span {
+  font-size: 1.8rem;
+}
 
-    input, textarea {
-      width: 100%;
-      padding: 12px;
-      border-radius: 14px;
-      border: none;
-      background: rgba(255,255,255,0.6);
-      font-size: 0.95rem;
-    }
+/* Inputs */
+label {
+  margin-top: 16px;
+  display: block;
+  font-size: 0.85rem;
+  color: #666;
+}
 
-    textarea {
-      resize: none;
-      height: 80px;
-    }
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 14px;
+  border: none;
+  background: rgba(255,255,255,0.6);
+  margin-top: 6px;
+  font-family: inherit;
+}
 
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
+textarea { resize: none; }
 
-    .note {
-      font-size: 0.75rem;
-      color: #888;
-      margin-top: 4px;
-    }
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
 
-    .error {
-      margin-top: 14px;
-      padding: 12px;
-      background: rgba(212,163,163,0.25);
-      color: #7a2e2e;
-      border-radius: 14px;
-      text-align: center;
-      display: none;
-    }
-
-    .success {
-      margin-top: 14px;
-      padding: 12px;
-      background: rgba(156,175,136,0.3);
-      color: #355e3b;
-      border-radius: 14px;
-      text-align: center;
-      display: none;
-    }
-
-    .art-button {
-      margin-top: 26px;
-      width: 100%;
-      padding: 14px;
-      border-radius: 50px;
-      border: none;
-      background: var(--sage);
-      color: white;
-      font-size: 1rem;
-      letter-spacing: 1.5px;
-      cursor: pointer;
-    }
-
-    .art-button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  </style>
+/* Button */
+.art-button {
+  margin-top: 26px;
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 50px;
+  background: var(--sage);
+  color: #fff;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+}
+.art-button:disabled {
+  background: #cfcfcf;
+}
+</style>
 </head>
 
 <body>
+<div class="live-time" id="liveTime"></div>
+
 <div class="art-bg">
   <div class="shape circle-one"></div>
   <div class="shape circle-two"></div>
@@ -157,89 +147,125 @@
   <form class="glass-form" id="healthForm">
     <h1>Daily Health Log</h1>
 
+    <div class="streak" id="streakBox">
+      🔥 <span>0</span> Day Streak
+    </div>
+
     <label>Date</label>
     <input type="date" id="entryDate" required />
 
     <div class="grid-2">
       <div>
         <label>Sleep Time</label>
-        <input type="time" id="sleepTime" />
+        <input type="time" id="sleepTime">
       </div>
       <div>
         <label>Wake-up Time</label>
-        <input type="time" id="wakeTime" />
+        <input type="time" id="wakeTime">
       </div>
     </div>
+
+    <label>Sleep Hours</label>
+    <input type="number" id="sleepHours" readonly>
 
     <div class="grid-2">
       <div>
         <label>Work Login</label>
-        <input type="time" id="workLogin" />
+        <input type="time" id="workLogin">
       </div>
       <div>
         <label>Work Logout</label>
-        <input type="time" id="workLogout" />
+        <input type="time" id="workLogout">
       </div>
     </div>
 
+    <label>Work Hours</label>
+    <input type="number" id="workHours" readonly>
+
     <label>Screen Time (hours)</label>
-    <input type="number" step="0.1" id="screenTime" />
+    <input type="number" step="0.1" id="screenTime">
 
     <div class="grid-2">
       <div>
         <label>Steps</label>
-        <input type="number" id="steps" />
+        <input type="number" id="steps">
       </div>
       <div>
         <label>Workout (minutes)</label>
-        <input type="number" id="workoutMin" />
+        <input type="number" id="workoutMin">
       </div>
     </div>
 
     <div class="grid-2">
       <div>
         <label>Water Intake (liters)</label>
-        <input type="number" step="0.1" id="waterLiters" />
+        <input type="number" step="0.1" id="waterLiters">
       </div>
       <div>
         <label>Weight (kg)</label>
-        <input type="number" step="0.1" id="weightKg" />
-        <div class="note">Optional · Weekly entry</div>
+        <input type="number" step="0.1" id="weightKg">
       </div>
     </div>
 
     <label>Notes</label>
-    <textarea id="notes" placeholder="Energy, mood, eye strain, headaches, etc."></textarea>
+    <textarea rows="3" id="notes"></textarea>
 
-    <div class="error" id="errorBox"></div>
-    <div class="success" id="successBox">Health log saved successfully</div>
-
-    <button class="art-button" type="submit" id="saveBtn">SAVE HEALTH LOG</button>
+    <button class="art-button" id="saveBtn">SAVE</button>
   </form>
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwJZKpjsMiyFG9F022EbeQFVWi-PINF0_zZbVo_WzisNwbQeNQ4mWUQp1oqqyFe_-ra/exec";
+/* ================= CONFIG ================= */
+const HEALTH_API_URL = "https://script.google.com/macros/s/AKfycbwJZKpjsMiyFG9F022EbeQFVWi-PINF0_zZbVo_WzisNwbQeNQ4mWUQp1oqqyFe_-ra/exec";
 
-document.getElementById("healthForm").addEventListener("submit", async (e) => {
+/* ================= LIVE TIME ================= */
+function updateClock() {
+  const now = new Date();
+  document.getElementById("liveTime").innerText =
+    now.toLocaleDateString(undefined,{weekday:'short',day:'2-digit',month:'short'}) +
+    " • " +
+    now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+setInterval(updateClock,1000); updateClock();
+
+/* ================= TIME CALC ================= */
+function toMin(t){ if(!t) return null; const [h,m]=t.split(":"); return +h*60 + +m; }
+
+function calcSleep(){
+  const s=toMin(sleepTime.value), w=toMin(wakeTime.value);
+  if(s==null||w==null) return;
+  let d=w-s; if(d<=0)d+=1440;
+  sleepHours.value=(d/60).toFixed(2);
+}
+function calcWork(){
+  const i=toMin(workLogin.value), o=toMin(workLogout.value);
+  if(i==null||o==null||o<i) return;
+  workHours.value=((o-i)/60).toFixed(2);
+}
+sleepTime.onchange=wakeTime.onchange=calcSleep;
+workLogin.onchange=workLogout.onchange=calcWork;
+
+/* ================= STREAK ================= */
+fetch(`${HEALTH_API_URL}?action=streak`)
+  .then(r=>r.json())
+  .then(d=>{
+    if(d.streak!==undefined)
+      document.querySelector("#streakBox span").innerText=d.streak;
+  });
+
+/* ================= SUBMIT ================= */
+healthForm.onsubmit = async e => {
   e.preventDefault();
-
-  const btn = document.getElementById("saveBtn");
-  const errorBox = document.getElementById("errorBox");
-  const successBox = document.getElementById("successBox");
-
-  errorBox.style.display = "none";
-  successBox.style.display = "none";
-
-  btn.disabled = true;
-  btn.textContent = "SAVING...";
+  saveBtn.disabled=true; saveBtn.innerText="SAVING...";
 
   const payload = {
     entryDate: entryDate.value,
     sleepTime: sleepTime.value,
     wakeTime: wakeTime.value,
+    sleepHours: sleepHours.value,
     workLogin: workLogin.value,
     workLogout: workLogout.value,
+    workHours: workHours.value,
     screenTime: screenTime.value,
     steps: steps.value,
     workoutMin: workoutMin.value,
@@ -248,33 +274,14 @@ document.getElementById("healthForm").addEventListener("submit", async (e) => {
     notes: notes.value
   };
 
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
+  const res = await fetch(HEALTH_API_URL, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  }).then(r=>r.json());
 
-    const text = await res.text();
-
-    if (text === "DUPLICATE") {
-      errorBox.textContent = `Health log for ${entryDate.value} already exists`;
-      errorBox.style.display = "block";
-    } else if (text === "OK") {
-      successBox.style.display = "block";
-      document.getElementById("healthForm").reset();
-    } else {
-      errorBox.textContent = "Save failed. Please try again.";
-      errorBox.style.display = "block";
-    }
-
-  } catch (err) {
-    errorBox.textContent = "Network error. Please try again.";
-    errorBox.style.display = "block";
-  }
-
-  btn.disabled = false;
-  btn.textContent = "SAVE HEALTH LOG";
-});
+  alert(res.message || "Saved");
+  saveBtn.disabled=false; saveBtn.innerText="SAVE";
+};
 </script>
 </body>
 </html>
