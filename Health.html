@@ -189,29 +189,42 @@ button.error{background:#DC2626}
 <script>
 const API="https://script.google.com/macros/s/AKfycbwJZKpjsMiyFG9F022EbeQFVWi-PINF0_zZbVo_WzisNwbQeNQ4mWUQp1oqqyFe_-ra/exec";
 
-const d=new Date();
-date.value=d.toISOString().slice(0,10);
+const today = new Date().toISOString().slice(0,10);
+date.value = today;
 
-function mins(t){
-  if(!t)return null;
-  const[a,b]=t.split(":").map(Number);
-  return a*60+b;
+const LOCK_KEY = "HEALTH_LOG_" + today;
+
+// 🔒 Lock UI if already saved today
+if (localStorage.getItem(LOCK_KEY)) {
+  save.disabled = true;
+  save.textContent = "Already Logged Today ✓";
+  save.className = "success";
+  msg.textContent = "Health log already exists for today.";
 }
 
+// --- Time to minutes helper
+function mins(t){
+  if(!t) return null;
+  const [h,m]=t.split(":").map(Number);
+  return h*60+m;
+}
+
+// --- Auto calculations
 function calc(){
-  if(sleep.value&&wake.value){
-    let diff=mins(wake.value)-mins(sleep.value);
-    if(diff<=0)diff+=1440;
-    sleepHrs.value=(diff/60).toFixed(2);
+  if(sleep.value && wake.value){
+    let d = mins(wake.value)-mins(sleep.value);
+    if(d<=0) d+=1440;
+    sleepHrs.value=(d/60).toFixed(2);
   }
-  if(login.value&&logout.value){
-    let diff=mins(logout.value)-mins(login.value);
-    if(diff>0)workHrs.value=(diff/60).toFixed(2);
+  if(login.value && logout.value){
+    let d = mins(logout.value)-mins(login.value);
+    if(d>0) workHrs.value=(d/60).toFixed(2);
   }
 }
 
 sleep.onchange=wake.onchange=login.onchange=logout.onchange=calc;
 
+// --- Live clock
 setInterval(()=>{
   liveTime.textContent=new Date().toLocaleString("en-IN",{
     weekday:"long",day:"2-digit",month:"short",
@@ -219,39 +232,58 @@ setInterval(()=>{
   });
 },1000);
 
-save.onclick=async()=>{
-  msg.textContent="";
-  save.textContent="Saving…";
+// --- SAVE (HARD SAFE)
+save.onclick = async () => {
 
-  const res=await fetch(API,{
-    method:"POST",
-    body:JSON.stringify({
-      entryDate:date.value,
-      sleepTime:sleep.value,
-      wakeTime:wake.value,
-      workLogin:login.value,
-      workLogout:logout.value,
-      steps:steps.value,
-      workoutMin:workout.value,
-      waterLiters:water.value,
-      screenTime:screen.value,
-      weightKg:weight.value,
-      notes:notes.value
-    })
-  });
+  if (save.disabled) return; // 🛑 absolute stop
 
-  const t=await res.text();
-  if(t==="DUPLICATE"){
-    msg.textContent="Health log already exists for this date.";
-    save.className="error";
-    save.textContent="Already Saved";
-    return;
+  save.disabled = true;
+  save.textContent = "Saving…";
+  msg.textContent = "";
+
+  try {
+    const res = await fetch(API,{
+      method:"POST",
+      body:JSON.stringify({
+        entryDate:date.value,
+        sleepTime:sleep.value,
+        wakeTime:wake.value,
+        workLogin:login.value,
+        workLogout:logout.value,
+        steps:steps.value,
+        workoutMin:workout.value,
+        waterLiters:water.value,
+        screenTime:screen.value,
+        weightKg:weight.value,
+        notes:notes.value
+      })
+    });
+
+    const txt = await res.text();
+
+    if (txt === "DUPLICATE") {
+      save.textContent = "Already Logged ✓";
+      save.className = "error";
+      msg.textContent = "Health log already exists for this date.";
+      localStorage.setItem(LOCK_KEY, "1");
+      return;
+    }
+
+    if (txt === "OK") {
+      save.textContent = "Saved ✓";
+      save.className = "success";
+      msg.textContent = "Great job! See you tomorrow 💚";
+      localStorage.setItem(LOCK_KEY, "1");
+    }
+
+  } catch (e) {
+    save.disabled = false;
+    save.textContent = "Save Health Log";
+    msg.textContent = "Something went wrong. Try again.";
   }
-
-  save.className="success";
-  save.textContent="Saved ✓";
 };
 </script>
+
 
 </body>
 </html>
