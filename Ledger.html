@@ -2,21 +2,21 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Account Ledger</title>
 
 <style>
-body{margin:0;font-family:Inter,system-ui;background:#f5f7fa;color:#475569}
+body{margin:0;background:#f5f7fa;font-family:Inter,system-ui;color:#475569}
 .container{max-width:1200px;margin:auto;padding:24px}
-.card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;margin-bottom:20px}
-h1{margin-bottom:20px}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:20px;margin-bottom:20px}
+h1{margin-bottom:16px}
 label{font-size:13px;color:#64748b}
 select,input{width:100%;padding:12px;border-radius:10px;border:1px solid #e2e8f0}
 button{padding:12px 18px;border-radius:10px;border:none;background:#64748b;color:#fff;cursor:pointer}
 
 .filters{
   display:grid;
-  grid-template-columns: 2fr 1fr 1fr 120px;
+  grid-template-columns:2fr 1fr 1fr auto;
   gap:16px;
   align-items:end;
 }
@@ -30,6 +30,8 @@ button{padding:12px 18px;border-radius:10px;border:none;background:#64748b;color
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid #e2e8f0}
 th{color:#64748b}
+
+.loading{color:#94a3b8;text-align:center;padding:20px}
 
 @media(max-width:768px){
   .filters{grid-template-columns:1fr}
@@ -74,7 +76,7 @@ th{color:#64748b}
 <tr><th>Date</th><th>Txn</th><th>Type</th><th>Category</th><th>Debit</th><th>Credit</th><th>Balance</th></tr>
 </thead>
 <tbody id="rows">
-<tr><td colspan="7">Select an account</td></tr>
+<tr><td colspan="7" class="loading">Select an account</td></tr>
 </tbody>
 </table>
 </div>
@@ -83,45 +85,57 @@ th{color:#64748b}
 
 <script>
 const API = "https://script.google.com/macros/s/AKfycbzMO7aNBxJXJ2T7lRN8KQUvy8zmKsDNf_iAe1sfkoloFanBP4a_ui8lOCjxB9lZgRHuag/exec";
-const account = document.getElementById("account");
-const rows = document.getElementById("rows");
+
+const accountEl = document.getElementById("account");
+const rowsEl = document.getElementById("rows");
 
 fetch(`${API}?action=accounts`)
   .then(r=>r.json())
   .then(data=>{
-    account.innerHTML =
-      `<option value="">Select</option>` +
-      data.map(a=>`<option value="${a}">${a}</option>`).join("");
-    account.onchange = loadLedger;
+    accountEl.innerHTML =
+      `<option value="">Select Account</option>` +
+      data.map(a=>`<option value="${a.name}">${a.name}</option>`).join("");
+    accountEl.addEventListener("change", loadLedger);
   });
 
 function loadLedger(){
-  if(!account.value) return;
+  const acc = accountEl.value;
+  if(!acc){
+    rowsEl.innerHTML = `<tr><td colspan="7" class="loading">Select an account</td></tr>`;
+    return;
+  }
 
-  let url = `${API}?action=ledger&account=${account.value}`;
-  if(from.value || to.value) url += `&from=${from.value}&to=${to.value}`;
+  rowsEl.innerHTML = `<tr><td colspan="7" class="loading">Loading…</td></tr>`;
 
-  fetch(url).then(r=>r.json()).then(data=>{
-    let inflow=0,outflow=0;
+  let url = `${API}?action=ledger&account=${encodeURIComponent(acc)}`;
+  if(from.value) url += `&from=${from.value}`;
+  if(to.value) url += `&to=${to.value}`;
 
-    rows.innerHTML = data.map(r=>{
-      inflow+=r.credit; outflow+=r.debit;
-      return `<tr>
-        <td>${r.date}</td>
-        <td>${r.txnId}</td>
-        <td>${r.type}</td>
-        <td>${r.category}</td>
-        <td>${r.debit}</td>
-        <td>${r.credit}</td>
-        <td>${r.balance}</td>
-      </tr>`;
-    }).join("");
+  fetch(url)
+    .then(r=>r.json())
+    .then(res=>{
+      opening.textContent = `₹${res.opening}`;
+      inflow.textContent = `₹${res.inflow}`;
+      outflow.textContent = `₹${res.outflow}`;
+      closing.textContent = `₹${res.closing}`;
 
-    opening.textContent = "₹" + (data[0]?.balance - inflow + outflow || 0);
-    inflow.textContent = "₹" + inflow;
-    outflow.textContent = "₹" + outflow;
-    closing.textContent = "₹" + (data.at(-1)?.balance || 0);
-  });
+      if(!res.rows.length){
+        rowsEl.innerHTML = `<tr><td colspan="7" class="loading">No transactions</td></tr>`;
+        return;
+      }
+
+      rowsEl.innerHTML = res.rows.map(r=>`
+        <tr>
+          <td>${r.date}</td>
+          <td>${r.txn}</td>
+          <td>${r.type}</td>
+          <td>${r.category}</td>
+          <td>${r.debit}</td>
+          <td>${r.credit}</td>
+          <td>${r.balance}</td>
+        </tr>
+      `).join("");
+    });
 }
 </script>
 
