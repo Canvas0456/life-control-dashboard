@@ -3,330 +3,301 @@
 <head>
 <meta charset="UTF-8" />
 <title>Daily Money Log</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
+/* ================= ROOT THEME ================= */
 :root {
-  --bg1:#F7F8FC; --bg2:#EEF2F7;
-  --card:#FFFFFF; --border:#E5E7EB;
-  --text:#374151; --muted:#6B7280;
-  --accent:#9AA7D8;
-  --radius:14px;
+  --bg-primary: #0F172A;
+  --bg-card: #1E293B;
+  --accent-finance: #2DD4BF;
+  --accent-health: #FB7185;
+  --accent-ai: #818CF8;
+  --text-primary: #F8FAFC;
+  --glass-border: rgba(255,255,255,0.1);
+  --glass-bg: rgba(255,255,255,0.04);
 }
 
-body::before {
-  content:"";
-  position:fixed; inset:0;
-  background:
-    radial-gradient(circle at 15% 20%, #9AA7D8 0, transparent 35%),
-    radial-gradient(circle at 85% 80%, #7FB7A3 0, transparent 40%);
-  opacity:.035; pointer-events:none;
+/* ================= GLOBAL ================= */
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
 }
-
-* { box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
 
 body {
-  margin:0;
-  background:linear-gradient(135deg,var(--bg1),var(--bg2));
-  color:var(--text);
-  min-height:100vh;
-  padding:80px 16px 40px;
+  min-height: 100vh;
+  padding: 24px;
 }
 
-.clock {
-  position:fixed; top:16px; right:20px;
-  font-size:13px; color:var(--muted);
+/* ================= LIVE CLOCK ================= */
+#liveClock {
+  position: fixed;
+  top: 16px;
+  right: 24px;
+  font-size: 0.85rem;
+  opacity: 0.9;
+  letter-spacing: 0.5px;
 }
 
+/* ================= LAYOUT ================= */
 .container {
-  max-width:1100px;
-  margin:auto;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:24px;
-  animation:fadeUp .4s ease;
+  max-width: 1200px;
+  margin: auto;
 }
 
-h1 { grid-column:span 2; margin:0; }
+.header {
+  margin-bottom: 24px;
+}
 
+.header h1 {
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+/* ================= BENTO GRID ================= */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+  gap: 20px;
+}
+
+/* ================= GLASS CARD ================= */
 .card {
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:24px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 20px;
+  transition: transform .3s ease, box-shadow .3s ease;
 }
 
-label { font-size:13px; font-weight:500; margin-bottom:6px; display:block; }
-.field { margin-bottom:18px; }
-
-input,select,button {
-  width:100%; padding:10px 12px;
-  border-radius:8px;
-  border:1px solid var(--border);
-  font-size:14px;
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 30px rgba(45,212,191,0.12);
 }
 
-input[readonly] { background:#F3F4F6; }
+/* ================= FORM ================= */
+label {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin-top: 14px;
+  display: block;
+}
+
+input, select {
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: none;
+  background: #0f172a;
+  color: var(--text-primary);
+}
 
 button {
-  border:none;
-  background:var(--accent);
-  color:#fff;
-  font-weight:600;
+  margin-top: 20px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.9rem;
+  letter-spacing: 1.5px;
+  background: var(--accent-finance);
+  color: #022c22;
+  cursor: pointer;
+  transition: all .3s ease;
 }
 
-button:disabled { opacity:.6; cursor:not-allowed; }
-
-.hidden { display:none; }
-
-table { width:100%; border-collapse:collapse; font-size:13px; }
-thead th {
-  text-align:left;
-  padding:8px;
-  border-bottom:1px solid var(--border);
-  color:var(--muted);
-}
-tbody td {
-  padding:8px;
-  border-bottom:1px dashed #E5E7EB;
-}
-td.amount { text-align:right; font-weight:600; }
-td.accounts { color:var(--muted); font-size:12px; }
-
-@media(max-width:900px){
-  .container { grid-template-columns:1fr; }
-  h1 { grid-column:span 1; }
+button:hover {
+  box-shadow: 0 0 25px rgba(45,212,191,0.5);
+  transform: scale(1.03);
 }
 
-@keyframes fadeUp {
-  from { opacity:0; transform:translateY(8px); }
-  to { opacity:1; transform:none; }
+/* ================= LAST TRANSACTIONS ================= */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+th {
+  opacity: 0.6;
+}
+
+/* ================= FOOTER ================= */
+footer {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 0.7rem;
+  opacity: 0.6;
 }
 </style>
 </head>
 
 <body>
 
-<div class="clock" id="clock"></div>
+<div id="liveClock"></div>
 
 <div class="container">
-<h1>Daily Money Log</h1>
 
-<!-- FORM -->
-<div class="card">
-<form id="txnForm">
+  <div class="header">
+    <h1>💸 Daily Money Log</h1>
+  </div>
 
-<div class="field">
-<label>Date</label>
-<input type="date" id="txnDate" required>
-</div>
+  <div class="bento">
 
-<div class="field">
-<label>Type</label>
-<select id="txnType" required>
-<option value="">Select</option>
-<option value="INCOME">Income</option>
-<option value="EXP">Expense</option>
-<option value="EMI">EMI Payment</option>
-<option value="SAVINGS">Savings</option>
-<option value="TRANSFER">Transfer</option>
-</select>
-</div>
+    <!-- ADD TRANSACTION -->
+    <div class="card">
+      <h3>Add Transaction</h3>
 
-<div class="field">
-<label>Category</label>
-<select id="category"></select>
-</div>
+      <label>Date</label>
+      <input type="date" id="txnDate">
 
-<div class="field hidden" id="subBlock">
-<label>Sub Category</label>
-<select id="subCategory"></select>
-</div>
+      <label>Type</label>
+      <select id="txnType">
+        <option>EXP</option>
+        <option>INC</option>
+        <option>TRANSFER</option>
+        <option>SAV</option>
+        <option>EMI</option>
+      </select>
 
-<div class="field">
-<label>Amount</label>
-<input type="number" id="amount" required>
-</div>
+      <label>Category</label>
+      <select id="category"></select>
 
-<div class="field hidden" id="emiBlock">
-<label>EMI</label>
-<select id="emiId"></select>
-</div>
+      <label>Sub Category</label>
+      <select id="subCategory"></select>
 
-<div class="field hidden" id="fromBlock">
-<label>From Account</label>
-<select id="fromAccount"></select>
-</div>
+      <label>Amount</label>
+      <input type="number" id="amount">
 
-<div class="field hidden" id="toBlock">
-<label>To Account</label>
-<select id="toAccount"></select>
-</div>
+      <label>From Account</label>
+      <select id="fromAccount"></select>
 
-<div class="field">
-<label>Notes (Optional)</label>
-<input type="text" id="notes" placeholder="Any additional details">
-</div>
+      <label>To Account</label>
+      <select id="toAccount"></select>
 
-<button id="saveBtn" type="submit">Save Transaction</button>
-</form>
-</div>
+      <label>Notes</label>
+      <input id="notes">
 
-<!-- LAST 10 -->
-<div class="card">
-<h3>Last 10 Transactions</h3>
-<div id="recentTxns">Loading…</div>
-</div>
+      <button onclick="saveTxn()">SAVE TRANSACTION</button>
+    </div>
+
+    <!-- LAST 10 -->
+    <div class="card">
+      <h3>Last 10 Transactions</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th><th>Type</th><th>Category</th><th>Accounts</th><th>Amount</th>
+          </tr>
+        </thead>
+        <tbody id="recent"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <footer>
+    © Designed & Engineered by <b>Kaiwalya Muley</b>
+  </footer>
 
 </div>
 
 <script>
-const API="https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
+/* ================= CONFIG ================= */
+const API = "https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
 
-const txnForm=document.getElementById("txnForm");
-const txnType=txnForm.txnType;
-const category=txnForm.category;
-const subCategory=txnForm.subCategory;
-const amount=txnForm.amount;
-const emiId=txnForm.emiId;
-const fromAccount=txnForm.fromAccount;
-const toAccount=txnForm.toAccount;
-const notes=document.getElementById("notes");
-const saveBtn=document.getElementById("saveBtn");
+/* ================= LIVE CLOCK ================= */
+setInterval(()=>{
+  const d = new Date();
+  document.getElementById("liveClock").innerText =
+    d.toLocaleDateString(undefined,{weekday:'long',day:'2-digit',month:'short',year:'numeric'})
+    + " • " +
+    d.toLocaleTimeString();
+},1000);
 
-let allAccounts=[], subMap={}, emiMap={};
-
-setInterval(()=>clock.textContent=new Date().toLocaleString("en-IN",{weekday:"short",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}),1000);
-
+/* ================= INIT ================= */
 async function init(){
-  allAccounts = await fetch(API+"?action=accounts").then(r=>r.json());
-  subMap = await fetch(API+"?action=subcategories").then(r=>r.json());
+  const [acc, cat, sub, recent] = await Promise.all([
+    fetch(API+"?module=txn&action=accounts").then(r=>r.json()),
+    fetch(API+"?module=txn&action=categories").then(r=>r.json()),
+    fetch(API+"?module=txn&action=subcategories").then(r=>r.json()),
+    fetch(API+"?module=txn&action=recent").then(r=>r.json())
+  ]);
 
-  const emis = await fetch(API+"?action=emis").then(r=>r.json());
-  emiId.innerHTML="<option value=''>Select EMI</option>";
-  emis.forEach(e=>{ emiMap[e.id]=e.amount; emiId.innerHTML+=`<option value="${e.id}">${e.name}</option>`; });
+  fillSelect("fromAccount", acc);
+  fillSelect("toAccount", acc);
+  fillSelect("category", cat);
 
-  rebuildFrom();
-  loadRecent();
+  document.getElementById("category").onchange = e=>{
+    fillSelect("subCategory", sub[e.target.value]||[]);
+  };
+
+  renderRecent(recent);
 }
 init();
 
-function rebuildFrom(){
-  fromAccount.innerHTML="<option value=''>Select</option>"+allAccounts.map(a=>`<option>${a}</option>`).join("");
+/* ================= HELPERS ================= */
+function fillSelect(id, arr){
+  const s = document.getElementById(id);
+  s.innerHTML="";
+  arr.forEach(v=>{
+    const o=document.createElement("option");
+    o.textContent=v; o.value=v;
+    s.appendChild(o);
+  });
 }
-function rebuildTo(exclude=""){
-  toAccount.innerHTML="<option value=''>Select</option>"+allAccounts.filter(a=>a!==exclude).map(a=>`<option>${a}</option>`).join("");
+
+function renderRecent(data){
+  document.getElementById("recent").innerHTML = data.map(r=>`
+    <tr>
+      <td>${r.date}</td>
+      <td>${r.type}</td>
+      <td>${r.category}</td>
+      <td>${r.from||""} → ${r.to||""}</td>
+      <td>₹ ${r.amount}</td>
+    </tr>
+  `).join("");
 }
 
-/* TYPE RULES — FIXED SAVINGS */
-txnType.onchange=()=>{
-  fromBlock.classList.add("hidden");
-  toBlock.classList.add("hidden");
-  emiBlock.classList.add("hidden");
-  subBlock.classList.add("hidden");
-  amount.readOnly=false;
-  category.innerHTML="";
+/* ================= SAVE ================= */
+async function saveTxn(){
+  const payload = {
+    txnDate: txnDate.value,
+    txnType: txnType.value,
+    category: category.value,
+    subCategory: subCategory.value,
+    amount: amount.value,
+    fromAccount: fromAccount.value,
+    toAccount: toAccount.value,
+    notes: notes.value,
+    source:"WEB"
+  };
 
-  if(txnType.value==="INCOME"){
-    category.innerHTML="<option>Income</option>";
-    toBlock.classList.remove("hidden");
-    rebuildTo();
-  }
+  await fetch(API,{
+    method:"POST",
+    body:JSON.stringify({
+      module:"txn",
+      action:"addTransaction",
+      payload
+    })
+  });
 
-  if(txnType.value==="EXP"){
-    ["Living Essentials","Transport & Mobility","Lifestyle & Personal","Health & Wellness"]
-      .forEach(c=>category.innerHTML+=`<option>${c}</option>`);
-    fromBlock.classList.remove("hidden");
-    subBlock.classList.remove("hidden");
-  }
-
-  if(txnType.value==="SAVINGS"){
-    category.innerHTML="<option>Savings</option>";
-    fromBlock.classList.remove("hidden");   // ✅ FIX
-  }
-
-  if(txnType.value==="EMI"){
-    category.innerHTML="<option>Financial Commitments</option>";
-    emiBlock.classList.remove("hidden");
-    fromBlock.classList.remove("hidden");
-  }
-
-  if(txnType.value==="TRANSFER"){
-    category.innerHTML="<option>Transfer</option>";
-    fromBlock.classList.remove("hidden");
-    toBlock.classList.remove("hidden");
-    rebuildFrom();
-    rebuildTo();
-  }
-};
-
-category.onchange=()=>{
-  subCategory.innerHTML=(subMap[category.value]||[]).map(s=>`<option>${s}</option>`).join("");
-};
-
-emiId.onchange=()=>{
-  amount.value=emiMap[emiId.value]||"";
-  amount.readOnly=!!emiMap[emiId.value];
-};
-
-fromAccount.onchange=()=>{
-  if(txnType.value==="TRANSFER") rebuildTo(fromAccount.value);
-};
-
-txnForm.onsubmit=async e=>{
-  e.preventDefault();
-  saveBtn.disabled=true;
-  saveBtn.textContent="Saving…";
-
-  await fetch(API,{method:"POST",body:JSON.stringify({
-    action:"addTransaction",
-    payload:{
-      txnDate:txnDate.value,
-      txnType:txnType.value,
-      category:category.value,
-      subCategory:subCategory.value,
-      amount:Number(amount.value),
-      fromAccount:fromAccount.value,
-      toAccount:toAccount.value,
-      emiId:emiId.value,
-      notes:notes.value,
-      source:"WEB"
-    }
-  })});
-
-  txnForm.reset();
-  saveBtn.disabled=false;
-  saveBtn.textContent="Save Transaction";
-  loadRecent();
-};
-
-async function loadRecent(){
-  const box=document.getElementById("recentTxns");
-  try{
-    const data=await fetch(API+"?action=recent").then(r=>r.json());
-    box.innerHTML=`
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th><th>Type</th><th>Category</th><th>Accounts</th><th style="text-align:right">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-        ${data.map(t=>`
-          <tr>
-            <td>${t.date}</td>
-            <td>${t.type}</td>
-            <td>${t.category}</td>
-            <td class="accounts">${t.from||""}${t.to?` → ${t.to}`:""}</td>
-            <td class="amount">₹ ${t.amount}</td>
-          </tr>`).join("")}
-        </tbody>
-      </table>`;
-  }catch{
-    box.innerHTML="<em>No recent transactions</em>";
-  }
+  location.reload();
 }
 </script>
-
 </body>
 </html>
