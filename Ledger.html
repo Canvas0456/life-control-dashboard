@@ -68,7 +68,7 @@ button{
 .filters{
   display:grid;
   grid-template-columns:2fr 1fr 1fr auto;
-  gap:12px;
+  gap:16px;
   align-items:end;
 }
 
@@ -133,7 +133,9 @@ th{
 <div class="card filters">
   <div>
     <label>Select Account</label>
-    <select id="accountSelect"></select>
+    <select id="accountSelect">
+      <option value="">Select Account</option>
+    </select>
   </div>
 
   <div>
@@ -147,7 +149,7 @@ th{
   </div>
 
   <div>
-    <button onclick="loadLedger()">Apply</button>
+    <button onclick="loadLedger(true)">Apply</button>
   </div>
 </div>
 
@@ -223,63 +225,64 @@ const inflowEl = document.getElementById("inflow");
 const outflowEl = document.getElementById("outflow");
 const closingEl = document.getElementById("closing");
 
+/* Load only real account names */
 async function loadAccounts(){
   const res = await fetch(`${API}?action=accounts`);
   const data = await res.json();
 
+  const validAccounts = data.filter(a =>
+    !/^ACC\d+/i.test(a) && a.length > 3
+  );
+
   accountSelect.innerHTML =
     `<option value="">Select Account</option>` +
-    data.map(a=>`<option value="${a}">${a}</option>`).join("");
+    validAccounts.map(a=>`<option value="${a}">${a}</option>`).join("");
 
   accountSelect.addEventListener("change", ()=>{
     if(accountSelect.value){
-      loadLedger();
+      loadLedger(false);
     }
   });
 }
 
-async function loadLedger(){
+/* Load Ledger */
+async function loadLedger(isApply=false){
   if(!accountSelect.value) return;
-
-  const from = fromDate.value;
-  const to = toDate.value;
 
   let url = `${API}?action=ledger&account=${accountSelect.value}`;
 
-  if(from || to){
-    url += `&from=${from}&to=${to}`;
+  if(isApply && (fromDate.value || toDate.value)){
+    url += `&from=${fromDate.value}&to=${toDate.value}`;
   }
 
   const res = await fetch(url);
   const data = await res.json();
 
-  let inflow = 0, outflow = 0;
-  let categoryMap = {};
+  let inflow=0, outflow=0;
+  let categoryMap={};
 
   if(!data.length){
     ledgerBody.innerHTML =
       `<tr><td colspan="7" class="empty">No transactions</td></tr>`;
   } else {
     ledgerBody.innerHTML = data.map(r=>{
-      inflow += r.credit;
-      outflow += r.debit;
+      inflow+=r.credit;
+      outflow+=r.debit;
 
-      if(!categoryMap[r.category]){
-        categoryMap[r.category] = { debit:0, credit:0 };
-      }
-      categoryMap[r.category].debit += r.debit;
-      categoryMap[r.category].credit += r.credit;
+      categoryMap[r.category] ??= {debit:0, credit:0};
+      categoryMap[r.category].debit+=r.debit;
+      categoryMap[r.category].credit+=r.credit;
 
       return `
-        <tr>
-          <td>${r.date}</td>
-          <td>${r.txnId}</td>
-          <td>${r.type}</td>
-          <td>${r.category}</td>
-          <td class="red">₹ ${r.debit}</td>
-          <td class="green">₹ ${r.credit}</td>
-          <td>₹ ${r.balance}</td>
-        </tr>`;
+      <tr>
+        <td>${r.date}</td>
+        <td>${r.txnId}</td>
+        <td>${r.type}</td>
+        <td>${r.category}</td>
+        <td class="red">₹ ${r.debit}</td>
+        <td class="green">₹ ${r.credit}</td>
+        <td>₹ ${r.balance}</td>
+      </tr>`;
     }).join("");
   }
 
@@ -292,23 +295,22 @@ async function loadLedger(){
 }
 
 function renderCategoryBreakup(map){
-  const rows = Object.keys(map);
-
-  if(!rows.length){
+  const keys = Object.keys(map);
+  if(!keys.length){
     categoryBody.innerHTML =
       `<tr><td colspan="4" class="empty">No data</td></tr>`;
     return;
   }
 
-  categoryBody.innerHTML = rows.map(c=>{
+  categoryBody.innerHTML = keys.map(c=>{
     const d = map[c];
     return `
-      <tr>
-        <td>${c}</td>
-        <td>₹ ${d.debit}</td>
-        <td>₹ ${d.credit}</td>
-        <td>₹ ${(d.credit - d.debit).toFixed(2)}</td>
-      </tr>`;
+    <tr>
+      <td>${c}</td>
+      <td>₹ ${d.debit}</td>
+      <td>₹ ${d.credit}</td>
+      <td>₹ ${(d.credit-d.debit).toFixed(2)}</td>
+    </tr>`;
   }).join("");
 }
 
