@@ -7,40 +7,86 @@
 
 <style>
 :root {
-  --bg:#F7F8FC;
-  --card:#FFFFFF;
-  --border:#E5E7EB;
-  --text:#374151;
-  --muted:#6B7280;
-  --debit:#E4989B;
-  --credit:#84A98C;
+  --bg1:#F7F8FC; --bg2:#EEF2F7;
+  --card:#FFFFFF; --border:#E5E7EB;
+  --text:#374151; --muted:#6B7280;
+  --debit:#E4989B; --credit:#84A98C;
+  --accent:#9AA7D8;
+  --radius:14px;
 }
 
-* { box-sizing:border-box; font-family:system-ui,Segoe UI,Roboto; }
+body::before {
+  content:"";
+  position:fixed; inset:0;
+  background:
+    radial-gradient(circle at 15% 20%, #9AA7D8 0, transparent 35%),
+    radial-gradient(circle at 85% 80%, #7FB7A3 0, transparent 40%);
+  opacity:.035; pointer-events:none;
+}
+
+* { box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
 
 body {
   margin:0;
-  background:var(--bg);
-  padding:32px 16px;
+  background:linear-gradient(135deg,var(--bg1),var(--bg2));
   color:var(--text);
+  min-height:100vh;
+  padding:32px 16px 40px;
 }
 
-h1 { margin:0 0 16px; }
+h1 { margin:0 0 20px; }
 
 .card {
   background:var(--card);
   border:1px solid var(--border);
-  border-radius:14px;
+  border-radius:var(--radius);
   padding:20px;
   margin-bottom:20px;
 }
 
+label {
+  font-size:13px;
+  font-weight:500;
+  margin-bottom:6px;
+  display:block;
+}
+
 select {
   width:100%;
-  padding:10px;
+  padding:10px 12px;
   border-radius:8px;
   border:1px solid var(--border);
+  font-size:14px;
 }
+
+/* SUMMARY CARDS */
+.summary {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+  margin-bottom:20px;
+}
+
+.summary .box {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px;
+}
+
+.summary .label {
+  font-size:12px;
+  color:var(--muted);
+}
+
+.summary .value {
+  margin-top:6px;
+  font-size:18px;
+  font-weight:600;
+}
+
+.value.credit { color:var(--credit); }
+.value.debit { color:var(--debit); }
 
 table {
   width:100%;
@@ -63,14 +109,17 @@ tbody td {
   border-bottom:1px dashed var(--border);
 }
 
+td.right { text-align:right; }
 td.debit { color:var(--debit); }
 td.credit { color:var(--credit); }
 td.balance { font-weight:600; }
 
-.right { text-align:right; }
+@media(max-width:900px){
+  .summary { grid-template-columns:1fr 1fr; }
+}
 
-@media(max-width:768px){
-  table { font-size:12px; }
+@media(max-width:600px){
+  .summary { grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -79,11 +128,35 @@ td.balance { font-weight:600; }
 
 <h1>Account Ledger</h1>
 
+<!-- ACCOUNT SELECT -->
 <div class="card">
   <label>Select Account</label>
-  <select id="accountSelect"></select>
+  <select id="accountSelect">
+    <option value="">Loading accounts…</option>
+  </select>
 </div>
 
+<!-- SUMMARY -->
+<div class="summary">
+  <div class="box">
+    <div class="label">Opening Balance</div>
+    <div class="value" id="openBal">₹ 0</div>
+  </div>
+  <div class="box">
+    <div class="label">Net Inflow</div>
+    <div class="value credit" id="inflow">₹ 0</div>
+  </div>
+  <div class="box">
+    <div class="label">Net Outflow</div>
+    <div class="value debit" id="outflow">₹ 0</div>
+  </div>
+  <div class="box">
+    <div class="label">Closing Balance</div>
+    <div class="value" id="closeBal">₹ 0</div>
+  </div>
+</div>
+
+<!-- LEDGER TABLE -->
 <div class="card">
   <table>
     <thead>
@@ -104,30 +177,59 @@ td.balance { font-weight:600; }
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbzFrvs7pVyW7HCciqHeNF_1oQVCScJkH_6gem3YXt5lVyxjfJXh36wOXYIRYIho4gGz/exec";
+/* 🔴 IMPORTANT — PUT YOUR LEDGER WEB APP URL HERE */
+const API = "PASTE_LEDGER_WEBAPP_URL_HERE";
 
 const accountSelect = document.getElementById("accountSelect");
 const ledgerBody = document.getElementById("ledgerBody");
 
-async function init() {
-  const accounts = await fetch(API + "?action=accounts").then(r => r.json());
-  accountSelect.innerHTML = "<option value=''>Select</option>" +
-    accounts.map(a => `<option>${a}</option>`).join("");
-}
-init();
+const openBal = document.getElementById("openBal");
+const inflow = document.getElementById("inflow");
+const outflow = document.getElementById("outflow");
+const closeBal = document.getElementById("closeBal");
 
+/* LOAD ACCOUNTS */
+async function loadAccounts() {
+  try {
+    const accounts = await fetch(API + "?action=accounts").then(r => r.json());
+    accountSelect.innerHTML =
+      "<option value=''>Select</option>" +
+      accounts.map(a => `<option>${a}</option>`).join("");
+  } catch {
+    accountSelect.innerHTML = "<option>Error loading accounts</option>";
+  }
+}
+loadAccounts();
+
+/* LOAD LEDGER */
 accountSelect.onchange = async () => {
-  if (!accountSelect.value) return;
+  const acc = accountSelect.value;
+  if (!acc) return;
 
   ledgerBody.innerHTML = "<tr><td colspan='7'>Loading…</td></tr>";
 
-  const data = await fetch(API + "?action=ledger&account=" + encodeURIComponent(accountSelect.value))
-    .then(r => r.json());
+  const data = await fetch(
+    API + "?action=ledger&account=" + encodeURIComponent(acc)
+  ).then(r => r.json());
 
   if (!data.length) {
-    ledgerBody.innerHTML = "<tr><td colspan='7'><em>No data</em></td></tr>";
+    ledgerBody.innerHTML = "<tr><td colspan='7'><em>No transactions</em></td></tr>";
+    resetSummary();
     return;
   }
+
+  let totalDebit = 0;
+  let totalCredit = 0;
+
+  data.forEach(r => {
+    totalDebit += Number(r.debit || 0);
+    totalCredit += Number(r.credit || 0);
+  });
+
+  openBal.textContent = "₹ " + data[0].balance;
+  inflow.textContent = "₹ " + totalCredit.toFixed(2);
+  outflow.textContent = "₹ " + totalDebit.toFixed(2);
+  closeBal.textContent = "₹ " + data[data.length - 1].balance;
 
   ledgerBody.innerHTML = data.map(r => `
     <tr>
@@ -141,6 +243,11 @@ accountSelect.onchange = async () => {
     </tr>
   `).join("");
 };
+
+function resetSummary(){
+  openBal.textContent = inflow.textContent =
+  outflow.textContent = closeBal.textContent = "₹ 0";
+}
 </script>
 
 </body>
